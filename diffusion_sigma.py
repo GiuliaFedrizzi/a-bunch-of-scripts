@@ -1,4 +1,4 @@
-# compares results from different sims from different directories (gaussRes) - pressure input with gaussian distribution 
+# compares results from different sims in different directories (gaussRes) - pressure input with gaussian distribution 
 import pandas as pd
 from matplotlib import colors
 import matplotlib.pyplot as plt

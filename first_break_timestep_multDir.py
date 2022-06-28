@@ -14,7 +14,6 @@ parent_directories = []
 for sigma_dir in sorted(glob.glob("sigma*/")):
     """ get the list of directories"""
     parent_directories.append(sigma_dir)
-
 fig, axs = plt.subplots(nrows=1, ncols=1)
 
 #ax3.set_xlim([xmax-0.05,xmax+0.05])
@@ -63,10 +62,11 @@ for parent_directory in parent_directories:   # sigma_*
             timesteps.append(float(timestep.replace("/","")))  # ...get the time
             times_of_bb.append(float(time_of_first_bb))
 
-            axs.plot(timesteps,times_of_bb, '--o',linewidth=2,label=parent_directory)  # ...and plot it
-            axs.set_xscale('log')
-            axs.set_yscale('log')
+
         os.chdir('..')
+    axs.plot(timesteps,times_of_bb, '--o',linewidth=2,label=parent_directory)  # ...and plot it
+    axs.set_xscale('log')
+    #axs.set_yscale('log')
     os.chdir("../..")
 fig_title = "Time of the first broken bond for different time steps\n"
 axs.set(title=fig_title, xlabel='Time step (s)', ylabel='Time before first broken bond (s)')
