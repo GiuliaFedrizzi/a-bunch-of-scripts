@@ -12,8 +12,9 @@ import os as os
 
 parent_directories = []
 for sigma_dir in sorted(glob.glob("sigma*/")):
-    """ get the list of directories"""
+    """ get the list of directories """
     parent_directories.append(sigma_dir)
+# parent_directories = ["sigma_3_0"]
 fig, axs = plt.subplots(nrows=1, ncols=1)
 
 #ax3.set_xlim([xmax-0.05,xmax+0.05])
@@ -64,12 +65,14 @@ for parent_directory in parent_directories:   # sigma_*
 
 
         os.chdir('..')
-    axs.plot(timesteps,times_of_bb, '--o',linewidth=2,label=parent_directory)  # ...and plot it
+    my_label = "$\sigma$ = " + parent_directory.split("_")[1] + "." + parent_directory.split("_")[2].replace("/","")
+    axs.plot(timesteps,times_of_bb, '--o',linewidth=2,label=my_label)  # ...and plot it
     axs.set_xscale('log')
     #axs.set_yscale('log')
     os.chdir("../..")
 fig_title = "Time of the first broken bond for different time steps\n"
 axs.set(title=fig_title, xlabel='Time step (s)', ylabel='Time before first broken bond (s)')
+axs.grid(linestyle='--',alpha=0.6)#(linestyle='-', linewidth=2)
 #axs.set_xscale('log')
 #figure_name = parent_directory.replace("/","-")+"_time_first_bb.png"
 #plt.savefig(figure_name, dpi=600)
