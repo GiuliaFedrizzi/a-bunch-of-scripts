@@ -40,7 +40,7 @@ def getFirstBrokenBond(myExp):
 for parent_directory in parent_directories:   # sigma_*
     # change directory (I want to have 1 script that I keep outside of the many directories)
     os.chdir(parent_directory)
-    os.chdir(parent_directory.replace("/","") + "_gaussTime02")
+    os.chdir(parent_directory.replace("/","") + "_gaussTime04")
 
     dirList = []
     for my_dir in sorted(glob.glob("tstep*/")):
