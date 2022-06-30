@@ -14,6 +14,9 @@ set -o pipefail
 
 dirName=tstep02
 
+# submits each simulation with a different timestep, always keeping the same amount of pressure/time constant
+# pressure is added at every timestep. Smaller tsteps mean smaller pressure.
+
 #   -> imagine there is a foor loop that increments the task array variable here
 # for every SGE_TASK_ID:
   #    --------------- name of directory ---------------

@@ -7,7 +7,7 @@ import math
 import os
 import glob
 
-parent_directory = "gaussRes"
+parent_directory = "gaussTime"
 
 # some variables for the subplots:
 tot_files = 9  # is going to be the total number of subplots (#subplots=tot_files-1)
