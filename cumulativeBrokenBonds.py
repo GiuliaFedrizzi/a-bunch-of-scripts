@@ -8,7 +8,10 @@
 import matplotlib.pyplot as plt
 import glob
 import os as os
+from joblib import Parallel, delayed
+import multiprocessing
 
+timestep_dir = "tstep04_4_1e4"
 parent_directories = []
 for sigma_dir in sorted(glob.glob("sigma*/")):
     """ get the list of directories """
@@ -26,6 +29,7 @@ time_string = "time is "
 def getBrokenBondTime(lattefile):
     """ every time you find "Broken Bonds", save the number of bb present and the relative time"""
     time_line = 0
+    time_bb_array = [];bb_array = []  # reset these two arrays
     with open(lattefile) as expFile:
         for num, line in enumerate(expFile,1):
             if time_string in line:
@@ -41,39 +45,28 @@ def getBrokenBondTime(lattefile):
                 time_bb_array.append(float(timebb))              # build the array with the relative time 
     return time_bb_array,bb_array  
     
-for parent_directory in parent_directories:   # sigma_*
+def plot_bb_in_time(parent_directory):
     # change directory (I want to have 1 script that I keep outside of the many directories)
     os.chdir(parent_directory)
-    os.chdir(parent_directory.replace("/","") + "_gaussTime05")
-
-    dirList = []
-
+    os.chdir(parent_directory.replace("/","") + "_gaussTime05")  # build the path
     print(os.getcwd())
-    timesteps = []
-    times_of_bb = []   # list of times at which we have the first broken bond
-    # loop through directories
-    os.chdir("tstep04_5_1e5")  # get inside tstep04_5_1e5 (chooses always the same timestep)
-    #x = str(myDir).split("_")  # split where there are underscores
-    #timestep = x[2]  # take the third part of the string, e.g. 1e4
-    try:
-        time_bb_array = [];bb_array = []  # reset these two arrays
-        time_bb_array,bb_array = getBrokenBondTime("latte.log")
-    except:
-        print("couldn't open the file.")
-    # if time_bb_array:   # if you found a broken bond...
-    #     timesteps.append(float(timestep.replace("/","")))  # ...get the time
-    #     times_of_bb.append(float(time_of_first_bb))
-
+    os.chdir(timestep_dir)  # get inside tstep04_... (chooses always the same timestep)
+    #try:
+    time_bb_array,bb_array = getBrokenBondTime("latte.log")
+    #except:
+    #    print("Failed to get bb or time.")
 
     os.chdir('..')
     my_label = "$\sigma$ = " + parent_directory.split("_")[1] + "." + parent_directory.split("_")[2].replace("/","")  # build the label sigma = x (from the directory name)
-    axs.plot(time_bb_array,bb_array, '--o',linewidth=2,label=my_label)  # ...and plot it
+    axs.plot(time_bb_array,bb_array, '--o',linewidth=2,markersize=3,label=my_label)  # ...and plot it
     #axs.set_xscale('log')
     #axs.set_yscale('log')
     os.chdir("../..")
-    
 
-fig_title = "Number of broken bonds (cumulative) in time for different $\sigma$ values\n"
+for parent_directory in parent_directories:   # sigma_*
+    plot_bb_in_time(parent_directory)
+
+fig_title = "Number of broken bonds (cumulative) in time for different $\sigma$ values\nTimestep = " + timestep_dir.split("_")[2] # take the third part of the string, e.g. 1e4
 axs.set(title=fig_title, xlabel='Time (s)', ylabel='Number of broken bonds')
 axs.grid(linestyle='--',alpha=0.6)#(linestyle='-', linewidth=2)
 # #axs.set_xscale('log')
