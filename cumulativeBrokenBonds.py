@@ -11,7 +11,7 @@ import os as os
 from joblib import Parallel, delayed
 import multiprocessing
 
-timestep_dir = "tstep04_4_1e4"
+timestep_dir = "tstep04_5_5e5"
 parent_directories = []
 for sigma_dir in sorted(glob.glob("sigma*/")):
     """ get the list of directories """

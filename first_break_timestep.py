@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import glob
 import os as os
 
-parent_directory = "sigma_1_0_gaussTime02"
+parent_directory = "sigma_3_0_gaussTime05"
 
 
 fig, axs = plt.subplots(nrows=1, ncols=1)

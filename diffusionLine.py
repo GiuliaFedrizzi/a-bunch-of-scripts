@@ -27,7 +27,7 @@ def getTimeStep(inputFile):
                 return input_tstep  
 
 # open the first file after melt addition to find the max P
-myExp = pd.read_csv("my_experiment00010.csv", header=0)
+myExp = pd.read_csv("my_experiment00002.csv", header=0)
 xmax = myExp.loc[myExp['Pressure'].idxmax(), 'x coord']
 ymax = myExp.loc[myExp['Pressure'].idxmax(), 'y coord']
 myExp0 = pd.read_csv("my_experiment00000.csv", header=0)
@@ -57,14 +57,9 @@ ax2.set_xlim([ymax-0.05,ymax+0.05])
 count=0
 
 for i,filename in enumerate(sorted(glob.glob("my_experiment*"))):
-    if i%1000 == 0:
-# for i in range(5,10,1):
-#     if i<10:
-#         filename="my_experiment0000"+str(i)+".csv"
-#     elif i<100:
-#         filename="my_experiment000"+str(i)+".csv"
-#     else:
-#         filename="my_experiment00"+str(i)+".csv"
+    if i == 0:
+        continue  # skip t = 0
+    if i%1000 == 0:   #  plot only every x timesteps (files)
         myExp = pd.read_csv(filename, header=0)
         #pressure_array_x = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['y coord'],ymax,rel_tol=4.9e-6),axis=1),'Pressure'])
         pressure_array_x = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['y coord'],ymax,rel_tol=1e-3),axis=1),'Pressure'])
@@ -75,7 +70,7 @@ for i,filename in enumerate(sorted(glob.glob("my_experiment*"))):
         input_tstep = float(getTimeStep("input.txt"))
         file_num = float(filename.split("experiment")[1].split(".")[0])  # first take the part after "experiment", then the one before the "."
         # name of the line
-        labelName = "time = " + str('{:.4e}'.format(input_tstep*file_num))
+        labelName = "t=" + str('{:.1e}'.format(input_tstep*file_num))
 
         # plot
         # if i == 5:
@@ -94,7 +89,7 @@ for i,filename in enumerate(sorted(glob.glob("my_experiment*"))):
         ax2.plot(y_array, pressure_array_y,plotStyle,label=labelName)
         #ax2.legend()
         ax2.set_title("Vertical Profile")
-        if i == 9000:
+        if i == 20000:
             break
 
 
