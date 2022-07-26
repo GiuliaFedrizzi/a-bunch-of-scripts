@@ -14,6 +14,7 @@ import cProfile
 import pstats
 profile = cProfile.Profile()
 
+filefrequency = 100
 
 # change directory (I want to have 1 script that I keep outside of the many directories)
 #os.chdir('diffusionProfile/visc/mi1e-2_v1e0')
@@ -35,7 +36,7 @@ def getTimeStep(inputFile):
 
 fig, axs = plt.subplots(nrows=1,ncols=1)
 
-for dir in sorted(glob.glob("sigma*/*gaussTime05/tstep0*")):
+for dir in sorted(glob.glob("sigma*/*gaussTime05/tstep04_5_1e5")):
     os.chdir(dir)
     print(os.getcwd())
     maxPressure = [] # initialise empty array
@@ -45,7 +46,7 @@ for dir in sorted(glob.glob("sigma*/*gaussTime05/tstep0*")):
     for i,filename in enumerate(sorted(glob.glob("my_experiment*"))):
         if i == 0:
             continue  # skip t = 0
-        if i%10 == 0:   #  plot only every x timesteps (files)
+        if i%filefrequency == 0:   #  plot only every x timesteps (files)
             myExp = pd.read_csv(filename, header=0)
             maxPressure.append(getMaxPressures(myExp))
             input_tstep = float(getTimeStep("input.txt"))
@@ -53,27 +54,32 @@ for dir in sorted(glob.glob("sigma*/*gaussTime05/tstep0*")):
             time_array.append(input_tstep*file_num)
             # # name of the line
             # labelName = "t=" + str('{:.1e}'.format(input_tstep*file_num))
-            if i == 200:
+            if i == 20*filefrequency:
                 break
-    plotStyle='-'
-    labelName = os.getcwd().split("myExperiments/")[1] # get the part of the path that is after "myExperiments/"
+    plotStyle='-o'
+    dirName = os.getcwd().split("myExperiments/")[1] # get the part of the path that is after "myExperiments/"
+    sigma_components = dirName.split("/")[1].split("_")   # take the second part after / in "gaussTime/sigma_1_0/sigma_1_0_gaussTime05/tstep04_5_1e5", split around "_"
+    labelName = "$\sigma$ = " + sigma_components[1] + "." + sigma_components[2]   # from sigma_1_0 to 1.0
     axs.plot(time_array, maxPressure,plotStyle,label=labelName)     
     os.chdir("../../..")   
         
 
 axs.set_xlabel("Time")
 axs.set_ylabel("Max Fluid Pressure")
-axs.set_title("Max Fluid Pressure in time")
+axs.set_title("Max Fluid Pressure in time. Time step = " + dirName.split("/")[-1].split("_")[-1] + "\nValues every " + str(filefrequency) + " files.")
 #axs.xaxis.set_major_formatter(FormatStrFormatter('% .1e'))
 #fig.suptitle(os.getcwd().split("myExperiments/")[1]) # get the part of the path that is after "myExperiments/"
 
 # LEGEND:
 # get the position of the plot so I can add the legend to it 
-#box = ax2.get_position()
+#box = axs.get_position()
 
-# upper left = the point that I am setting wiht the second argument
-#ax2.legend(loc='center left',bbox_to_anchor=(1,0.5),fancybox=True, ncol=1) 
-axs.legend()
+                # upper left = the point that I am setting wiht the second argument
+#axs.legend(loc='center left',bbox_to_anchor=(1,0.5),fancybox=True, ncol=1) 
+#axs.legend(loc='upper left',fancybox=True, ncol=1) 
+axs.legend(fancybox=True, ncol=1) 
+axs.grid(linestyle='--',alpha=0.6)#(linestyle='-', linewidth=2)
+#axs.legend()
 #plt.tight_layout()
 plt.show()
 #plt.savefig("porDiff01_a.png", dpi=150,transparent=False)

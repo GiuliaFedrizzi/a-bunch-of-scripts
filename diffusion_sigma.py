@@ -29,7 +29,7 @@ dirList = []
 for my_dir in sorted(glob.glob("grcont*")):
     """ get the list of directories"""
     dirList.append(my_dir)
-
+print(dirList)
 max_P = 0.0
 min_P = 0.0
 
