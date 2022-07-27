@@ -55,7 +55,7 @@ for sigma_dir in sorted(glob.glob("sigma_*")): # sigma_1_0
                 """ loop through FILES """
                 if i == 0 or i == 1:
                     continue
-                if i == 100:
+                if i == 50:
                     continue
                 # go through files, one by one
                 myExp = pd.read_csv(file, header=0)
