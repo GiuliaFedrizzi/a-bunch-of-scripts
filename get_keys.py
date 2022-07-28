@@ -6,10 +6,18 @@ mini-script that
 
 import pandas as pd
 import shutil
-shutil.copy('my_h5.h5', 'my_h5_copy.h5')
 
-h5 = "my_h5_copy.h5"
+file_name_root = "my_h5_limitFiles0_sigma3"  # the name before .h5, same for the original and the copy
+orig_file = file_name_root + ".h5" # name of the original h5 file
+copied_file = file_name_root + "_copy.h5"  # name of the copy
+
+shutil.copy(orig_file, copied_file)  # save a copy
+
+h5 = copied_file
 
 store = pd.HDFStore(h5)
-
-print(store.keys())
+#store.walk_nodes
+#my_h5 = tb.open_file(h5)
+for key in store.keys():
+    print(key)
+#print(store.keys())
