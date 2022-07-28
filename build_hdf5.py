@@ -19,13 +19,13 @@ fig, axs = plt.subplots(nrows=1, ncols=1)
 max_P = 0.0
 min_P = 0.0
 
-if os.path.exists('my_h5_limitFiles0_sigma3_func.h5'):
-    os.remove('my_h5_limitFiles0_sigma3_func.h5')
+if os.path.exists('my_h5_limitFiles0_sigma3_par.h5'):
+    os.remove('my_h5_limitFiles0_sigma3_par.h5')
 
 
 # wrap csv importer in a function that can be mapped
-def read_extract_P(myExp,x_col_done):
-    """converts a filename to a pandas dataframe"""
+def read_extract_P(file):
+    """converts a filename to a pandas dataframe, gets x_array (x coordinate) and pressure"""
         # go through files, one by one
     myExp = pd.read_csv(file, header=0)
     # find the location in the y coordinate corresponding to the max pressure 
@@ -36,11 +36,9 @@ def read_extract_P(myExp,x_col_done):
     pressure_array_x = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['y coord'],ymax,rel_tol=1e-3),axis=1),'Pressure'])
     #pressure_array_y = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['x coord'],xmax,rel_tol=1e-3),axis=1),'Pressure'])
     col_name = file.replace(".csv","").replace("my_experiment","t_")
-    if x_col_done == 0:
-        df["x_coordinate"] = x_array
-        x_col_done = 1   # now I've done it, so don't add it next time
+    df["x_coordinate"] = x_array
     df[col_name] = pressure_array_x  # store x coordinates
-    return df,x_col_done
+    return df
 
 
 
@@ -84,11 +82,14 @@ for sigma_dir in sorted(glob.glob("sigma_3*")): # sigma_1_0
             x_col_done = 0       # have I put the column with the x coordinates in the dataframe yet?
          # ~~~ start time ~~~
             st1 = time.time()
-            for file in file_list:
-                df,x_col_done = read_extract_P(file,x_col_done)
+            # for file in file_list:
+            with Pool(processes=8) as pool:
+                df_list = pool.map(read_extract_P, file_list)
 
                 #df.attrs['tstep'] = tstep_dir.split("_")[2]  # get the third part of the name, after _ (eg 5e3 from tstep02_3_5e3)
             # --- end for loop files ---
+            df_merged = pd.concat(df_list, ignore_index=True)
+
          # ~~~ end time ~~~
             et1 = time.time()
             elapsed_time1 = et1 - st1
@@ -102,7 +103,7 @@ for sigma_dir in sorted(glob.glob("sigma_3*")): # sigma_1_0
 
             # append df to a group and assign the key with f-strings
                                                                 #f'{group}/{k}'
-            df.to_hdf("../../../my_h5_limitFiles0_sigma3_func.h5", f'{sigma_dir}/{time0_name}/{tstep_name}', append=True)
+            df_merged.to_hdf("../../../my_h5_limitFiles0_sigma3_par.h5", f'{sigma_dir}/{time0_name}/{tstep_name}', append=True)
             # !!!! if you change the name here, remember to change it where it checks if it exists  !!!!
 
             et3 = time.time()

@@ -7,7 +7,7 @@ mini-script that
 import pandas as pd
 import shutil
 
-file_name_root = "my_h5_limitFiles0_sigma3"  # the name before .h5, same for the original and the copy
+file_name_root = "my_h5_limitFiles0_sigma3_par"  # the name before .h5, same for the original and the copy
 orig_file = file_name_root + ".h5" # name of the original h5 file
 copied_file = file_name_root + "_copy.h5"  # name of the copy
 
