@@ -27,12 +27,13 @@ def apply_scale(coord):
 
 
 dfm_old = pd.DataFrame()
-scales = ['050','200']
+#scales = ['050','200']
+scales = ['050']#,'200']
 for scale in scales:
     if scale == '200':
         h5 = "/nobackup/scgf/myExperiments/gaussTime/my_h5_copy.h5"
     elif scale == '050':
-        h5 = "/nobackup/scgf/myExperiments/gaussScale/scale050/my_h5_copy2.h5"
+        h5 = "/nobackup/scgf/myExperiments/gaussScale/scale050/my_h5_limitFiles0_sigma3_par_copy.h5"
     
     store = pd.HDFStore(h5)
     my_keys = store.keys()

@@ -1,4 +1,4 @@
-# compares results from different sims in different directories (gaussTime) - pressure input with gaussian distribution 
+# compares results from different sims with different scales (gaussTime (200m), scale050 (50m) etc) - pressure input with gaussian distribution 
 import pandas as pd
 from matplotlib import colors
 import matplotlib.pyplot as plt
@@ -7,43 +7,28 @@ import math
 import os
 import glob
 
-#parent_directory = "gaussTimeOnce"
+# ---------------------------------
+# - to be run from myExperiments -
+# ---------------------------------
 
 # some variables for the subplots:
-tot_files = 9  # is going to be the total number of subplots (#subplots=tot_files-1)
-nrow = tot_files-1; ncol = 2;
+tot_files = 9  # total number of subplots is (tot_files-1)*2. Each one corresponds to a time step
+nrow = tot_files-1; ncol = 2;  # for each file: 1 horizontal, 1 vertical profile
 fig, axs = plt.subplots(nrows=nrow, ncols=ncol)
 
+dirList = ['/nobackup/scgf/myExperiments/gaussScale/scale050/sigma_3_0/sigma_3_0_gaussTime05/tstep04_5_1e5','/nobackup/scgf/myExperiments/gaussTime/sigma_3_0/sigma_3_0_gaussTime05/tstep04_5_1e5']
 
-#fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
-#fig, ax1 = plt.subplots(nrows=1,ncols=1)
+# initialise stuff
+max_P = 0.0; min_P = 0.0
 
-#ax3.set_xlim([xmax-0.05,xmax+0.05])
-#ax4.set_xlim([ymax-0.05,ymax+0.05])
-#ax3.set_ylim([0.054,0.055])    
-
-
-#os.chdir(parent_directory)
-dir_list_sigma = []
-#for my_dir in sorted(glob.glob("tstep*")):
-for my_dir in sorted(glob.glob("sigma*")):
-    """ get the list of directories"""
-    dir_list_sigma.append(my_dir)
-print(dir_list_sigma)
-max_P = 0.0
-min_P = 0.0
-
-#for myDir in dir_list_sigma[1:4]:
-for myDir in dir_list_sigma[1:3]:
+#for myDir in dirList[1:4]:
+for myDir in dirList:
     # loop through directories
-    os.chdir(myDir + "/" + myDir + "_gaussTime05/tstep04_4_1e4")
+    os.chdir(myDir)
     print("--> Entering " + str(os.getcwd()))
-    file_list = sorted(glob.glob("my_experiment0*.csv"))
-    file_list = file_list[2:tot_files+2]
-    print("list:" + ' '.join(file_list) + " size = " + str(len(file_list)))
+    file_list = sorted(glob.glob("my_experiment00*.csv"))
     #print(file_list)
 
-    # things that are done only once: locate the max, get the coordinates
     myExp0 = pd.read_csv(file_list[3], header=0)  # as a reference: open a later file to get xmax,ymax,x coordinates
     xmax = myExp0.loc[myExp0['Pressure'].idxmax(), 'x coord']
     ymax = myExp0.loc[myExp0['Pressure'].idxmax(), 'y coord']
@@ -54,8 +39,11 @@ for myDir in dir_list_sigma[1:3]:
     # get the y coordinates of all x in range of tolerance
     y_array = np.array(myExp0.loc[myExp0.apply(lambda x: math.isclose(x['x coord'],xmax,rel_tol=1e-3),axis=1),'y coord'])
 
+    for i,file in enumerate(file_list[0:tot_files]): 
 
-    for i,file in enumerate(file_list):
+        if i == 0 or i == 1:
+            continue
+        #print(file)
         # go through files, one by one
         myExp = pd.read_csv(file, header=0)
 
@@ -70,12 +58,12 @@ for myDir in dir_list_sigma[1:3]:
         # extract the pressure arrays
         pressure_array_x = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['y coord'],ymax,rel_tol=1e-3),axis=1),'Pressure'])
         pressure_array_y = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['x coord'],xmax,rel_tol=1e-3),axis=1),'Pressure'])
-        x = str(os.getcwd())  # current directory
-        labelName = '-'.join(x.split("/")[5:-1]) # split where there there's a slash, keep dir names from the 6th (5) to the last (-1), join these with a -
+        x = str(myDir).split("myExperiments/")  # split between before and after myExperiments/
+        labelName = x[1]  # take the second part of the string
         all_axes=axs.reshape(-1)
         all_axes[2*i-2].plot(x_array, pressure_array_x,label=labelName)
         all_axes[2*i-1].plot(y_array, pressure_array_y,label=labelName)
-    os.chdir("../../..")
+    os.chdir("..")
 
 # LEGEND:
 # get the position of the middle plot so I can add the legend to it (all_axes[1].legend)
