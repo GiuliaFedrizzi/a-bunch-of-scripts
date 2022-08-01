@@ -1,4 +1,5 @@
-""" plot only every x timesteps (files) """
+""" plot a line for pressure diffusion. From a single directory.
+ only every x timesteps (files) """
 
 # I use this ^ to run python in VS code in interactive mode
 import pandas as pd
@@ -11,6 +12,7 @@ import os
 import glob
 import seaborn as sns
 
+filename = 'my_experiment13400.csv'
 
 def getTimeStep(inputFile):
     with open(inputFile) as iFile:
@@ -20,7 +22,7 @@ def getTimeStep(inputFile):
                 return input_tstep  
 
 # open the first file after melt addition to find the max P
-myExp = pd.read_csv("my_experiment20000.csv", header=0)
+myExp = pd.read_csv(filename, header=0)
 xmax = myExp.loc[myExp['Pressure'].idxmax(), 'x coord']
 ymax = myExp.loc[myExp['Pressure'].idxmax(), 'y coord']
 #myExp0 = pd.read_csv("my_experiment00000.csv", header=0)
@@ -43,12 +45,12 @@ ax2.set_xlim([ymax-0.05,ymax+0.05])
 #ax3.set_ylim([0.054,0.055])
 
 count=0
-filename = 'my_experiment20000.csv'
+
 #for i,filename in enumerate(sorted(glob.glob("my_experiment*"))):
     # if i == 0:
     #     continue  # skip t = 0
     # if i%1000 == 0:   #  plot only every x timesteps (files)
-myExp = pd.read_csv(filename, header=0)
+#myExp = pd.read_csv(filename, header=0)
 #pressure_array_x = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['y coord'],ymax,rel_tol=4.9e-6),axis=1),'Pressure'])
 pressure_array_x = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['y coord'],ymax,rel_tol=1e-3),axis=1),'Pressure'])
 pressure_array_y = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['x coord'],xmax,rel_tol=1e-3),axis=1),'Pressure'])
