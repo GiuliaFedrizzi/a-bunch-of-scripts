@@ -92,8 +92,8 @@ for dir in dir_list:
         df1_y = pd.DataFrame(data1_y)
         df_y = pd.concat([df_y,df1_y], ignore_index=True) # append to old one
 
-sns.lineplot(data=df_x ,x="x",y="Fluid Pressure",ax=ax1,hue='time',style='scale',alpha=0.5)
-sns.lineplot(data=df_y ,x="y",y="Fluid Pressure",ax=ax2,hue='time',style='scale',alpha=0.5)
+g_x = sns.lineplot(data=df_x ,x="x",y="Fluid Pressure",ax=ax1,hue='time',style='scale',alpha=0.5)
+g_y = sns.lineplot(data=df_y ,x="y",y="Fluid Pressure",ax=ax2,hue='time',style='scale',alpha=0.5)
 ax1.set_ylabel("Fluid Pressure")
 ax1.set_title("Horizontal Profile")
 ax1.set_xlim([-0.06,+0.06])  # zoom in. Limits are max location +- 0.05
@@ -102,6 +102,7 @@ ax2.set_xlim([-0.06,+0.06])  # zoom in. Limits are max location +- 0.05
 #ax2.legend()
 ax2.set_title("Vertical Profile")
 
+g_x.legend_.remove()
 #fig.suptitle(os.getcwd().split("myExperiments/")[1]) # get the part of the path that is after "myExperiments/"
 
 # LEGEND:
@@ -109,10 +110,9 @@ ax2.set_title("Vertical Profile")
 box = ax2.get_position()
 
 # upper left = the point that I am setting wiht the second argument
-#ax3.legend(loc='upper left',bbox_to_anchor=(0,-0.1),fancybox=True, ncol=8)
-#ax2.legend(loc='center left',bbox_to_anchor=(1,0.5),fancybox=True, ncol=1) 
+ax2.legend(loc='center left',bbox_to_anchor=(1,0.5),fancybox=True, ncol=1)   # legend for the vertical line plot
 os.chdir('/nobackup/scgf/myExperiments/gaussScale')
-#plt.savefig("gaussScale50-100-200.png", dpi=300,transparent=True)
+plt.savefig("gaussScale50-100-200.png", dpi=600,transparent=True)
 #plt.tight_layout()
 plt.show()
 

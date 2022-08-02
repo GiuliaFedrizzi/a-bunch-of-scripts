@@ -2,7 +2,8 @@
 
 """ plots the cumulative number of broken bonds with increasing time
  Giulia June 2022
- To be run from gaussTime, goes through sigma*/sigma*_gaussTime05/tstep04_5_1e5
+ To be run from gaussTime or similar (just above sigma_*_*), goes through sigma*/sigma*_gaussTime05/tstep04_5_1e5
+ the last directory (e.g. tstep04_5_1e5) can be given as a command line argument
 """
 # goes through multiple directories
 import matplotlib.pyplot as plt
@@ -10,8 +11,10 @@ import glob
 import os as os
 from joblib import Parallel, delayed
 import multiprocessing
+import sys
 
-timestep_dir = "tstep04_5_5e5"
+#timestep_dir = "tstep04_3_5e3"
+timestep_dir = sys.argv[1]  # give the path of the last directory (e.g. tstep04_3_5e3). 
 parent_directories = []
 for sigma_dir in sorted(glob.glob("sigma*/")):
     """ get the list of directories """
@@ -49,8 +52,8 @@ def plot_bb_in_time(parent_directory):
     # change directory (I want to have 1 script that I keep outside of the many directories)
     os.chdir(parent_directory)
     os.chdir(parent_directory.replace("/","") + "_gaussTime05")  # build the path
-    print(os.getcwd())
     os.chdir(timestep_dir)  # get inside tstep04_... (chooses always the same timestep)
+    print(os.getcwd())
     #try:
     time_bb_array,bb_array = getBrokenBondTime("latte.log")
     #except:
@@ -58,7 +61,7 @@ def plot_bb_in_time(parent_directory):
 
     os.chdir('..')
     my_label = "$\sigma$ = " + parent_directory.split("_")[1] + "." + parent_directory.split("_")[2].replace("/","")  # build the label sigma = x (from the directory name)
-    axs.plot(time_bb_array,bb_array, '--o',linewidth=2,markersize=3,label=my_label)  # ...and plot it
+    axs.plot(time_bb_array,bb_array, '--o',linewidth=1,markersize=2,label=my_label)  # ...and plot it
     #axs.set_xscale('log')
     #axs.set_yscale('log')
     os.chdir("../..")

@@ -37,7 +37,7 @@ def getFirstBrokenBond(myExp):
                 timebb = timebb.replace("\n","")  # get rid of \n
                 return timebb  
     
-for parent_directory in parent_directories:   # sigma_*
+for parent_directory in sorted(glob.glob("sigma*/"))[0:-1]:   # sigma_*
     # change directory (I want to have 1 script that I keep outside of the many directories)
     os.chdir(parent_directory)
     os.chdir(parent_directory.replace("/","") + "_gaussTime05")
@@ -97,41 +97,4 @@ all_axes[-1].set_ylabel("Fluid Pressure")   # the middle plot (tot_files/2)
 all_axes[0].set_title("Horizontal Profile")
 all_axes[0].set_title("Vertical Profile")
 """
-"""
-for i,ax in enumerate(all_axes):
-    # zoom in. Limits are max location +- 0.05
-    if i%2 == 0: # even => horizontal
-        all_axes[i].set_xlim([xmax-0.02,xmax+0.02])
-    else:
-        all_axes[i].set_xlim([ymax-0.02,ymax+0.02])
-    all_axes[i].set_ylim([ymax-0.02,ymax+0.02])
 
-#plt.tight_layout()
-os.chdir('..')
-plt.savefig(parent_directory+".png",dpi=600)
-plt.show()
-
-    
-
-# -- end directory loop --
-
-ax1.set_ylabel("Fluid Pressure")
-ax1.set_title("Horizontal Profile")
-ax2.set_title("Vertical Profile")
-
-# zoom in. Limits are max location +- 0.05
-ax1.set_xlim([xmax-0.05,xmax+0.05])
-ax2.set_xlim([ymax-0.05,ymax+0.05])
-# LEGEND:
-# get the position of the 3rd plot so I can add the legend to it (ax3.legend)
-box = ax2.get_position()
-
-#fig.suptitle("Profiles along the point of Maximum Pressure")
-
-# upper left = the point that I am setting wiht the second argument
-#ax3.legend(loc='upper left',bbox_to_anchor=(0,-0.1),fancybox=True, ncol=8)
-ax2.legend(loc='center left',bbox_to_anchor=(1,0.5),fancybox=True, ncol=1) 
-#plt.tight_layout()
-plt.show()
-
-"""
