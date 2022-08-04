@@ -16,3 +16,10 @@
 MS=/home/home01/scgf/myscripts
 # pvbatch $MS/saveAnimationEveryFolder.py > pvbatchout.log
 pvbatch --mpi --force-offscreen-rendering $MS/saveAnimationEveryFolder.py &> pvbatchout.log
+
+# to submit from outside sigma*:
+# for s in sigma_*; do cd ${s}/${s}_gaussTime05; for d in tstep04_*; do cd $d; pwd; qsub $MS/sub_pvbatch.sh; cd ..; done; cd ../../; done
+
+# then when I want to copy to rclone:
+# rclone copy -P --exclude={*.csv,*.sh.*,core.*} gaussTime/ onedrive:/PhD/arc/myExperiments/gaussTime/ 
+
