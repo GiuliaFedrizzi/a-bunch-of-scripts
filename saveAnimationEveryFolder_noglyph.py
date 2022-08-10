@@ -1,5 +1,7 @@
 # trace generated using paraview version 5.9.0
 
+# same as saveAnimationEveryFolder, but trying to skip glyph, which might take a long time. Never tested.
+
 #### import the simple module from the paraview
 from paraview.simple import *
 import glob
@@ -98,70 +100,72 @@ tableToPoints1.ZColumn = 'z coord'
 # get active view
 renderView1 = GetActiveViewOrCreate('RenderView')
 
+# instead of glyph1Display meaning glyph, use this name to refer to table to points
+glyph1Display = Show(tableToPoints1, renderView1)
 
 #  ====== GLYPH =======
 # create a new 'Glyph'
-glyph1 = Glyph(registrationName='Glyph1', Input=tableToPoints1,
-    GlyphType='Arrow')
-glyph1.OrientationArray = ['POINTS', 'No orientation array']
-glyph1.ScaleArray = ['POINTS', 'Broken Bonds']
-glyph1.ScaleFactor = 0.02
-glyph1.GlyphTransform = 'Transform2'
+# glyph1 = Glyph(registrationName='Glyph1', Input=tableToPoints1,
+#     GlyphType='Arrow')
+# glyph1.OrientationArray = ['POINTS', 'No orientation array']
+# glyph1.ScaleArray = ['POINTS', 'Broken Bonds']
+# glyph1.ScaleFactor = 0.02
+# glyph1.GlyphTransform = 'Transform2'
 
-# show data in view
-glyph1Display = Show(glyph1, renderView1)
+# # show data in view
+# glyph1Display = Show(glyph1, renderView1)
 
-# trace defaults for the display properties.
-glyph1Display.Representation = 'Surface'
-glyph1Display.ColorArrayName = [None, '']
-#glyph1Display.SelectTCoordArray = 'None'
-#glyph1Display.SelectNormalArray = 'None'
-#glyph1Display.SelectTangentArray = 'None'
-glyph1Display.OSPRayScaleArray = 'Broken Bonds'
-glyph1Display.OSPRayScaleFunction = 'PiecewiseFunction'
-glyph1Display.SelectOrientationVectors = 'None'
-glyph1Display.ScaleFactor = 0.09975000023841858
-#glyph1Display.SelectScaleArray = 'Broken Bonds'
-#glyph1Display.GlyphType = 'Arrow'
-glyph1.GlyphType = 'Sphere'
-glyph1Display.GlyphTableIndexArray = 'Broken Bonds'
-glyph1Display.GaussianRadius = 0.004987500011920929
-glyph1Display.SetScaleArray = ['POINTS', 'Broken Bonds']
-glyph1.ScaleArray = ['POINTS', 'No scale array']
-glyph1Display.ScaleTransferFunction = 'PiecewiseFunction'
-#glyph1Display.OpacityArray = ['POINTS', 'Broken Bonds']
-glyph1Display.OpacityTransferFunction = 'PiecewiseFunction'
-glyph1Display.DataAxesGrid = 'GridAxesRepresentation'
-glyph1Display.PolarAxes = 'PolarAxesRepresentation'
-
-
-glyph1.GlyphMode = 'All Points'
-
-# init the 'PiecewiseFunction' selected for 'ScaleTransferFunction'
-glyph1Display.ScaleTransferFunction.Points = [0.0, 0.0, 0.5, 0.0, 1.1757813367477812e-38, 1.0, 0.5, 0.0]
-
-# init the 'PiecewiseFunction' selected for 'OpacityTransferFunction'
-glyph1Display.OpacityTransferFunction.Points = [0.0, 0.0, 0.5, 0.0, 1.1757813367477812e-38, 1.0, 0.5, 0.0]
-
-# hide data in view
-#Hide(tableToPoints1, renderView1)
+# # trace defaults for the display properties.
+# glyph1Display.Representation = 'Surface'
+# glyph1Display.ColorArrayName = [None, '']
+# #glyph1Display.SelectTCoordArray = 'None'
+# #glyph1Display.SelectNormalArray = 'None'
+# #glyph1Display.SelectTangentArray = 'None'
+# glyph1Display.OSPRayScaleArray = 'Broken Bonds'
+# glyph1Display.OSPRayScaleFunction = 'PiecewiseFunction'
+# glyph1Display.SelectOrientationVectors = 'None'
+# glyph1Display.ScaleFactor = 0.09975000023841858
+# #glyph1Display.SelectScaleArray = 'Broken Bonds'
+# #glyph1Display.GlyphType = 'Arrow'
+# glyph1.GlyphType = 'Sphere'
+# glyph1Display.GlyphTableIndexArray = 'Broken Bonds'
+# glyph1Display.GaussianRadius = 0.004987500011920929
+# glyph1Display.SetScaleArray = ['POINTS', 'Broken Bonds']
+# glyph1.ScaleArray = ['POINTS', 'No scale array']
+# glyph1Display.ScaleTransferFunction = 'PiecewiseFunction'
+# #glyph1Display.OpacityArray = ['POINTS', 'Broken Bonds']
+# glyph1Display.OpacityTransferFunction = 'PiecewiseFunction'
+# glyph1Display.DataAxesGrid = 'GridAxesRepresentation'
+# glyph1Display.PolarAxes = 'PolarAxesRepresentation'
 
 
-# Properties modified on glyph1
-#glyph1.ScaleFactor = 0.02
+# glyph1.GlyphMode = 'All Points'
 
-# set scalar coloring
-ColorBy(glyph1Display, ('POINTS', 'Pressure'))
+# # init the 'PiecewiseFunction' selected for 'ScaleTransferFunction'
+# glyph1Display.ScaleTransferFunction.Points = [0.0, 0.0, 0.5, 0.0, 1.1757813367477812e-38, 1.0, 0.5, 0.0]
 
-# rescale color and/or opacity maps used to include current data range
-glyph1Display.RescaleTransferFunctionToDataRange(True, False)
+# # init the 'PiecewiseFunction' selected for 'OpacityTransferFunction'
+# glyph1Display.OpacityTransferFunction.Points = [0.0, 0.0, 0.5, 0.0, 1.1757813367477812e-38, 1.0, 0.5, 0.0]
+
+# # hide data in view
+# #Hide(tableToPoints1, renderView1)
+
+
+# # Properties modified on glyph1
+# #glyph1.ScaleFactor = 0.02
+
+# # set scalar coloring
+# ColorBy(glyph1Display, ('POINTS', 'Pressure'))
+
+# # rescale color and/or opacity maps used to include current data range
+# glyph1Display.RescaleTransferFunctionToDataRange(True, False)
 
 # show color bar/color legend
 #glyph1Display.SetScalarBarVisibility(renderView1, True)
 
 # get color transfer function/color map for 'Pressure'
 pressureLUT = GetColorTransferFunction('Pressure')
-pressureLUT.RGBPoints = [1000000.0, 0.231373, 0.298039, 0.752941, 1000064.0, 0.865003, 0.865003, 0.865003, 1000128.0, 0.705882, 0.0156863, 0.14902]
+#pressureLUT.RGBPoints = [1000000.0, 0.231373, 0.298039, 0.752941, 1000064.0, 0.865003, 0.865003, 0.865003, 1000128.0, 0.705882, 0.0156863, 0.14902]
 pressureLUT.ScalarRangeInitialized = 1.0
 
 # get opacity transfer function/opacity map for 'Pressure'

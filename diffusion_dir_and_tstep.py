@@ -1,4 +1,4 @@
-""" plot a line = pressire diffusion
+""" plot a line = pressure diffusion
  1st plot: horizontal, 2nd plot: vertical
 
 can plot from different directories (e.g. sigma, resolution)
@@ -32,10 +32,22 @@ import os
 import glob
 import seaborn as sns
 
-dir_list = ['/nobackup/scgf/myExperiments/gaussTime/sigma_3_0/sigma_3_0_gaussTime05/tstep04_5_1e5',
-    '/nobackup/scgf/myExperiments/gaussScale/scale100/sigma_3_0/sigma_3_0_gaussTime05/tstep04_5_1e5',
-    '/nobackup/scgf/myExperiments/gaussScale/scale050/sigma_3_0/sigma_3_0_gaussTime05/tstep04_5_1e5']
-dir_labels = ['200','100','50']
+# dir_list = ['/nobackup/scgf/myExperiments/gaussTime/sigma_3_0/sigma_3_0_gaussTime05/tstep04_5_1e5',
+#     '/nobackup/scgf/myExperiments/gaussScale/scale100/sigma_3_0/sigma_3_0_gaussTime05/tstep04_5_1e5',
+#     '/nobackup/scgf/myExperiments/gaussScale/scale050/sigma_3_0/sigma_3_0_gaussTime05/tstep04_5_1e5']
+
+# dir_list = ['/nobackup/scgf/myExperiments/gaussTime/sigma_3_0/sigma_3_0_gaussTime05/tstep04_5_1e5',
+#      '/nobackup/scgf/myExperiments/gaussScale/scale200_r200/sigma_3_0/sigma_3_0_gaussTime05/tstep04_5_1e5']
+
+sigma_str = "/sigma_3_0"
+time_str = '5_1e5'
+dir_list = ['/nobackup/scgf/myExperiments/gaussTimeOnce/gaussTimeOnce200' + sigma_str + sigma_str +'_gaussTime05/tstep04_' + time_str,
+    '/nobackup/scgf/myExperiments/gaussTimeOnce/gaussTimeOnce050' + sigma_str + sigma_str + '_gaussTime05/tstep04_' + time_str]
+
+
+#dir_labels = ['200','100','50']
+# dir_labels = ['400','200']  # res400.elle, res200.elle
+dir_labels = ['200','50']  # res400.elle, res200.elle
 
 fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
 first_file = 'my_experiment00100.csv'
@@ -72,7 +84,7 @@ for dir in dir_list:
     #ax1.set_xlim([xmax-0.05,xmax+0.05])  # zoom in. Limits are max location +- 0.05
     #ax2.set_xlim([ymax-0.05,ymax+0.05])
 
-    for i,filename in enumerate(sorted(glob.glob("my_experiment00*"))[1:101:10]): # skip the 1st file.  [beg:end:step]
+    for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[1:1001:300]): #[beg:end:step]
         myExp = pd.read_csv(filename, header=0)
         pressure_array_x = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['y coord'],ymax,rel_tol=1e-4),axis=1),'Pressure'])
         pressure_array_y = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['x coord'],xmax,rel_tol=1e-4),axis=1),'Pressure'])
@@ -103,7 +115,7 @@ ax2.set_xlim([-0.06,+0.06])  # zoom in. Limits are max location +- 0.05
 ax2.set_title("Vertical Profile")
 
 g_x.legend_.remove()
-#fig.suptitle(os.getcwd().split("myExperiments/")[1]) # get the part of the path that is after "myExperiments/"
+fig.suptitle("$\sigma$ = "+sigma_str.replace("/sigma_","").replace("_",".")+", tstep = " + time_str.split("_")[1]) # get the part of the path that is after "myExperiments/"
 
 # LEGEND:
 # get the position of the plot so I can add the legend to it 
@@ -111,8 +123,9 @@ box = ax2.get_position()
 
 # upper left = the point that I am setting wiht the second argument
 ax2.legend(loc='center left',bbox_to_anchor=(1,0.5),fancybox=True, ncol=1)   # legend for the vertical line plot
-os.chdir('/nobackup/scgf/myExperiments/gaussScale')
-plt.savefig("gaussScale50-100-200.png", dpi=600,transparent=True)
+# save:
+#os.chdir('/nobackup/scgf/myExperiments/gaussScale')
+#plt.savefig("gaussScale50-100-200_diff_hrz-vrt.png", dpi=600,transparent=True)
 #plt.tight_layout()
 plt.show()
 

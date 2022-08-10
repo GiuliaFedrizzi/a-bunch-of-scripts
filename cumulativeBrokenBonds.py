@@ -29,6 +29,24 @@ fig, axs = plt.subplots(nrows=1, ncols=1)
 broken_bond_string = "Broken Bonds"
 time_string = "time is "
 
+# get the scale from the path
+if os.getcwd().split("/")[-1] == "scale050":  # if I'm in the directory "scale050"
+    scale_string = "050"
+elif os.getcwd().split("/")[-1] == "scale100":
+    scale_string = "100"
+elif os.getcwd().split("/")[-1] == "gaussTime":  # gaussTime's scale was 200
+    scale_string = "200"
+elif "200_" in os.getcwd().split("/")[-1]:  # if the directory contains "200_", which is 200_r200
+    scale_string = "200"
+else:
+    scale_string = "unknown"
+
+# get the resolution from the path (for figure title)
+if "_r200" in os.getcwd().split("/")[-1]:
+    res_string = "200"
+else:
+    res_string = "400"
+
 def getBrokenBondTime(lattefile):
     """ every time you find "Broken Bonds", save the number of bb present and the relative time"""
     time_line = 0
@@ -69,7 +87,8 @@ def plot_bb_in_time(parent_directory):
 for parent_directory in parent_directories:   # sigma_*
     plot_bb_in_time(parent_directory)
 
-fig_title = "Number of broken bonds (cumulative) in time for different $\sigma$ values\nTimestep = " + timestep_dir.split("_")[2] # take the third part of the string, e.g. 1e4
+fig_title = "Number of broken bonds (cumulative) in time for different $\sigma$ values\nTimestep = " + timestep_dir.split("_")[2]  +", scale = "+scale_string+", resolution = " + res_string # take the third part of the string, e.g. 1e4
+
 axs.set(title=fig_title, xlabel='Time (s)', ylabel='Number of broken bonds')
 axs.grid(linestyle='--',alpha=0.6)#(linestyle='-', linewidth=2)
 # #axs.set_xscale('log')
