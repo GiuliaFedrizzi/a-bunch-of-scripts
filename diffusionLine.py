@@ -12,7 +12,8 @@ import os
 import glob
 import seaborn as sns
 
-filename = 'my_experiment13400.csv'
+#os.chdir('/nobackup/scgf/myExperiments/gaussTimeOnce/gaussTimeOnce200/sigma_1_0/sigma_1_0_gaussTime05/tstep04_4_5e4/')
+filename = 'my_experiment00080.csv'
 
 def getTimeStep(inputFile):
     with open(inputFile) as iFile:
@@ -23,72 +24,56 @@ def getTimeStep(inputFile):
 
 # open the first file after melt addition to find the max P
 myExp = pd.read_csv(filename, header=0)
-xmax = myExp.loc[myExp['Pressure'].idxmax(), 'x coord']
-ymax = myExp.loc[myExp['Pressure'].idxmax(), 'y coord']
-#myExp0 = pd.read_csv("my_experiment00000.csv", header=0)
+#xmax = myExp.loc[myExp['Pressure'].idxmax(), 'x coord']
+#ymax = myExp.loc[myExp['Pressure'].idxmax(), 'y coord']
+xmax = 0.505
+ymax = 0.505
 
 # find the x coordinates that corresponds to the max pressure
-#print(myExp.loc[myExp.apply(lambda x: math.isclose(x['x coord'],xmax,rel_tol=1e-4),axis=1)])
 x_array = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['y coord'],ymax,rel_tol=1e-3),axis=1),'x coord'])
 
 # get the y coordinates of all x in range of tolerance
 y_array = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['x coord'],xmax,rel_tol=1e-3),axis=1),'y coord'])
 
-#fig, ((ax1,ax2),(ax3,ax4)) = plt.subplots(nrows=2,ncols=2)
 fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
-#fig, ax1 = plt.subplots(nrows=1,ncols=1)
 # zoom in. Limits are max location +- 0.05
 ax1.set_xlim([xmax-0.05,xmax+0.05])
 ax2.set_xlim([ymax-0.05,ymax+0.05])
-#ax3.set_xlim([xmax-0.05,xmax+0.05])
-#ax4.set_xlim([ymax-0.05,ymax+0.05])
-#ax3.set_ylim([0.054,0.055])
 
 count=0
 
-#for i,filename in enumerate(sorted(glob.glob("my_experiment*"))):
-    # if i == 0:
-    #     continue  # skip t = 0
-    # if i%1000 == 0:   #  plot only every x timesteps (files)
-#myExp = pd.read_csv(filename, header=0)
-#pressure_array_x = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['y coord'],ymax,rel_tol=4.9e-6),axis=1),'Pressure'])
-pressure_array_x = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['y coord'],ymax,rel_tol=1e-3),axis=1),'Pressure'])
-pressure_array_y = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['x coord'],xmax,rel_tol=1e-3),axis=1),'Pressure'])
-porosity_array_x = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['y coord'],ymax,rel_tol=1e-3),axis=1),'Porosity'])
-porosity_array_y = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['x coord'],xmax,rel_tol=1e-3),axis=1),'Porosity'])
+for i,filename in enumerate(sorted(glob.glob("my_experiment*"))):
+    if i == 0:
+         continue  # skip t = 0
+    if i%100 == 0:   #  plot only every x timesteps (files)
+        myExp = pd.read_csv(filename, header=0)
+        
+        pressure_array_x = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['y coord'],ymax,rel_tol=1e-3),axis=1),'Pressure'])
+        pressure_array_y = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['x coord'],xmax,rel_tol=1e-3),axis=1),'Pressure'])
 
-input_tstep = float(getTimeStep("input.txt"))
-file_num = float(filename.split("experiment")[1].split(".")[0])  # first take the part after "experiment", then the one before the "."
-# name of the line
-labelName = "t=" + str('{:.1e}'.format(input_tstep*file_num))
+        input_tstep = float(getTimeStep("input.txt"))
+        file_num = float(filename.split("experiment")[1].split(".")[0])  # first take the part after "experiment", then the one before the "."
+        # name of the line
+        labelName = "t=" + str('{:.1e}'.format(input_tstep*file_num))
 
-# plot
-# if i == 5:
-#     plotStyle='--'
-# if i == 9:
-#     plotStyle='k--'
-# else:
-#     plotStyle='-'
-plotStyle='-'
+        plotStyle='-'
 
-# ax1.plot(x_array, pressure_array_x,plotStyle,label=labelName)
-# # ax1.legend()
-# ax1.set_ylabel("Fluid Pressure")
-# ax1.set_title("Horizontal Profile")
+        # ax1.plot(x_array, pressure_array_x,plotStyle,label=labelName)
+        # ax1.legend()
+        ax1.set_ylabel("Fluid Pressure")
+        ax1.set_title("Horizontal Profile")
 
-# ax2.plot(y_array, pressure_array_y,plotStyle,label=labelName)
-# #ax2.legend()
-# ax2.set_title("Vertical Profile")
-data = {'x_coord': x_array,'pressure': pressure_array_x}
-df = pd.DataFrame(data)
-sns.lineplot(data=df,x="x_coord",y="pressure",ax=ax1)
-# ax1.legend()
-ax1.set_ylabel("Fluid Pressure")
-ax1.set_title("Horizontal Profile")
+        ax2.plot(y_array, pressure_array_y,plotStyle,label=labelName)
+        #ax2.legend()
+        ax2.set_title("Vertical Profile")
 
-ax2.plot(y_array, pressure_array_y,plotStyle,label=labelName)
-#ax2.legend()
-ax2.set_title("Vertical Profile")
+        data = {'x_coord': x_array,'pressure': pressure_array_x}
+        df = pd.DataFrame(data)
+        sns.lineplot(data=df,x="x_coord",y="pressure",ax=ax1)
+        ax1.set_ylabel("Fluid Pressure")
+        ax1.set_title("Horizontal Profile")
+
+
 
 fig.suptitle(os.getcwd().split("myExperiments/")[1]) # get the part of the path that is after "myExperiments/"
 

@@ -16,8 +16,7 @@ profile = cProfile.Profile()
 
 filefrequency = 100
 
-# change directory (I want to have 1 script that I keep outside of the many directories)
-#os.chdir('diffusionProfile/visc/mi1e-2_v1e0')
+
 def getMaxPressures(myExp):
     # look for the max P and save its x and y coordinates
     maxP = max(myExp['Pressure'])
@@ -82,7 +81,6 @@ axs.grid(linestyle='--',alpha=0.6)#(linestyle='-', linewidth=2)
 #axs.legend()
 #plt.tight_layout()
 plt.show()
-#plt.savefig("porDiff01_a.png", dpi=150,transparent=False)
 """
 # %% porosity distribution
 poroRead = pd.read_csv("my_experiment019.csv", header=0)

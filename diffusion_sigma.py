@@ -1,4 +1,7 @@
-# compares results from different sims in different directories (gaussTime) - pressure input with gaussian distribution 
+""" compares results from different sims with different sigmas - pressure input with gaussian distribution 
+    2columns of 8 plots (tot 16), number controlled by "tot_files"
+
+"""
 import pandas as pd
 from matplotlib import colors
 import matplotlib.pyplot as plt
@@ -13,16 +16,7 @@ import glob
 tot_files = 9  # is going to be the total number of subplots (#subplots=tot_files-1)
 nrow = tot_files-1; ncol = 2;
 fig, axs = plt.subplots(nrows=nrow, ncols=ncol)
-
-
-#fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
-#fig, ax1 = plt.subplots(nrows=1,ncols=1)
-
-#ax3.set_xlim([xmax-0.05,xmax+0.05])
-#ax4.set_xlim([ymax-0.05,ymax+0.05])
-#ax3.set_ylim([0.054,0.055])    
-
-
+   
 #os.chdir(parent_directory)
 dir_list_sigma = []
 #for my_dir in sorted(glob.glob("tstep*")):
@@ -33,29 +27,38 @@ print(dir_list_sigma)
 max_P = 0.0
 min_P = 0.0
 
-#for myDir in dir_list_sigma[1:4]:
-for myDir in dir_list_sigma[1:3]:
+def getTimeStep(inputFile):
+    with open(inputFile) as iFile:
+        for num, line in enumerate(iFile,1):
+            if "Tstep" in line:
+                input_tstep = line.split(" ")[1]  # split before and after space, take the second word (value of timestep)
+                return input_tstep  
+
+
+for myDir in dir_list_sigma:#[2:4]:
     # loop through directories
-    os.chdir(myDir + "/" + myDir + "_gaussTime05/tstep04_4_1e4")
+    os.chdir(myDir + "/" + myDir + "_gaussTime05/tstep04_4_5e4")
     print("--> Entering " + str(os.getcwd()))
     file_list = sorted(glob.glob("my_experiment0*.csv"))
-    file_list = file_list[2:tot_files+2]
-    print("list:" + ' '.join(file_list) + " size = " + str(len(file_list)))
+    file_list = file_list[2::10]  # sample every 10 files
+    file_list = file_list[0:tot_files-1]
+    print("list:" + ' '.join(file_list))
     #print(file_list)
 
     # things that are done only once: locate the max, get the coordinates
-    myExp0 = pd.read_csv(file_list[3], header=0)  # as a reference: open a later file to get xmax,ymax,x coordinates
+    myExp0 = pd.read_csv(file_list[2], header=0)  # as a reference: open a later file to get xmax,ymax,x coordinates
     xmax = myExp0.loc[myExp0['Pressure'].idxmax(), 'x coord']
     ymax = myExp0.loc[myExp0['Pressure'].idxmax(), 'y coord']
 
     # find the x coordinates that corresponds to the max pressure
-    x_array = np.array(myExp0.loc[myExp0.apply(lambda x: math.isclose(x['y coord'],ymax,rel_tol=1e-3),axis=1),'x coord'])
+    #x_array = np.array(myExp0.loc[myExp0.apply(lambda x: math.isclose(x['y coord'],ymax,rel_tol=1e-2),axis=1),'x coord'])
 
     # get the y coordinates of all x in range of tolerance
-    y_array = np.array(myExp0.loc[myExp0.apply(lambda x: math.isclose(x['x coord'],xmax,rel_tol=1e-3),axis=1),'y coord'])
+    y_array = np.array(myExp0.loc[myExp0.apply(lambda x: math.isclose(x['x coord'],xmax,rel_tol=1e-2),axis=1),'y coord'])
 
 
     for i,file in enumerate(file_list):
+        print(i,file)
         # go through files, one by one
         myExp = pd.read_csv(file, header=0)
 
@@ -68,13 +71,17 @@ for myDir in dir_list_sigma[1:3]:
             min_P = min_P_temp
 
         # extract the pressure arrays
-        pressure_array_x = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['y coord'],ymax,rel_tol=1e-3),axis=1),'Pressure'])
-        pressure_array_y = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['x coord'],xmax,rel_tol=1e-3),axis=1),'Pressure'])
+        x_array,pressure_array_x = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['y coord'],ymax,rel_tol=1e-2),axis=1),['x coord','Pressure']])
+        pressure_array_y = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['x coord'],xmax,rel_tol=1e-2),axis=1),'Pressure'])
         x = str(os.getcwd())  # current directory
         labelName = '-'.join(x.split("/")[5:-1]) # split where there there's a slash, keep dir names from the 6th (5) to the last (-1), join these with a -
         all_axes=axs.reshape(-1)
-        all_axes[2*i-2].plot(x_array, pressure_array_x,label=labelName)
-        all_axes[2*i-1].plot(y_array, pressure_array_y,label=labelName)
+        all_axes[2*i].plot(x_array, pressure_array_x,label=labelName,alpha=0.5)
+        input_tstep = float(getTimeStep("input.txt"))  # read the timestep from input.txt
+        file_num = float(file.split("experiment")[1].split(".")[0])  # first take the part after "experiment", then the one before the "."
+        all_axes[2*i].set_ylabel("t=" + str('{:.1e}'.format(input_tstep*file_num)))
+        print("t=" + str('{:.1e}'.format(input_tstep*file_num)))
+        all_axes[2*i+1].plot(y_array, pressure_array_y,label=labelName,alpha=0.5)
     os.chdir("../../..")
 
 # LEGEND:
@@ -90,18 +97,18 @@ box = all_axes[-1].get_position()
 #ax3.legend(loc='upper left',bbox_to_anchor=(0,-0.1),fancybox=True, ncol=8)
 
 all_axes[-2].legend(loc='center left',bbox_to_anchor=(0,-0.5),fancybox=True, ncol=10) 
-all_axes[middle_subplot].set_ylabel("Fluid Pressure")   # the middle plot (tot_files/2)
+#all_axes[middle_subplot].set_ylabel("Fluid Pressure")   # the middle plot (tot_files/2)
 #all_axes[-1].set_ylabel("Fluid Pressure")   # the middle plot (tot_files/2)
 all_axes[0].set_title("Horizontal Profile")
-all_axes[0].set_title("Vertical Profile")
+all_axes[1].set_title("Vertical Profile")
 
 
 for i,ax in enumerate(all_axes):
     # zoom in. Limits are max location +- 0.05
     if i%2 == 0: # even => horizontal
-        all_axes[i].set_xlim([xmax-0.01,xmax+0.01])
+        all_axes[i].set_xlim([xmax-0.03,xmax+0.03])
     else:  # vertical profile
-        all_axes[i].set_xlim([ymax-0.01,ymax+0.01])
+        all_axes[i].set_xlim([ymax-0.03,ymax+0.03])
     all_axes[i].set_ylim([min_P,max_P])  
 
 #plt.tight_layout()

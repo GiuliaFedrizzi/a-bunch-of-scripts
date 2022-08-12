@@ -32,22 +32,23 @@ import os
 import glob
 import seaborn as sns
 
-# dir_list = ['/nobackup/scgf/myExperiments/gaussTime/sigma_3_0/sigma_3_0_gaussTime05/tstep04_5_1e5',
-#     '/nobackup/scgf/myExperiments/gaussScale/scale100/sigma_3_0/sigma_3_0_gaussTime05/tstep04_5_1e5',
-#     '/nobackup/scgf/myExperiments/gaussScale/scale050/sigma_3_0/sigma_3_0_gaussTime05/tstep04_5_1e5']
+dir_list = ['/nobackup/scgf/myExperiments/gaussTime/sigma_3_0/sigma_3_0_gaussTime05/tstep04_5_1e5',
+    '/nobackup/scgf/myExperiments/gaussScale/centreScale100/sigma_3_0/sigma_3_0_gaussTime05/tstep04_5_1e5',
+    '/nobackup/scgf/myExperiments/gaussScale/centreScale050/sigma_3_0/sigma_3_0_gaussTime05/tstep04_5_1e5']
 
 # dir_list = ['/nobackup/scgf/myExperiments/gaussTime/sigma_3_0/sigma_3_0_gaussTime05/tstep04_5_1e5',
 #      '/nobackup/scgf/myExperiments/gaussScale/scale200_r200/sigma_3_0/sigma_3_0_gaussTime05/tstep04_5_1e5']
 
 sigma_str = "/sigma_3_0"
 time_str = '5_1e5'
-dir_list = ['/nobackup/scgf/myExperiments/gaussTimeOnce/gaussTimeOnce200' + sigma_str + sigma_str +'_gaussTime05/tstep04_' + time_str,
-    '/nobackup/scgf/myExperiments/gaussTimeOnce/gaussTimeOnce050' + sigma_str + sigma_str + '_gaussTime05/tstep04_' + time_str]
+# dir_list = ['/nobackup/scgf/myExperiments/gaussTimeOnce/gaussTimeOnce200' + sigma_str + sigma_str +'_gaussTime05/tstep04_' + time_str,
+#     '/nobackup/scgf/myExperiments/gaussTimeOnce/gaussTimeOnce100' + sigma_str + sigma_str +'_gaussTime05/tstep04_' + time_str,
+#     '/nobackup/scgf/myExperiments/gaussTimeOnce/gaussTimeOnce050' + sigma_str + sigma_str + '_gaussTime05/tstep04_' + time_str]
 
 
 #dir_labels = ['200','100','50']
 # dir_labels = ['400','200']  # res400.elle, res200.elle
-dir_labels = ['200','50']  # res400.elle, res200.elle
+dir_labels = ['200','100','50']  # scale 200m, 100m or 50m
 
 fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
 first_file = 'my_experiment00100.csv'
@@ -65,10 +66,13 @@ def getTimeStep(inputFile):
 
 dirnum = 0
 for dir in dir_list:
+    
     """ loop through directories"""
     os.chdir(dir)
     dirnum+=1 # counter for directories
     dir_label = dir_labels[dirnum-1]   # get the label that corresponds to the directory
+    
+    scale_factor = float(dir_label)/200.0# factor for scaling the axes
 
     # open the first file after melt addition to find the max P
     myExp = pd.read_csv(first_file, header=0)
@@ -76,31 +80,33 @@ for dir in dir_list:
     ymax = myExp.loc[myExp['Pressure'].idxmax(), 'y coord']
 
     # find the x coordinates that corresponds to the max pressure
-    x_array = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['y coord'],ymax,rel_tol=1e-4),axis=1),'x coord'])
+    x_array = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['y coord'],ymax,rel_tol=1e-3),axis=1),'x coord'])
 
     # get the y coordinates of all x in range of tolerance
-    y_array = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['x coord'],xmax,rel_tol=1e-4),axis=1),'y coord'])
+    y_array = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['x coord'],xmax,rel_tol=1e-3),axis=1),'y coord'])
 
     #ax1.set_xlim([xmax-0.05,xmax+0.05])  # zoom in. Limits are max location +- 0.05
     #ax2.set_xlim([ymax-0.05,ymax+0.05])
 
-    for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[1:1001:300]): #[beg:end:step]
+    for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[1:101:30]): #[beg:end:step]
         myExp = pd.read_csv(filename, header=0)
-        pressure_array_x = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['y coord'],ymax,rel_tol=1e-4),axis=1),'Pressure'])
-        pressure_array_y = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['x coord'],xmax,rel_tol=1e-4),axis=1),'Pressure'])
+        pressure_array_x = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['y coord'],ymax,rel_tol=1e-3),axis=1),'Pressure'])
+        pressure_array_y = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['x coord'],xmax,rel_tol=1e-3),axis=1),'Pressure'])
+        #perm_array_x = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['y coord'],ymax,rel_tol=1e-4),axis=1),'Permeability'])
+        #perm_array_y = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['x coord'],xmax,rel_tol=1e-4),axis=1),'Permeability'])
 
         input_tstep = float(getTimeStep("input.txt"))
         file_num = float(filename.split("experiment")[1].split(".")[0])  # first take the part after "experiment", then the one before the "."
         # name of the line
         labelName = "t=" + str('{:.1e}'.format(input_tstep*file_num))
-
-        # x                  shift array by the max value so that the maximum is at zero
-        data1_x = {'x': x_array - xmax,'Fluid Pressure': pressure_array_x, 'scale': dir_label,'time': labelName}  # save temporarily
+        print("x_array: "+str(len(x_array))+", pressure_array_x: "+str(len(pressure_array_x)))
+        # x                  shift array by the max value so that the maximum is at zero and scale it 
+        data1_x = {'x': (x_array - xmax)*scale_factor,'Fluid Pressure': pressure_array_x, 'scale': dir_label,'time': labelName}  # save temporarily
         df1_x = pd.DataFrame(data1_x)
         df_x = pd.concat([df_x,df1_x], ignore_index=True) # append to old one
 
         # y                  shift array by the max value so that the maximum is at zero
-        data1_y = {'y': y_array - ymax,'Fluid Pressure': pressure_array_y, 'scale': dir_label,'time': labelName}  # save temporarily
+        data1_y = {'y': (y_array - ymax)*scale_factor,'Fluid Pressure': pressure_array_y, 'scale': dir_label,'time': labelName}  # save temporarily
         df1_y = pd.DataFrame(data1_y)
         df_y = pd.concat([df_y,df1_y], ignore_index=True) # append to old one
 
@@ -108,8 +114,10 @@ g_x = sns.lineplot(data=df_x ,x="x",y="Fluid Pressure",ax=ax1,hue='time',style='
 g_y = sns.lineplot(data=df_y ,x="y",y="Fluid Pressure",ax=ax2,hue='time',style='scale',alpha=0.5)
 ax1.set_ylabel("Fluid Pressure")
 ax1.set_title("Horizontal Profile")
-ax1.set_xlim([-0.06,+0.06])  # zoom in. Limits are max location +- 0.05
-ax2.set_xlim([-0.06,+0.06])  # zoom in. Limits are max location +- 0.05
+ax1.set_xlim([-0.06,+0.06])  # zoom in. Limits are max location +- 0.06
+ax2.set_xlim([-0.06,+0.06])  # zoom in. Limits are max location +- 0.06
+#ax1.set_ylim([1e8,1.3e8])  # zoom in.
+#ax2.set_ylim([1e8,1.3e8])  # zoom in. 
 #ax2.plot(y_array, pressure_array_y,plotStyle,label=labelName)
 #ax2.legend()
 ax2.set_title("Vertical Profile")

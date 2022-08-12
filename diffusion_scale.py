@@ -1,4 +1,6 @@
 # compares results from different sims with different scales (gaussTime (200m), scale050 (50m) etc) - pressure input with gaussian distribution 
+# outdated, now use diffusion_res_and_time.py instead
+
 import pandas as pd
 from matplotlib import colors
 import matplotlib.pyplot as plt
@@ -16,7 +18,9 @@ tot_files = 9  # total number of subplots is (tot_files-1)*2. Each one correspon
 nrow = tot_files-1; ncol = 2;  # for each file: 1 horizontal, 1 vertical profile
 fig, axs = plt.subplots(nrows=nrow, ncols=ncol)
 
-dirList = ['/nobackup/scgf/myExperiments/gaussScale/scale050/sigma_3_0/sigma_3_0_gaussTime05/tstep04_5_1e5','/nobackup/scgf/myExperiments/gaussTime/sigma_3_0/sigma_3_0_gaussTime05/tstep04_5_1e5']
+dirList = ['/nobackup/scgf/myExperiments/gaussScale/centreScale050/sigma_3_0/sigma_3_0_gaussTime05/tstep04_5_1e5',
+'/nobackup/scgf/myExperiments/gaussScale/centreScale100/sigma_3_0/sigma_3_0_gaussTime05/tstep04_5_1e5',
+'/nobackup/scgf/myExperiments/gaussTime/sigma_3_0/sigma_3_0_gaussTime05/tstep04_5_1e5']
 
 # initialise stuff
 max_P = 0.0; min_P = 0.0
@@ -62,6 +66,7 @@ for myDir in dirList:
         labelName = x[1]  # take the second part of the string
         all_axes=axs.reshape(-1)
         all_axes[2*i-2].plot(x_array, pressure_array_x,label=labelName)
+        all_axes[2*i-2].set_ylabel("t =")
         all_axes[2*i-1].plot(y_array, pressure_array_y,label=labelName)
     os.chdir("..")
 
@@ -78,10 +83,10 @@ box = all_axes[-1].get_position()
 #ax3.legend(loc='upper left',bbox_to_anchor=(0,-0.1),fancybox=True, ncol=8)
 
 all_axes[-2].legend(loc='center left',bbox_to_anchor=(0,-0.5),fancybox=True, ncol=10) 
-all_axes[middle_subplot].set_ylabel("Fluid Pressure")   # the middle plot (tot_files/2)
+#all_axes[middle_subplot].set_ylabel("Fluid Pressure")   # the middle plot (tot_files/2)
 #all_axes[-1].set_ylabel("Fluid Pressure")   # the middle plot (tot_files/2)
 all_axes[0].set_title("Horizontal Profile")
-all_axes[0].set_title("Vertical Profile")
+all_axes[1].set_title("Vertical Profile")
 
 
 for i,ax in enumerate(all_axes):
