@@ -1,6 +1,10 @@
 """ plot a line = pressure diffusion
  1st plot: horizontal, 2nd plot: vertical
 
+line:
+  colour: time
+  style: resolution
+
 can plot from different directories (e.g. sigma, resolution)
 builds 2 pandas dataframes of the type:
 
@@ -31,16 +35,27 @@ from scipy import interpolate
 import os
 import glob
 import seaborn as sns
+from pathlib import Path
 
-dir_list = ['/nobackup/scgf/myExperiments/gaussTime/sigma_3_0/sigma_3_0_gaussTime05/tstep04_5_1e5',
-    '/nobackup/scgf/myExperiments/gaussScale/centreScale100/sigma_3_0/sigma_3_0_gaussTime05/tstep04_5_1e5',
-    '/nobackup/scgf/myExperiments/gaussScale/centreScale050/sigma_3_0/sigma_3_0_gaussTime05/tstep04_5_1e5']
+# dir_list = ['/nobackup/scgf/myExperiments/gaussTime/sigma_1_0/sigma_1_0_gaussTime05/tstep04_5_1e5',
+#     '/nobackup/scgf/myExperiments/gaussScale/centreScale100/sigma_1_0/sigma_1_0_gaussTime05/tstep04_5_1e5',
+#     '/nobackup/scgf/myExperiments/gaussScale/centreScalePoints050/sigma_1_0/sigma_1_0_gaussTime05/tstep04_5_1e5']
 
 # dir_list = ['/nobackup/scgf/myExperiments/gaussTime/sigma_3_0/sigma_3_0_gaussTime05/tstep04_5_1e5',
 #      '/nobackup/scgf/myExperiments/gaussScale/scale200_r200/sigma_3_0/sigma_3_0_gaussTime05/tstep04_5_1e5']
 
-sigma_str = "/sigma_3_0"
-time_str = '5_1e5'
+sigma_str = "/sigma_2_0"
+time_str = '$10^{-2}$'
+dir_list = ['/nobackup/scgf/myExperiments/fluidDrivenFrac/fdf00',
+    '/nobackup/scgf/myExperiments/fluidDrivenFrac/fdf01',
+    '/nobackup/scgf/myExperiments/fluidDrivenFrac/fdf02',
+    '/nobackup/scgf/myExperiments/fluidDrivenFrac/fdf03']
+
+# dir_list = ['/nobackup/scgf/myExperiments/gaussFastDiff/scale050',
+#     '/nobackup/scgf/myExperiments/gaussFastDiff/scale100',
+#     '/nobackup/scgf/myExperiments/gaussFastDiff/scale150',
+#     '/nobackup/scgf/myExperiments/gaussFastDiff/scale200']
+
 # dir_list = ['/nobackup/scgf/myExperiments/gaussTimeOnce/gaussTimeOnce200' + sigma_str + sigma_str +'_gaussTime05/tstep04_' + time_str,
 #     '/nobackup/scgf/myExperiments/gaussTimeOnce/gaussTimeOnce100' + sigma_str + sigma_str +'_gaussTime05/tstep04_' + time_str,
 #     '/nobackup/scgf/myExperiments/gaussTimeOnce/gaussTimeOnce050' + sigma_str + sigma_str + '_gaussTime05/tstep04_' + time_str]
@@ -48,7 +63,7 @@ time_str = '5_1e5'
 
 #dir_labels = ['200','100','50']
 # dir_labels = ['400','200']  # res400.elle, res200.elle
-dir_labels = ['200','100','50']  # scale 200m, 100m or 50m
+dir_labels = ['fdf00','fdf01','fdf02','fdf03']  # scale 200m, 100m or 50m
 
 fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
 first_file = 'my_experiment00100.csv'
@@ -63,6 +78,12 @@ def getTimeStep(inputFile):
             if "Tstep" in line:
                 input_tstep = line.split(" ")[1]  # split before and after space, take the second word (value of timestep)
                 return input_tstep  
+def getViscosity(inputFile):
+    with open(inputFile) as iFile:
+        for num, line in enumerate(iFile,1):
+            if "mu_f" in line:
+                input_mu_f = line.split(" ")[1]  # split before and after space, take the second word (value of timestep)
+                return input_mu_f  
 
 dirnum = 0
 for dir in dir_list:
@@ -72,7 +93,7 @@ for dir in dir_list:
     dirnum+=1 # counter for directories
     dir_label = dir_labels[dirnum-1]   # get the label that corresponds to the directory
     
-    scale_factor = float(dir_label)/200.0# factor for scaling the axes
+    scale_factor = float(50)/200.0# factor for scaling the axes
 
     # open the first file after melt addition to find the max P
     myExp = pd.read_csv(first_file, header=0)
@@ -88,27 +109,31 @@ for dir in dir_list:
     #ax1.set_xlim([xmax-0.05,xmax+0.05])  # zoom in. Limits are max location +- 0.05
     #ax2.set_xlim([ymax-0.05,ymax+0.05])
 
-    for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[1:101:30]): #[beg:end:step]
-        myExp = pd.read_csv(filename, header=0)
-        pressure_array_x = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['y coord'],ymax,rel_tol=1e-3),axis=1),'Pressure'])
-        pressure_array_y = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['x coord'],xmax,rel_tol=1e-3),axis=1),'Pressure'])
-        #perm_array_x = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['y coord'],ymax,rel_tol=1e-4),axis=1),'Permeability'])
-        #perm_array_y = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['x coord'],xmax,rel_tol=1e-4),axis=1),'Permeability'])
+    for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[10:350:20]): #[beg:end:step]
+        myfile = Path(os.getcwd()+'/'+filename)  # build file name including path
+        if myfile.is_file():
+            print(dir_label)
+            myExp = pd.read_csv(filename, header=0)
+            pressure_array_x = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['y coord'],ymax,rel_tol=1e-3),axis=1),'Pressure'])
+            pressure_array_y = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['x coord'],xmax,rel_tol=1e-3),axis=1),'Pressure'])
+            #perm_array_x = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['y coord'],ymax,rel_tol=1e-4),axis=1),'Permeability'])
+            #perm_array_y = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['x coord'],xmax,rel_tol=1e-4),axis=1),'Permeability'])
 
-        input_tstep = float(getTimeStep("input.txt"))
-        file_num = float(filename.split("experiment")[1].split(".")[0])  # first take the part after "experiment", then the one before the "."
-        # name of the line
-        labelName = "t=" + str('{:.1e}'.format(input_tstep*file_num))
-        print("x_array: "+str(len(x_array))+", pressure_array_x: "+str(len(pressure_array_x)))
-        # x                  shift array by the max value so that the maximum is at zero and scale it 
-        data1_x = {'x': (x_array - xmax)*scale_factor,'Fluid Pressure': pressure_array_x, 'scale': dir_label,'time': labelName}  # save temporarily
-        df1_x = pd.DataFrame(data1_x)
-        df_x = pd.concat([df_x,df1_x], ignore_index=True) # append to old one
+            input_tstep = float(getTimeStep("input.txt"))
+            input_viscosity = float(getViscosity("input.txt"))
+            file_num = float(filename.split("experiment")[1].split(".")[0])  # first take the part after "experiment", then the one before the "."
+            # name of the line
+            labelName = "t/mu=" + str('{:.1e}'.format(input_tstep*file_num/input_viscosity))
+            print(labelName)
+            # x                  shift array by the max value so that the maximum is at zero and scale it 
+            data1_x = {'x': (x_array - xmax)*scale_factor,'Fluid Pressure': pressure_array_x, 'scale': dir_label,'time': labelName}  # save temporarily
+            df1_x = pd.DataFrame(data1_x)
+            df_x = pd.concat([df_x,df1_x], ignore_index=True) # append to old one
 
-        # y                  shift array by the max value so that the maximum is at zero
-        data1_y = {'y': (y_array - ymax)*scale_factor,'Fluid Pressure': pressure_array_y, 'scale': dir_label,'time': labelName}  # save temporarily
-        df1_y = pd.DataFrame(data1_y)
-        df_y = pd.concat([df_y,df1_y], ignore_index=True) # append to old one
+            # y                  shift array by the max value so that the maximum is at zero
+            data1_y = {'y': (y_array - ymax)*scale_factor,'Fluid Pressure': pressure_array_y, 'scale': dir_label,'time': labelName}  # save temporarily
+            df1_y = pd.DataFrame(data1_y)
+            df_y = pd.concat([df_y,df1_y], ignore_index=True) # append to old one
 
 g_x = sns.lineplot(data=df_x ,x="x",y="Fluid Pressure",ax=ax1,hue='time',style='scale',alpha=0.5)
 g_y = sns.lineplot(data=df_y ,x="y",y="Fluid Pressure",ax=ax2,hue='time',style='scale',alpha=0.5)
@@ -123,14 +148,15 @@ ax2.set_xlim([-0.06,+0.06])  # zoom in. Limits are max location +- 0.06
 ax2.set_title("Vertical Profile")
 
 g_x.legend_.remove()
-fig.suptitle("$\sigma$ = "+sigma_str.replace("/sigma_","").replace("_",".")+", tstep = " + time_str.split("_")[1]) # get the part of the path that is after "myExperiments/"
+#fig.suptitle("$\sigma$ = "+sigma_str.replace("/sigma_","").replace("_",".")+", tstep = " + time_str.split("_")[1]) # get the part of the path that is after "myExperiments/"
 
 # LEGEND:
 # get the position of the plot so I can add the legend to it 
 box = ax2.get_position()
 
 # upper left = the point that I am setting wiht the second argument
-ax2.legend(loc='center left',bbox_to_anchor=(1,0.5),fancybox=True, ncol=1)   # legend for the vertical line plot
+#ax2.legend(loc='center left',bbox_to_anchor=(1,0.5),fancybox=True, ncol=1)   # legend for the vertical line plot
+ax2.legend(fancybox=True, ncol=1)   # legend for the vertical line plot
 # save:
 #os.chdir('/nobackup/scgf/myExperiments/gaussScale')
 #plt.savefig("gaussScale50-100-200_diff_hrz-vrt.png", dpi=600,transparent=True)

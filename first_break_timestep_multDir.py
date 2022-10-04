@@ -5,7 +5,8 @@
 # I use this ^ to run python in VS code in interactive mode
 
 # plots the time of the first broken bond
-# goes through multiple directories
+# goes through multiple directories (multiple sigmas)
+# to be run from the parent directory of all sigmas
 import matplotlib.pyplot as plt
 import glob
 import os as os
@@ -37,11 +38,11 @@ def getFirstBrokenBond(myExp):
                 timebb = timebb.replace("\n","")  # get rid of \n
                 return timebb  
     
-for parent_directory in sorted(glob.glob("sigma*/"))[0:-1]:   # sigma_*
+for parent_directory in sorted(glob.glob("sigma*/")):   # sigma_*
     # change directory (I want to have 1 script that I keep outside of the many directories)
     os.chdir(parent_directory)
     os.chdir(parent_directory.replace("/","") + "_gaussTime05")
-
+    print(os.getcwd)
     dirList = []
     for my_dir in sorted(glob.glob("tstep*/")):
         """ get the list of directories"""
