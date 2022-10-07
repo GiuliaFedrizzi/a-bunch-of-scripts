@@ -62,7 +62,7 @@ def applyLightingAnd2Dview():
     renderView1.CameraFocalPoint = [0.499375, 0.498276665, 0.0]
     renderView1.CameraParallelScale = 0.7046833272972777
 
-def set_colormap_details(transform1Display):
+def set_colormap_pressure(transform1Display):
     """
     set the fluid pressure and Broken bonds colormaps
     set the representation to Broken Bonds
@@ -101,6 +101,11 @@ def set_colormap_details(transform1Display):
     pressureLUTColorBar.WindowLocation = 'AnyLocation'
     pressureLUTColorBar.Position = [0.7100785340314135, 0.34293193717277487]
 
+    return pressureLUT
+
+
+def set_colormap_broken_bonds(transform1Display):
+    renderView1 = GetActiveViewOrCreate('RenderView')
     # ========================= BROKEN BONDS ================================================
     # get color transfer function/color map for 'BrokenBonds'
     brokenBondsLUT = GetColorTransferFunction('BrokenBonds')
@@ -114,9 +119,7 @@ def set_colormap_details(transform1Display):
     # set scalar coloring
     ColorBy(transform1Display, ('POINTS', 'Broken Bonds'))
 
-    # Hide the scalar bar for this color map if no visible data is colored by it.
-    HideScalarBarIfNotNeeded(pressureLUT, renderView1)
-
+    
     # rescale color and/or opacity maps used to include current data range
     transform1Display.RescaleTransferFunctionToDataRange(True, False)
 
@@ -145,3 +148,5 @@ def set_colormap_details(transform1Display):
     brokenBondsLUTColorBar.WindowLocation = 'AnyLocation'
     brokenBondsLUTColorBar.Position = [0.7700414230019493, 0.35016025641025644]
     brokenBondsLUTColorBar.ScalarBarLength = 0.33
+
+    return brokenBondsLUT

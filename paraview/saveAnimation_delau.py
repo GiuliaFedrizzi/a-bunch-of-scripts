@@ -1,18 +1,30 @@
-# trace generated using paraview version 5.9.0
+"""
+open all csv files in directory
+find how often they were saved
+find timestep
+apply table to points filter
+apply delaunay filter (fills the gap between points)
+apply transform
+colour points by:
+- fluid pressure
+- number of broken bonds
+save animation (=screenshot of every timestep)
+
+
+Giulia Fedrizzi October 2022
+"""
 
 import sys
 # add the path to directory with macros to the sys path
 sys.path.append('/home/home01/scgf/.config/ParaView/Macros')  # change if path to A_TTPsphBclip.py is different
 
-from my_functions import * 
+from my_functions import * # includes paraview simple
 
-#### import the simple module from the paraview
-from paraview.simple import *
 import glob
 import os
 import time
 
-#LoadPalette(paletteName='WhiteBackground')
+LoadPalette(paletteName='WhiteBackground')
 
 # some variables for saving animations
 thisDirectory = os.getcwd()
@@ -59,8 +71,6 @@ print("frequency when files were saved: " + str(frequency))
 # create a new 'CSV Reader'
 my_experiment = CSVReader(FileName=allFiles)
 
-# get active view
-#spreadSheetView1 = GetActiveViewOrCreate('SpreadSheetView')
 
 # get animation scene
 animationScene1 = GetAnimationScene()
@@ -68,12 +78,8 @@ animationScene1 = GetAnimationScene()
 # update animation scene based on data timesteps
 animationScene1.UpdateAnimationUsingDataTimeSteps()
 
-
 # get layout
 layout1 = GetLayoutByName("Layout #1")
-
-# close an empty frame
-#layout1.Collapse(2)
 
 # find view
 renderView1 = FindViewOrCreate('RenderView1', viewtype='RenderView')
@@ -86,7 +92,6 @@ RenameSource('mf0001_freq1e1', my_experiment)
 
 
 # =========== END OPEN FILES =================
-
 
 applyTableToPoints()
 
@@ -117,7 +122,7 @@ Hide(delaunay2D1, renderView1)
 # === annotate time filter ===
 annotateTimeFilter1 = AnnotateTimeFilter(registrationName='AnnotateTimeFilter1')#, Input=glyph1)
 annotateTimeFilter1Display = Show(annotateTimeFilter1, renderView1)#, 'TextSourceRepresentation')
-annotateTimeFilter1.Format = 'Timestep: %9.2e'
+annotateTimeFilter1.Format = 'Time: %9.2e'
 annotateTimeFilter1.Shift = 0   # first timestep
 annotateTimeFilter1.Scale = (time_step_num*frequency)   # time between timesteps, extracted from input.txt, times the frequency for saving files
 # location of filter
@@ -171,67 +176,11 @@ renderView1.Update()
 #     # PNG options
 #     SuffixFormat='_%05d')
 
-"""
 # ------ start broken bonds viz map -------
-# get color transfer function/color map for 'BrokenBonds'
-brokenBondsLUT = GetColorTransferFunction('BrokenBonds')
 
-# Apply a preset using its name. Note this may not work as expected when presets have duplicate names.
-brokenBondsLUT.ApplyPreset('erdc_pbj_lin', True)
+brokenBondsLUT = set_colormap_broken_bonds(transform1Display)
 
-# get opacity transfer function/opacity map for 'BrokenBonds'
-brokenBondsPWF = GetOpacityTransferFunction('BrokenBonds')
-
-# Apply a preset using its name. Note this may not work as expected when presets have duplicate names.
-brokenBondsLUT.ApplyPreset('erdc_pbj_lin', True)
-
-# get active view
-renderView1 = GetActiveViewOrCreate('RenderView')
-
-# get color legend/bar for brokenBondsLUT in view renderView1
-brokenBondsLUTColorBar = GetScalarBar(brokenBondsLUT, renderView1)
-
-# Properties modified on brokenBondsLUTColorBar
-brokenBondsLUTColorBar.TitleBold = 1
-brokenBondsLUTColorBar.TitleFontSize = 21
-brokenBondsLUTColorBar.LabelBold = 1
-brokenBondsLUTColorBar.LabelFontSize = 20
-
-# Properties modified on brokenBondsLUTColorBar
-brokenBondsLUTColorBar.Title = 'Number of Broken Bonds'
-brokenBondsLUTColorBar.ComponentTitle = ''
-
-# Properties modified on brokenBondsLUTColorBar
-brokenBondsLUTColorBar.LabelFormat = '%#.1f'
-brokenBondsLUTColorBar.RangeLabelFormat = '%#.1f'
-
-# change scalar bar placement
-brokenBondsLUTColorBar.WindowLocation = 'AnyLocation'
-brokenBondsLUTColorBar.Position = [0.7700414230019493, 0.35016025641025644]
-brokenBondsLUTColorBar.ScalarBarLength = 0.33
-
-# Properties modified on brokenBondsLUTColorBar
-brokenBondsLUTColorBar.UseCustomLabels = 1
-brokenBondsLUTColorBar.CustomLabels = [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0]
-brokenBondsLUTColorBar.ScalarBarThickness = 20
-
-ColorBy(glyph1Display,('POINTS','Broken Bonds'))
-
-# no range labels -> I'm using custom ones
-brokenBondsLUTColorBar.AddRangeLabels = 0
-
-# Rescale transfer function
-brokenBondsLUT.RescaleTransferFunction(0.0, 6.0) # min = 0 bb, max = 6 bb
-
-# get opacity transfer function/opacity map for 'BrokenBonds'
-brokenBondsPWF = GetOpacityTransferFunction('BrokenBonds')
-
-# Rescale transfer function
-brokenBondsPWF.RescaleTransferFunction(0.0, 6.0)
-"""
-
-set_colormap_broken_bonds(transform1Display)
-
+# hide possible colorbars
 try:
     HideScalarBarIfNotNeeded(porosityLUT, renderView1)
 except Exception:
@@ -241,75 +190,19 @@ try:
     HideScalarBarIfNotNeeded(pressureLUT, renderView1)
 except Exception:
     pass
-# -----------
 
 # save animation
-pathAndName = thisDirectory+'/a_brokenBonds_.png'
+pathAndName = thisDirectory+'/a_brokenBonds.png'
 SaveAnimation(pathAndName, renderView1, ImageResolution=[2054, 1248],
     FrameWindow=rangeForAnimation, 
     # PNG options
     SuffixFormat='_%05d')
 
-# hide color bar/color legend
-#clip1Display.SetScalarBarVisibility(renderView1, False) # not working
-
 # ------ end broken bonds viz map -------
+# 
+pressureLUT = set_colormap_pressure(transform1Display)
 
-
-# ------ start pressure viz map -------
-"""# get color transfer function/color map for 'Pressure'
-pressureLUT = GetColorTransferFunction('Pressure')
-# get color legend/bar for pressureLUT in view renderView1
-pressureLUTColorBar = GetScalarBar(pressureLUT, renderView1)
-
-ColorBy(glyph1Display,('POINTS','Pressure'))
-HideScalarBarIfNotNeeded(brokenBondsLUT, renderView1)
-
-# Properties modified on brokenBondsLUTColorBar
-pressureLUTColorBar.TitleBold = 1
-pressureLUTColorBar.TitleFontSize = 21
-pressureLUTColorBar.LabelBold = 1
-pressureLUTColorBar.LabelFontSize = 20
-
-# Properties modified on brokenBondsLUTColorBar
-pressureLUTColorBar.Title = 'Fluid Pressure'
-pressureLUTColorBar.ComponentTitle = ''
-
-# toggle 3D widget visibility (only when running from the GUI)
-#Hide3DWidgets(proxy=glyph1.ClipType)
-
-# reset view to fit data
-renderView1.ResetCamera()
-
-# hide data in view
-Hide(glyph1, renderView1)
-
-# show color bar/color legend
-glyph1Display.SetScalarBarVisibility(renderView1, True)
-# ------ end pressure viz map -------
-
-# axes properties
-# Properties modified on renderView1.AxesGrid
-renderView1.AxesGrid.XLabelBold = 1
-renderView1.AxesGrid.XLabelFontSize = 25
-renderView1.AxesGrid.YLabelBold = 1
-renderView1.AxesGrid.YLabelFontSize = 25
-
-# Properties modified on renderView1.AxesGrid
-renderView1.AxesGrid.XLabelFontSize = 15
-renderView1.AxesGrid.YLabelFontSize = 15
-
-# Properties modified on renderView1.AxesGrid
-renderView1.AxesGrid.XLabelOpacity = 0.6000000000000001
-renderView1.AxesGrid.YLabelOpacity = 0.6000000000000001
-"""
-set_colormap_broken_bonds(transform1Display)
-# reset view to fit data
-renderView1.ResetCamera()
-
-# update the view to ensure updated data information
-renderView1.Update()
-
+# hide possible colorbars
 try:
     HideScalarBarIfNotNeeded(porosityLUT, renderView1)
 except Exception:
@@ -320,13 +213,13 @@ try:
 except Exception:
     pass
 
-# -----------
+# update the view to ensure updated data information
+renderView1.Update()
 
 # save animation
-pathAndName = thisDirectory+'/animation_fluidPressure.png'
+pathAndName = thisDirectory+'/a_fluidPressure.png'
 SaveAnimation(pathAndName, renderView1, ImageResolution=[2054, 1248],
     FrameWindow=rangeForAnimation, 
     # PNG options
     SuffixFormat='_%05d')
-# SaveScreenshot('/Users/giuliafedrizzi/OneDrive - University of Leeds/PhD/meetings/ppt/2021-12-17_xmas/exampleFrac3py.png', renderView1, ImageResolution=[2054, 1248])
 

@@ -23,6 +23,9 @@ builds 2 pandas dataframes of the type:
 
 and the second one for x_coord
 
+same as  diffusion_res_and_time, but uses coordinates instead of proximity threshold to get the points to plot
+finds the max P, then uses the id of that point to get the coordinates of the points in the horizontal and vertical line
+
 """
 
 # I use this ^ to run python in VS code in interactive mode
@@ -44,8 +47,8 @@ from pathlib import Path
 # dir_list = ['/nobackup/scgf/myExperiments/gaussTime/sigma_3_0/sigma_3_0_gaussTime05/tstep04_5_1e5',
 #      '/nobackup/scgf/myExperiments/gaussScale/scale200_r200/sigma_3_0/sigma_3_0_gaussTime05/tstep04_5_1e5']
 
-sigma_str = "/sigma_2_0"
-time_str = '$10^{-2}$'
+# sigma_str = "/sigma_2_0"
+# time_str = '$10^{-2}$'
 dir_list = ['/nobackup/scgf/myExperiments/gaussScaleFixFrac/fixedfraclong/size050',
     '/nobackup/scgf/myExperiments/gaussScaleFixFrac/fixedfraclong/size075',
     '/nobackup/scgf/myExperiments/gaussScaleFixFrac/fixedfraclong/size100']
@@ -99,7 +102,11 @@ for dir in dir_list:
     myExp = pd.read_csv(first_file, header=0)
     xmax = myExp.loc[myExp['Pressure'].idxmax(), 'x coord']
     ymax = myExp.loc[myExp['Pressure'].idxmax(), 'y coord']
-
+    max_id = myExp['Pressure'].idxmax() 
+    resolution = 400
+    offset = max_id%400
+    print("id of max P: "+str(max_id)+", max id: "+str(len(myExp)))
+    print("offset: "+str(offset))
     # # find the x coordinates that correspond to the max pressure
     # x_array = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['y coord'],ymax,rel_tol=1e-3),axis=1),'x coord'])
     # print("size of x_array: "+str(len(x_array)))
@@ -110,33 +117,36 @@ for dir in dir_list:
     #ax1.set_xlim([xmax-0.05,xmax+0.05])  # zoom in. Limits are max location +- 0.05
     #ax2.set_xlim([ymax-0.05,ymax+0.05])
 
-    for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[1:30:5]): #[beg:end:step]
+    for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[1::5]): #[beg:end:step]
         myfile = Path(os.getcwd()+'/'+filename)  # build file name including path
         if myfile.is_file():
             print(dir_label)
             myExp = pd.read_csv(filename, header=0)
             # find the x coordinates that correspond to the max pressure
-            x_array = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['y coord'],ymax,rel_tol=1e-3),axis=1),'x coord'])
+            x_array = myExp.iloc[offset::400,myExp.columns.get_loc('y coord')] # first: the point with coorinate = offset. Then every point above it (with a period of 400 = resolution) 
+            print("size of x_array: "+str(len(x_array)))
 
             # get the y coordinates of all x in range of tolerance
-            y_array = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['x coord'],xmax,rel_tol=1e-3),axis=1),'y coord'])
+            y_array = myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('x coord')] 
+            print("size of y_array: "+str(len(y_array)))
             
-            pressure_array_x = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['y coord'],ymax,rel_tol=1e-3),axis=1),'Pressure'])
-            pressure_array_y = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['x coord'],xmax,rel_tol=1e-3),axis=1),'Pressure'])
+            pressure_array_x = myExp.iloc[offset::400,myExp.columns.get_loc('Pressure')]
+            pressure_array_y =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Pressure')] 
 
             input_tstep = float(getTimeStep("input.txt"))
             input_viscosity = float(getViscosity("input.txt"))
             file_num = float(filename.split("experiment")[1].split(".")[0])  # first take the part after "experiment", then the one before the "."
             # name of the line
             labelName = "t/$\mu$=" + str('{:.1e}'.format(input_tstep*file_num/input_viscosity))
-            print(labelName)
+            #print(labelName)
+
             # x                  shift array by the max value so that the maximum is at zero and scale it 
-            data1_x = {'x': (x_array - xmax)*scale_factor,'Fluid Pressure': pressure_array_x, 'scale': dir_label,'time': labelName}  # save temporarily
+            data1_x = {'x': (x_array - ymax)*scale_factor,'Fluid Pressure': pressure_array_x, 'scale': dir_label,'time': labelName}  # save temporarily
             df1_x = pd.DataFrame(data1_x)
             df_x = pd.concat([df_x,df1_x], ignore_index=True) # append to old one
 
             # y                  shift array by the max value so that the maximum is at zero
-            data1_y = {'y': (y_array - ymax)*scale_factor,'Fluid Pressure': pressure_array_y, 'scale': dir_label,'time': labelName}  # save temporarily
+            data1_y = {'y': (y_array - xmax)*scale_factor,'Fluid Pressure': pressure_array_y, 'scale': dir_label,'time': labelName}  # save temporarily
             df1_y = pd.DataFrame(data1_y)
             df_y = pd.concat([df_y,df1_y], ignore_index=True) # append to old one
 
