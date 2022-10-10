@@ -49,10 +49,24 @@ from pathlib import Path
 
 # sigma_str = "/sigma_2_0"
 # time_str = '$10^{-2}$'
-dir_list = ['/nobackup/scgf/myExperiments/gaussScaleFixFrac/fixedfraclong/size050',
-    '/nobackup/scgf/myExperiments/gaussScaleFixFrac/fixedfraclong/size075',
-    '/nobackup/scgf/myExperiments/gaussScaleFixFrac/fixedfraclong/size100']
 
+
+#dir_labels = ['200','100','50']
+# dir_labels = ['400','200']  # res400.elle, res200.elle
+#dir_labels = ['fdf00','fdf01','fdf02','fdf03']  # scale 200m, 100m or 50m
+dir_labels = ['050','075','100','150']
+resolution = 400
+
+dir_list = []
+
+for i in dir_labels:
+    dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac/fixedfraclong/size'+str(i))
+    # '/nobackup/scgf/myExperiments/gaussScaleFixFrac/fixedfraclong/size075',
+    # '/nobackup/scgf/myExperiments/gaussScaleFixFrac/fixedfraclong/size100',
+    # '/nobackup/scgf/myExperiments/gaussScaleFixFrac/fixedfraclong/size150',
+    # '/nobackup/scgf/myExperiments/gaussScaleFixFrac/fixedfraclong/size200'
+    # ]
+    
 # dir_list = ['/nobackup/scgf/myExperiments/gaussFastDiff/scale050',
 #     '/nobackup/scgf/myExperiments/gaussFastDiff/scale100',
 #     '/nobackup/scgf/myExperiments/gaussFastDiff/scale150',
@@ -63,15 +77,8 @@ dir_list = ['/nobackup/scgf/myExperiments/gaussScaleFixFrac/fixedfraclong/size05
 #     '/nobackup/scgf/myExperiments/gaussTimeOnce/gaussTimeOnce050' + sigma_str + sigma_str + '_gaussTime05/tstep04_' + time_str]
 
 
-#dir_labels = ['200','100','50']
-# dir_labels = ['400','200']  # res400.elle, res200.elle
-#dir_labels = ['fdf00','fdf01','fdf02','fdf03']  # scale 200m, 100m or 50m
-dir_labels = ['50','75','100']
-
 fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
 first_file = 'my_experiment00010.csv'
-#data = {'x_coord': x_array}
-#df_x = pd.DataFrame(data)
 df_x = pd.DataFrame()
 df_y = pd.DataFrame()
 
@@ -90,7 +97,7 @@ def getViscosity(inputFile):
 
 dirnum = 0
 for dir in dir_list:
-    
+    print(dir)
     """ loop through directories"""
     os.chdir(dir)
     dirnum+=1 # counter for directories
@@ -103,56 +110,46 @@ for dir in dir_list:
     xmax = myExp.loc[myExp['Pressure'].idxmax(), 'x coord']
     ymax = myExp.loc[myExp['Pressure'].idxmax(), 'y coord']
     max_id = myExp['Pressure'].idxmax() 
-    resolution = 400
-    offset = max_id%400
-    print("id of max P: "+str(max_id)+", max id: "+str(len(myExp)))
-    print("offset: "+str(offset))
-    # # find the x coordinates that correspond to the max pressure
-    # x_array = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['y coord'],ymax,rel_tol=1e-3),axis=1),'x coord'])
-    # print("size of x_array: "+str(len(x_array)))
+    
+    offset = max_id%resolution
 
-    # # get the y coordinates of all x in range of tolerance
-    # y_array = np.array(myExp.loc[myExp.apply(lambda x: math.isclose(x['x coord'],xmax,rel_tol=1e-3),axis=1),'y coord'])
+    # find the x coordinates that correspond to the max pressure
+    # get the y coordinates of all x in range of tolerance
+    x_array = myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('x coord')] 
+    
+    y_array = myExp.iloc[offset::400,myExp.columns.get_loc('y coord')] # first: the point with coorinate = offset. Then every point above it (with a period of 400 = resolution) 
 
-    #ax1.set_xlim([xmax-0.05,xmax+0.05])  # zoom in. Limits are max location +- 0.05
-    #ax2.set_xlim([ymax-0.05,ymax+0.05])
-
-    for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[1::5]): #[beg:end:step]
+    for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[2:130:20]): #[beg:end:step]
         myfile = Path(os.getcwd()+'/'+filename)  # build file name including path
         if myfile.is_file():
-            print(dir_label)
             myExp = pd.read_csv(filename, header=0)
-            # find the x coordinates that correspond to the max pressure
-            x_array = myExp.iloc[offset::400,myExp.columns.get_loc('y coord')] # first: the point with coorinate = offset. Then every point above it (with a period of 400 = resolution) 
-            print("size of x_array: "+str(len(x_array)))
 
-            # get the y coordinates of all x in range of tolerance
-            y_array = myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('x coord')] 
-            print("size of y_array: "+str(len(y_array)))
+            pressure_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Pressure')] 
+            pressure_array_y = myExp.iloc[offset::400,myExp.columns.get_loc('Pressure')]
+            stress_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Mean Stress')] 
+            stress_array_y = myExp.iloc[offset::400,myExp.columns.get_loc('Mean Stress')]
             
-            pressure_array_x = myExp.iloc[offset::400,myExp.columns.get_loc('Pressure')]
-            pressure_array_y =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Pressure')] 
-
             input_tstep = float(getTimeStep("input.txt"))
             input_viscosity = float(getViscosity("input.txt"))
             file_num = float(filename.split("experiment")[1].split(".")[0])  # first take the part after "experiment", then the one before the "."
             # name of the line
             labelName = "t/$\mu$=" + str('{:.1e}'.format(input_tstep*file_num/input_viscosity))
-            #print(labelName)
 
             # x                  shift array by the max value so that the maximum is at zero and scale it 
-            data1_x = {'x': (x_array - ymax)*scale_factor,'Fluid Pressure': pressure_array_x, 'scale': dir_label,'time': labelName}  # save temporarily
-            df1_x = pd.DataFrame(data1_x)
-            df_x = pd.concat([df_x,df1_x], ignore_index=True) # append to old one
-
-            # y                  shift array by the max value so that the maximum is at zero
-            data1_y = {'y': (y_array - xmax)*scale_factor,'Fluid Pressure': pressure_array_y, 'scale': dir_label,'time': labelName}  # save temporarily
+            #data1_x = {'x': (x_array - ymax)*scale_factor,'Fluid Pressure': pressure_array_x, 'scale': dir_label,'time': labelName}  # save temporarily
+            data1_y = {'y': (y_array - ymax)*scale_factor,'Stress': stress_array_y, 'scale': dir_label,'time': labelName}  # save temporarily
             df1_y = pd.DataFrame(data1_y)
             df_y = pd.concat([df_y,df1_y], ignore_index=True) # append to old one
 
-g_x = sns.lineplot(data=df_x ,x="x",y="Fluid Pressure",ax=ax1,hue='time',style='scale',alpha=0.5)
-g_y = sns.lineplot(data=df_y ,x="y",y="Fluid Pressure",ax=ax2,hue='time',style='scale',alpha=0.5)
-ax1.set_ylabel("Fluid Pressure")
+            # y                  shift array by the max value so that the maximum is at zero
+            #data1_y = {'y': (y_array - xmax)*scale_factor,'Fluid Pressure': pressure_array_y, 'scale': dir_label,'time': labelName}  # save temporarily
+            data1_x = {'x': (x_array - xmax)*scale_factor,'Stress': stress_array_x, 'scale': dir_label,'time': labelName}  # save temporarily
+            df1_x = pd.DataFrame(data1_x)
+            df_x = pd.concat([df_x,df1_x], ignore_index=True) # append to old one
+
+g_x = sns.lineplot(data=df_x ,x="x",y="Stress",ax=ax1,hue='time',style='scale',alpha=0.5)
+g_y = sns.lineplot(data=df_y ,x="y",y="Stress",ax=ax2,hue='time',style='scale',alpha=0.5)
+ax1.set_ylabel("Stress")
 ax1.set_title("Horizontal Profile")
 ax1.set_xlim([-0.06,+0.06])  # zoom in. Limits are max location +- 0.06
 ax2.set_xlim([-0.06,+0.06])  # zoom in. Limits are max location +- 0.06
@@ -164,18 +161,19 @@ ax2.set_title("Vertical Profile")
 
 g_x.legend_.remove()
 #fig.suptitle("$\sigma$ = "+sigma_str.replace("/sigma_","").replace("_",".")+", tstep = " + time_str.split("_")[1]) # get the part of the path that is after "myExperiments/"
+fig.suptitle("Mean Stress") # get the part of the path that is after "myExperiments/"
 
 # LEGEND:
 # get the position of the plot so I can add the legend to it 
 box = ax2.get_position()
 
 # upper left = the point that I am setting wiht the second argument
-#ax2.legend(loc='center left',bbox_to_anchor=(1,0.5),fancybox=True, ncol=1)   # legend for the vertical line plot
-ax2.legend(fancybox=True, ncol=1)   # legend for the vertical line plot
+ax2.legend(loc='center left',bbox_to_anchor=(1.2,0.5),fancybox=True, ncol=1)   # legend for the vertical line plot
+#ax2.legend(fancybox=True, ncol=1)   # legend for the vertical line plot
 # save:
 #os.chdir('/nobackup/scgf/myExperiments/gaussScale')
 #plt.savefig("gaussScale50-100-200_diff_hrz-vrt.png", dpi=600,transparent=True)
-#plt.tight_layout()
+plt.tight_layout()
 plt.show()
 
 """
