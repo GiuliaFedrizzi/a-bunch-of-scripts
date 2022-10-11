@@ -131,6 +131,8 @@ def set_colormap_broken_bonds(transform1Display):
     brokenBondsLUTColorBar.ComponentTitle = ''
     brokenBondsLUTColorBar.TitleBold = 1
     brokenBondsLUTColorBar.LabelBold = 1
+    brokenBondsLUTColorBar.TitleFontSize = 21
+    brokenBondsLUTColorBar.LabelFontSize = 20
 
     # Chenge the number format in the broken bonds label
     brokenBondsLUTColorBar.LabelFormat = '%#.1f'
