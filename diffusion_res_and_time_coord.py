@@ -137,19 +137,19 @@ for dir in dir_list:
 
             # x                  shift array by the max value so that the maximum is at zero and scale it 
             #data1_x = {'x': (x_array - ymax)*scale_factor,'Fluid Pressure': pressure_array_x, 'scale': dir_label,'time': labelName}  # save temporarily
-            data1_y = {'y': (y_array - ymax)*scale_factor,'Stress': stress_array_y, 'scale': dir_label,'time': labelName}  # save temporarily
+            data1_y = {'y': (y_array - ymax)*scale_factor,'Stress (MPa)': stress_array_y/1e6, 'scale': dir_label,'time': labelName}  # save temporarily
             df1_y = pd.DataFrame(data1_y)
             df_y = pd.concat([df_y,df1_y], ignore_index=True) # append to old one
 
             # y                  shift array by the max value so that the maximum is at zero
             #data1_y = {'y': (y_array - xmax)*scale_factor,'Fluid Pressure': pressure_array_y, 'scale': dir_label,'time': labelName}  # save temporarily
-            data1_x = {'x': (x_array - xmax)*scale_factor,'Stress': stress_array_x, 'scale': dir_label,'time': labelName}  # save temporarily
+            data1_x = {'x': (x_array - xmax)*scale_factor,'Stress (MPa)': stress_array_x/1e6, 'scale': dir_label,'time': labelName}  # save temporarily
             df1_x = pd.DataFrame(data1_x)
             df_x = pd.concat([df_x,df1_x], ignore_index=True) # append to old one
 
-g_x = sns.lineplot(data=df_x ,x="x",y="Stress",ax=ax1,hue='time',style='scale',alpha=0.5)
-g_y = sns.lineplot(data=df_y ,x="y",y="Stress",ax=ax2,hue='time',style='scale',alpha=0.5)
-ax1.set_ylabel("Stress")
+g_x = sns.lineplot(data=df_x ,x="x",y="Stress (MPa)",ax=ax1,hue='time',style='scale',alpha=0.5)
+g_y = sns.lineplot(data=df_y ,x="y",y="Stress (MPa)",ax=ax2,hue='time',style='scale',alpha=0.5)
+#ax1.set_ylabel("Stress")
 ax1.set_title("Horizontal Profile")
 ax1.set_xlim([-0.06,+0.06])  # zoom in. Limits are max location +- 0.06
 ax2.set_xlim([-0.06,+0.06])  # zoom in. Limits are max location +- 0.06

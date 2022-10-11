@@ -11,7 +11,7 @@ External functions are defined in my_functions.py which must be imported
 
 import sys
 # add the path to directory with macros to the sys path
-sys.path.append('/home/home01/scgf/.config/ParaView/Macros')  # change if path to A_TTPsphBclip.py is different
+sys.path.append('/home/home01/scgf/myscripts/paraview')  # change if path to my_functions.py is different
 
 from my_functions import * 
 
@@ -48,7 +48,11 @@ Hide(delaunay2D1, renderView1)
 # update the view to ensure updated data information
 renderView1.Update()
 
-set_colormap_details(transform1Display)
+
+set_colormap_pressure(transform1Display)
+
+set_colormap_broken_bonds(transform1Display)
+
 
 # toggle 3D widget visibility (only when running from the GUI)
 Hide3DWidgets(proxy=transform1.Transform)

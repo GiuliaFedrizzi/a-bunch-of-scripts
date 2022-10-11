@@ -16,7 +16,7 @@ Giulia Fedrizzi October 2022
 
 import sys
 # add the path to directory with macros to the sys path
-sys.path.append('/home/home01/scgf/.config/ParaView/Macros')  # change if path to A_TTPsphBclip.py is different
+sys.path.append('/home/home01/scgf/myscripts/paraview')  # change if path to A_TTPsphBclip.py is different
 
 from my_functions import * # includes paraview simple
 
@@ -178,7 +178,7 @@ renderView1.Update()
 
 # ------ start broken bonds viz map -------
 
-brokenBondsLUT = set_colormap_broken_bonds(transform1Display)
+set_colormap_broken_bonds(transform1Display)
 
 # hide possible colorbars
 try:
@@ -200,7 +200,7 @@ SaveAnimation(pathAndName, renderView1, ImageResolution=[2054, 1248],
 
 # ------ end broken bonds viz map -------
 # 
-pressureLUT = set_colormap_pressure(transform1Display)
+set_colormap_pressure(transform1Display)
 
 # hide possible colorbars
 try:
@@ -223,3 +223,26 @@ SaveAnimation(pathAndName, renderView1, ImageResolution=[2054, 1248],
     # PNG options
     SuffixFormat='_%05d')
 
+
+set_colormap_porosity(transform1Display)
+
+# hide possible colorbars
+try:
+    HideScalarBarIfNotNeeded(pressureLUT, renderView1)
+except Exception:
+    pass
+
+try:
+    HideScalarBarIfNotNeeded(brokenBondsLUT, renderView1)
+except Exception:
+    pass
+
+# update the view to ensure updated data information
+renderView1.Update()
+
+# save animation
+pathAndName = thisDirectory+'/a_porosity.png'
+SaveAnimation(pathAndName, renderView1, ImageResolution=[2054, 1248],
+    FrameWindow=rangeForAnimation, 
+    # PNG options
+    SuffixFormat='_%05d')

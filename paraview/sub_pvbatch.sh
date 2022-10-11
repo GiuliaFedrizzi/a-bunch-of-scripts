@@ -16,7 +16,7 @@
 MS=/home/home01/scgf/myscripts
 # pvbatch $MS/saveAnimationEveryFolder.py > pvbatchout.log
 #pvbatch --mpi --force-offscreen-rendering $MS/saveAnimationEveryFolder.py &> pvbatchout.log
-pvbatch --mpi $MS/saveAnimationEveryFolder.py &> pvbatchout.log
+pvbatch --mpi $MS/paraview/saveAnimationEveryFolder.py &> pvbatchout.log
 
 # to submit from outside sigma*:
 # for s in sigma_*; do cd ${s}/${s}_gaussTime05; for d in tstep04_*; do cd $d; pwd; qsub $MS/sub_pvbatch.sh; cd ..; done; cd ../../; done

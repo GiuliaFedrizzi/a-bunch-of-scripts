@@ -51,6 +51,7 @@ def edit_transform_properties(transform1Display):
 
 def applyLightingAnd2Dview():
     renderView1 = GetActiveViewOrCreate('RenderView')
+    LoadPalette(paletteName='WhiteBackground')
     # apply lighting, set the view mode to 2D and camera position
     renderView1.KeyLightElevation = 10
     renderView1.FillLightWarmth = 80
@@ -93,6 +94,7 @@ def set_colormap_pressure(transform1Display):
     # get color legend/bar for pressureLUT in view renderView1
     pressureLUTColorBar = GetScalarBar(pressureLUT, renderView1)
 
+    pressureLUTColorBar.TitleBold = 1
     #format:
     pressureLUTColorBar.LabelFormat = '%-#6.3e'
     pressureLUTColorBar.RangeLabelFormat = '%-#6.3e'
@@ -101,7 +103,7 @@ def set_colormap_pressure(transform1Display):
     pressureLUTColorBar.WindowLocation = 'AnyLocation'
     pressureLUTColorBar.Position = [0.7100785340314135, 0.34293193717277487]
 
-    return pressureLUT
+    
 
 
 def set_colormap_broken_bonds(transform1Display):
@@ -149,4 +151,60 @@ def set_colormap_broken_bonds(transform1Display):
     brokenBondsLUTColorBar.Position = [0.7700414230019493, 0.35016025641025644]
     brokenBondsLUTColorBar.ScalarBarLength = 0.33
 
-    return brokenBondsLUT
+    # hide pressure LUT
+    pressureLUT = GetColorTransferFunction('Pressure')
+    # Hide the scalar bar for this color map if no visible data is colored by it.
+    HideScalarBarIfNotNeeded(pressureLUT, renderView1)
+
+
+def set_colormap_porosity(transform1Display):
+    renderView1 = GetActiveViewOrCreate('RenderView')
+    # ========================= BROKEN BONDS ================================================
+    # get color transfer function/color map for 'Porosity'
+    porosityLUT = GetColorTransferFunction('Porosity')
+
+    # Apply a preset using its name. Note this may not work as expected when presets have duplicate names.
+    porosityLUT.ApplyPreset('BuPu', True)
+
+    # show color bar/color legend
+    transform1Display.SetScalarBarVisibility(renderView1, True)
+
+    # set scalar coloring
+    ColorBy(transform1Display, ('POINTS', 'Porosity'))
+
+    
+    # rescale color and/or opacity maps used to include current data range
+    transform1Display.RescaleTransferFunctionToDataRange(True, False)
+
+    # get color legend/bar for brokenBondsLUT in view renderView1
+    porosityLUTColorBar = GetScalarBar(porosityLUT, renderView1)
+    porosityLUTColorBar.TitleBold = 1
+    porosityLUTColorBar.Title = 'Porosity'
+    porosityLUTColorBar.ComponentTitle = '\nMelt Fraction'
+    porosityLUTColorBar.TitleFontSize = 21
+    porosityLUTColorBar.LabelBold = 1
+    porosityLUTColorBar.LabelFontSize = 20
+
+
+    porosityLUTColorBar.AutomaticLabelFormat = 0
+    porosityLUTColorBar.RangeLabelFormat = '%-#6.1g' 
+
+
+    # Rescale transfer function - set limits
+    porosityLUT.RescaleTransferFunction(0.02, 0.3)
+
+    # change scalar bar placement
+    porosityLUTColorBar.WindowLocation = 'AnyLocation'
+    porosityLUTColorBar.Position = [0.7700414230019493, 0.35016025641025644]
+    porosityLUTColorBar.ScalarBarLength = 0.33
+
+    # hide pressure LUT
+    pressureLUT = GetColorTransferFunction('Pressure')
+    # Hide the scalar bar for this color map if no visible data is colored by it.
+    HideScalarBarIfNotNeeded(pressureLUT, renderView1)
+
+    # hide bb LUT
+    brokenBondsLUT = GetColorTransferFunction('BrokenBonds')
+    # Hide the scalar bar for this color map if no visible data is colored by it.
+    HideScalarBarIfNotNeeded(brokenBondsLUT, renderView1)
+
