@@ -13,8 +13,10 @@ import sys
 
 #timestep_dir = "tstep04_3_5e3"
 
-dir_labels = ['050','075','100','150']
+dir_labels = ['040','050','075','100','150']
 resolution = 400
+
+normalise=True
 
 parent_directories = []
 
@@ -56,9 +58,13 @@ def plot_bb_in_time(parent_directory):
     time_bb_array,bb_array = getBrokenBondTime(parent_directory+"/latte.log")
     #except:
     #    print("Failed to get bb or time.")
-
-    my_label = "size = " + parent_directory.split("/")[-1].replace("size","")
-    axs.plot(time_bb_array,bb_array, '--o',linewidth=1,markersize=2,label=my_label)  # ...and plot it
+    domain_size=parent_directory.split("/")[-1].replace("size","")
+    my_label = "size = " + domain_size
+    if normalise:
+        print(int(domain_size))
+        axs.plot(time_bb_array,bb_array, '--o',linewidth=1,markersize=2,label=my_label)  # ...and plot it
+    else:    
+        axs.plot(time_bb_array,bb_array, '--o',linewidth=1,markersize=2,label=my_label)  # ...and plot it
     #axs.set_xscale('log')
     #axs.set_yscale('log')
 

@@ -54,13 +54,13 @@ from pathlib import Path
 #dir_labels = ['200','100','50']
 # dir_labels = ['400','200']  # res400.elle, res200.elle
 #dir_labels = ['fdf00','fdf01','fdf02','fdf03']  # scale 200m, 100m or 50m
-dir_labels = ['050','075','100','150']
+dir_labels = ['040','050','075','100','150']
 resolution = 400
 
 dir_list = []
 
 for i in dir_labels:
-    dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac/fixedfraclong/size'+str(i))
+    dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac/fixedfracs3/size'+str(i))
     # '/nobackup/scgf/myExperiments/gaussScaleFixFrac/fixedfraclong/size075',
     # '/nobackup/scgf/myExperiments/gaussScaleFixFrac/fixedfraclong/size100',
     # '/nobackup/scgf/myExperiments/gaussScaleFixFrac/fixedfraclong/size150',
@@ -119,7 +119,7 @@ for dir in dir_list:
     
     y_array = myExp.iloc[offset::400,myExp.columns.get_loc('y coord')] # first: the point with coorinate = offset. Then every point above it (with a period of 400 = resolution) 
 
-    for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[2:130:20]): #[beg:end:step]
+    for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[2:36:5]): #[beg:end:step]
         myfile = Path(os.getcwd()+'/'+filename)  # build file name including path
         if myfile.is_file():
             myExp = pd.read_csv(filename, header=0)
@@ -137,18 +137,21 @@ for dir in dir_list:
 
             # x                  shift array by the max value so that the maximum is at zero and scale it 
             #data1_x = {'x': (x_array - ymax)*scale_factor,'Fluid Pressure': pressure_array_x, 'scale': dir_label,'time': labelName}  # save temporarily
-            data1_y = {'y': (y_array - ymax)*scale_factor,'Stress (MPa)': stress_array_y/1e6, 'scale': dir_label,'time': labelName}  # save temporarily
+            #data1_y = {'y': (y_array - ymax)*scale_factor,'Stress (MPa)': stress_array_y/1e6, 'scale': dir_label,'time': labelName}  # save temporarily
+            data1_y = {'y': (y_array - ymax)*scale_factor,'Fluid Pressure (MPa)': pressure_array_y/1e6, 'scale': dir_label,'time': labelName}  # save temporarily
             df1_y = pd.DataFrame(data1_y)
             df_y = pd.concat([df_y,df1_y], ignore_index=True) # append to old one
 
             # y                  shift array by the max value so that the maximum is at zero
             #data1_y = {'y': (y_array - xmax)*scale_factor,'Fluid Pressure': pressure_array_y, 'scale': dir_label,'time': labelName}  # save temporarily
-            data1_x = {'x': (x_array - xmax)*scale_factor,'Stress (MPa)': stress_array_x/1e6, 'scale': dir_label,'time': labelName}  # save temporarily
+            data1_x = {'x': (x_array - xmax)*scale_factor,'Fluid Pressure (MPa)': pressure_array_x/1e6, 'scale': dir_label,'time': labelName}  # save temporarily
             df1_x = pd.DataFrame(data1_x)
             df_x = pd.concat([df_x,df1_x], ignore_index=True) # append to old one
 
-g_x = sns.lineplot(data=df_x ,x="x",y="Stress (MPa)",ax=ax1,hue='time',style='scale',alpha=0.5)
-g_y = sns.lineplot(data=df_y ,x="y",y="Stress (MPa)",ax=ax2,hue='time',style='scale',alpha=0.5)
+#g_x = sns.lineplot(data=df_x ,x="x",y="Stress (MPa)",ax=ax1,hue='time',style='scale',alpha=0.5)
+#g_y = sns.lineplot(data=df_y ,x="y",y="Stress (MPa)",ax=ax2,hue='time',style='scale',alpha=0.5)
+g_x = sns.lineplot(data=df_x ,x="x",y="Fluid Pressure (MPa)",ax=ax1,hue='time',style='scale',alpha=0.5)
+g_y = sns.lineplot(data=df_y ,x="y",y="Fluid Pressure (MPa)",ax=ax2,hue='time',style='scale',alpha=0.5)
 #ax1.set_ylabel("Stress")
 ax1.set_title("Horizontal Profile")
 ax1.set_xlim([-0.06,+0.06])  # zoom in. Limits are max location +- 0.06
@@ -161,19 +164,19 @@ ax2.set_title("Vertical Profile")
 
 g_x.legend_.remove()
 #fig.suptitle("$\sigma$ = "+sigma_str.replace("/sigma_","").replace("_",".")+", tstep = " + time_str.split("_")[1]) # get the part of the path that is after "myExperiments/"
-fig.suptitle("Mean Stress") # get the part of the path that is after "myExperiments/"
+fig.suptitle("Fluid Pressure") # get the part of the path that is after "myExperiments/"
 
 # LEGEND:
 # get the position of the plot so I can add the legend to it 
 box = ax2.get_position()
 
 # upper left = the point that I am setting wiht the second argument
-ax2.legend(loc='center left',bbox_to_anchor=(1.2,0.5),fancybox=True, ncol=1)   # legend for the vertical line plot
-#ax2.legend(fancybox=True, ncol=1)   # legend for the vertical line plot
+#ax2.legend(loc='center left',bbox_to_anchor=(1.2,0.5),fancybox=True, ncol=1)   # legend for the vertical line plot
+ax2.legend(fancybox=True, ncol=1)   # legend for the vertical line plot
 # save:
 #os.chdir('/nobackup/scgf/myExperiments/gaussScale')
 #plt.savefig("gaussScale50-100-200_diff_hrz-vrt.png", dpi=600,transparent=True)
-plt.tight_layout()
+#plt.tight_layout()
 plt.show()
 
 """
