@@ -18,7 +18,7 @@ import seaborn as sns
 from pathlib import Path
 
 
-plot_figure = 1
+plot_figure = 0
 #fig, axs = plt.subplots(nrows=1, ncols=1)
 dir_labels = ['040','050']
 # dir_labels = ['040','050','075','100','150']
@@ -110,8 +110,17 @@ for dir in dir_list:
         w, v = np.linalg.eig(cov_matrix)  # eigenvalues and eigenvectors
         print("eigenvalues: " + str(w)+ ", \neigenvectors: "+ str(v))
         print(v[0][0])
+
+        a = (bb_df.x_coord_shifted**2*bb_df['Broken Bonds']).sum()  # multiplies tow by row, then sums everything
+        b = (bb_df.x_coord_shifted*bb_df.y_coord_shifted*bb_df['Broken Bonds']).sum()  # multiplies tow by row, then sums everything
+        c = (bb_df.y_coord_shifted**2*bb_df['Broken Bonds']).sum()  # multiplies tow by row, then sums everything
+        # This is what I should do above too
         
-        
+        theta = math.atan(b/(a-c))/2
+        if (a-c)*math.cos(2*theta)+b*math.sin(2*theta) > 0: # it's maximising the second moment. wrong theta.
+            theta = theta + math.pi
+
+        print("theta=",theta)
         # TO DO: weight sum by n of bb
 
         if plot_figure:
