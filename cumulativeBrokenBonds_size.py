@@ -13,7 +13,7 @@ import sys
 
 #timestep_dir = "tstep04_3_5e3"
 
-dir_labels = ['040','050','075','100','150']
+dir_labels = ['020','030', '040','050','060','070','080','090','100']
 resolution = 400
 
 normalise=True
@@ -21,7 +21,7 @@ normalise=True
 parent_directories = []
 
 for i in dir_labels:
-    parent_directories.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac/fixedfraclong/size'+str(i))
+    parent_directories.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac/fixedfrac100/size'+str(i))
 
 # parent_directories = ["sigma_3_0"]
 fig, axs = plt.subplots(nrows=1, ncols=1)
