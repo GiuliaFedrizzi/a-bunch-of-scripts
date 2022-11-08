@@ -7,11 +7,9 @@ builds matrix:
 
 # I use this ^ to run python in VS code in interactive mode
 import pandas as pd
-from matplotlib import colors
 import matplotlib.pyplot as plt
 import numpy as np
 import math
-from scipy import interpolate
 import os
 import glob
 import seaborn as sns
@@ -19,15 +17,14 @@ from pathlib import Path
 
 from useful_functions import * 
 
-plot_figure = 0
-#fig, axs = plt.subplots(nrows=1, ncols=1)
-dir_labels = ['020','030','040','050','060','070','080','090','100']   
-# dir_labels = ['040','050','075','100','150']
+plot_figure = 1
+#dir_labels = ['020','030','040','050','060','070','080','090','100']   
+dir_labels = ['090','100']   
 resolution = 200
 
 # some variables for the subplots:
 tot_files = len(dir_labels)  # is going to be the total number of subplots (#subplots=tot_files-1)
-nrow = 3;
+nrow = 1;
 ncol = int((tot_files)/nrow);
 fig, axs = plt.subplots(nrows=nrow, ncols=ncol)
 all_axes=axs.reshape(-1) 
@@ -71,24 +68,18 @@ def read_calculate_plot(filename,scale_factor):
     read the csv file, call build_cov_matrix, calculate eigenvalues and vectors, plot
     """
     myExp = pd.read_csv(filename, header=0)
-    #print(len(myExp))
 
-
-    #bb_df =  myExp.loc[myExp['Broken Bonds']>0,:]   # select only those with at least one broken bond
-    
-    # print(bb_df.head())
-    # bb_df.reset_index(drop=True, inplace=True)
-    # print(bb_df.head())
-    
-    # xcoord_new = bb_df['x coord']*100
-    # ycoord_new = bb_df['y coord']*100
-    #bb_df = myExp.copy()
     mask = myExp['Broken Bonds'] > 0    # create a mask: find the true value of each row's 'xcoord' column being greater than 0, then using those truth values to identify which rows to keep
     bb_df = myExp[mask].copy()  # keep only the rows found by mask
 
     bb_df.reset_index(drop=True, inplace=True)
-    bb_df['xcoord100'] = bb_df['x coord']*100
-    bb_df['ycoord100'] = bb_df['y coord']*100
+
+    # factors to shift the domain so they are all consistent. Reference is size = 100
+    x_shift = 50-(scale_factor/2)   # 50 is the position of the centre in the simulation w size = 100
+    y_shift = 100-(scale_factor)   
+    print("scale factor: ",scale_factor)
+    bb_df['xcoord100'] = bb_df['x coord']*scale_factor + x_shift
+    bb_df['ycoord100'] = bb_df['y coord']*scale_factor + y_shift
 
     tot_bb = bb_df['Broken Bonds'].sum()   # 0th order moment
     
@@ -104,14 +95,6 @@ def read_calculate_plot(filename,scale_factor):
     w, v = np.linalg.eig(cov_matrix)  # eigenvalues and eigenvectors
     print("eigenvalues: " + str(w)+ ", \neigenvectors: "+ str(v))
 
-    # true_v = 2*v        
-    # # true_v=np.empty([2,1])
-    # # # scale the eigenvectors so they have true units
-    # # true_v[0] = 2*math.sqrt(v[0]/tot_bb)
-    # # true_v[1] = 2*math.sqrt(v[1]/tot_bb)
-    # print("true v = ",true_v)
-    #print("v = ",v)
-
     theta_rad = np.pi/2 - np.arctan2(2*cov_matrix[0][1],(cov_matrix[0][0]-cov_matrix[1][1]))/2  # orientation in rad   2*b,a-c
     theta_deg = theta_rad % 180 - 90         # orientation in degrees
     # if (a-c)*math.cos(2*theta)+b*math.sin(2*theta) > 0: # it's maximising the second moment. wrong theta.
@@ -121,7 +104,6 @@ def read_calculate_plot(filename,scale_factor):
     # TO DO: weight sum by n of bb
 
     if plot_figure:
-        print("figure ",dirnum)
         plt.sca(all_axes[dirnum])   # set the current active subplot        
         # sns.scatterplot(data=bb_df,x="xcoord100",y="ycoord100",hue="Broken Bonds",linewidth=0,alpha=0.8,marker="h",size=0.6).set_aspect('equal')
         sns.scatterplot(data=bb_df,x="xcoord100",y="ycoord100",hue="Broken Bonds",linewidth=0,alpha=0.8,marker="h").set_aspect('equal')
@@ -141,23 +123,23 @@ def read_calculate_plot(filename,scale_factor):
         
 
 dirnum = 0 # counter for directories
-input_tstep = float(getTimeStep("input.txt"))
+input_tstep = float(getTimeStep(dir_list[0]+"/input.txt"))
 
 for dir in dir_list:
-    print(dir)
+    print("\n",dir)
     """ loop through directories"""
     os.chdir(dir)
     
     dir_label = dir_labels[dirnum]   # get the label that corresponds to the directory
     
-    scale_factor = float(dir_label)/200.0# factor for scaling the axes
+    scale_factor = float(dir_label)  # factor for scaling the axes
 
-    filename = "my_experiment00250.csv"
-    #for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[2:36:5]): #[beg:end:step]
+    filename = "my_experiment00050.csv"
+    #for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[2:36:5]): #[beg:end:step]  # loop through files
     myfile = Path(os.getcwd()+'/'+filename)  # build file name including path
     if myfile.is_file():
         read_calculate_plot(filename,scale_factor)
-        # end of for loop through files
+        
     dirnum+=1  # advance the counter, even if no files were found
     
 
