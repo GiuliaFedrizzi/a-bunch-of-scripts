@@ -17,42 +17,32 @@ import glob
 import seaborn as sns
 from pathlib import Path
 
+from useful_functions import * 
 
 plot_figure = 1
 #fig, axs = plt.subplots(nrows=1, ncols=1)
-dir_labels = ['020','030','040','050']   # must be even
+dir_labels = ['020','030','040','050','060','070','080','090','100']   
 # dir_labels = ['040','050','075','100','150']
-resolution = 400
+resolution = 200
 
 # some variables for the subplots:
 tot_files = len(dir_labels)  # is going to be the total number of subplots (#subplots=tot_files-1)
-ncol = int((tot_files)); nrow = 1;
+nrow = 3;
+ncol = int((tot_files)/nrow);
 fig, axs = plt.subplots(nrows=nrow, ncols=ncol)
 all_axes=axs.reshape(-1) 
 
 dir_list = []
-origin = np.array([[0, 0],[0, 0]]) # origin point
 
 for i in dir_labels:
-    dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac/fixedfrac100/size'+str(i))
+    dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/radiusSq200/size'+str(i))
     
 #fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
-first_file = 'my_experiment00010.csv'
+#first_file = 'my_experiment00010.csv'
 df_x = pd.DataFrame()
 df_y = pd.DataFrame()
 
-def getTimeStep(inputFile):
-    with open(inputFile) as iFile:
-        for num, line in enumerate(iFile,1):
-            if "Tstep" in line:
-                input_tstep = line.split(" ")[1]  # split before and after space, take the second word (value of timestep)
-                return input_tstep  
-def getViscosity(inputFile):
-    with open(inputFile) as iFile:
-        for num, line in enumerate(iFile,1):
-            if "mu_f" in line:
-                input_mu_f = line.split(" ")[1]  # split before and after space, take the second word (value of timestep)
-                return input_mu_f  
+
 
 dirnum = 0 # counter for directories
 for dir in dir_list:
@@ -65,10 +55,10 @@ for dir in dir_list:
     scale_factor = float(dir_label)/200.0# factor for scaling the axes
 
     # open the first file after melt addition to find the max P
-    myExp = pd.read_csv(first_file, header=0)
+    #myExp = pd.read_csv(first_file, header=0)
     # xmax = myExp.loc[myExp['Pressure'].idxmax(), 'x coord']
     # ymax = myExp.loc[myExp['Pressure'].idxmax(), 'y coord']
-    max_id = myExp['Pressure'].idxmax() 
+    #max_id = myExp['Pressure'].idxmax() 
     
     filename = "my_experiment00250.csv"
     #for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[2:36:5]): #[beg:end:step]
@@ -79,9 +69,12 @@ for dir in dir_list:
         #print(len(myExp))
         bb_df =  myExp[myExp['Broken Bonds']>0]   # select only those with at least one broken bond
         #print(len(bb_df))
+
+        bb_df['xcoord100'] = bb_df['x coord']*100
+        bb_df['ycoord100'] = bb_df['y coord']*100
         
         tot_bb = bb_df['Broken Bonds'].sum()   # 0th order moment
-        print("tot bb = ",tot_bb)
+        
         input_tstep = float(getTimeStep("input.txt"))
         if len(bb_df)==0:
             print("No broken bonds.")
@@ -99,11 +92,11 @@ for dir in dir_list:
 
 
         # 1st order moment: position of centre of mass (COM)
-        com_x = (bb_df['x coord']*bb_df['Broken Bonds']).sum()/tot_bb  # multiplies row by row, then sums everything
-        com_y = (bb_df['y coord']*bb_df['Broken Bonds']).sum()/tot_bb  # multiplies row by row, then sums everything
+        com_x = (bb_df['xcoord100']*bb_df['Broken Bonds']).sum()/tot_bb  # multiplies row by row, then sums everything
+        com_y = (bb_df['ycoord100']*bb_df['Broken Bonds']).sum()/tot_bb  # multiplies row by row, then sums everything
         
-        bb_df['x_coord_shifted'] = bb_df['x coord']-com_x
-        bb_df['y_coord_shifted'] = bb_df['y coord']-com_y
+        bb_df['x_coord_shifted'] = bb_df['xcoord100']-com_x
+        bb_df['y_coord_shifted'] = bb_df['ycoord100']-com_y
 
         # # get some info about the file
         # input_viscosity = float(getViscosity("input.txt"))
@@ -113,9 +106,9 @@ for dir in dir_list:
         # labelName = "t/$\mu$=" + str('{:.1e}'.format(input_tstep*file_num/input_viscosity))
 
         
-        a = ((bb_df['x coord']-com_x)**2*bb_df['Broken Bonds']).sum()#/tot_bb  # multiplies tow by row, then sums everything
-        b = ((bb_df['x coord']-com_x)*(bb_df['y coord']-com_y)*bb_df['Broken Bonds']).sum()#/tot_bb  # multiplies tow by row, then sums everything
-        c = ((bb_df['y coord']-com_y)**2*bb_df['Broken Bonds']).sum()#/tot_bb  # multiplies tow by row, then sums everything
+        a = ((bb_df['xcoord100']-com_x)**2*bb_df['Broken Bonds']).sum()/tot_bb  # multiplies tow by row, then sums everything
+        b = ((bb_df['xcoord100']-com_x)*(bb_df['ycoord100']-com_y)*bb_df['Broken Bonds']).sum()/tot_bb  # multiplies tow by row, then sums everything
+        c = ((bb_df['ycoord100']-com_y)**2*bb_df['Broken Bonds']).sum()/tot_bb  # multiplies tow by row, then sums everything
         
         # a = ((bb_df['x coord']-com_x)**2).sum()/tot_bb  # multiplies tow by row, then sums everything
         # b = ((bb_df['x coord']-com_x)*(bb_df['y coord']-com_y)).sum()/tot_bb  # multiplies tow by row, then sums everything
@@ -138,7 +131,7 @@ for dir in dir_list:
         # print("true v = ",true_v)
         #print("v = ",v)
 
-        theta_rad = np.arctan2(2*b,(a-c))/2  # orientation in rad
+        theta_rad = np.pi/2 - np.arctan2(2*b,(a-c))/2  # orientation in rad
         theta_deg = theta_rad % 180 - 90         # orientation in degrees
         # if (a-c)*math.cos(2*theta)+b*math.sin(2*theta) > 0: # it's maximising the second moment. wrong theta.
         #     theta = theta + math.pi
@@ -148,10 +141,10 @@ for dir in dir_list:
 
         if plot_figure:
             print("figure ",dirnum)
-            plt.sca(all_axes[dirnum])           
-            sns.scatterplot(data=bb_df,x="x coord",y="y coord",hue="Broken Bonds",linewidth=0,alpha=0.8,marker="h",size=0.6).set_aspect('equal')
-            # plt.arrow(0,0,v[0][0]/4,v[0][1]/4, head_width=0.03, head_length=0.03)  # first eigenvector: arrow from 0,0 (origin) to the coordinates of 1st eigv
-            # plt.arrow(0,0,v[1][0]/4,v[1][1]/4, head_width=0.03, head_length=0.03)
+            plt.sca(all_axes[dirnum])   # set the current active subplot        
+            # sns.scatterplot(data=bb_df,x="xcoord100",y="ycoord100",hue="Broken Bonds",linewidth=0,alpha=0.8,marker="h",size=0.6).set_aspect('equal')
+            sns.scatterplot(data=bb_df,x="xcoord100",y="ycoord100",hue="Broken Bonds",linewidth=0,alpha=0.8,marker="h").set_aspect('equal')
+            
             plt.plot(com_x,com_y,'.',markersize=10)
 
             x1 = com_x + math.cos(theta_rad)*0.5*min(w)
@@ -160,18 +153,26 @@ for dir in dir_list:
             y2 = com_y - math.cos(theta_rad)*0.5*max(w)
             plt.plot((com_x, x1), (com_y, y1), '-r', linewidth=2.5)
             plt.plot((com_x, x2), (com_y, y2), '-r', linewidth=2.5)
+            plt.legend([],[], frameon=False)
             #y1 = com_y - math.sin(theta_rad)*0.5*min(w)
             # plt.arrow(com_x,com_y,v[0][0]/4,v[0][1]/4, head_width=0.03, head_length=0.03)  # first eigenvector: arrow from 0,0 (origin) to the coordinates of 1st eigv
             # plt.arrow(com_x,com_y,v[1][0]/4,v[1][1]/4, head_width=0.03, head_length=0.03)
             
-        dirnum+=1 
-        # end of for loop through files
+            # end of for loop through files
+
+    dirnum+=1  # advance the counter, even if no files were found
+        
 if plot_figure:
+    fig.suptitle("t = "+str(input_tstep))
+
+    # LEGEND:
+    box = all_axes[-1].get_position()    # get the position of the plot so I can add the legend to it 
+
+    # upper left = the point that I am setting wiht the second argument
+    all_axes[-1].legend(loc='center left',bbox_to_anchor=(1.2,0.5),fancybox=True, ncol=1)   # legend for the vertical line plot
+
     plt.show()
-#g_x = sns.lineplot(data=df_x ,x="x",y="Stress (MPa)",ax=ax1,hue='time',style='scale',alpha=0.5)
-#g_y = sns.lineplot(data=df_y ,x="y",y="Stress (MPa)",ax=ax2,hue='time',style='scale',alpha=0.5)
-# g_x = sns.lineplot(data=df_x ,x="x",y="Fluid Pressure (MPa)",ax=ax1,hue='time',style='scale',alpha=0.5)
-# g_y = sns.lineplot(data=df_y ,x="y",y="Fluid Pressure (MPa)",ax=ax2,hue='time',style='scale',alpha=0.5)
+
 # #ax1.set_ylabel("Stress")
 # ax1.set_title("Horizontal Profile")
 # ax1.set_xlim([-0.06,+0.06])  # zoom in. Limits are max location +- 0.06
@@ -182,13 +183,8 @@ if plot_figure:
 # #ax2.legend()
 # ax2.set_title("Vertical Profile")
 
-# g_x.legend_.remove()
 # #fig.suptitle("$\sigma$ = "+sigma_str.replace("/sigma_","").replace("_",".")+", tstep = " + time_str.split("_")[1]) # get the part of the path that is after "myExperiments/"
 # fig.suptitle("Fluid Pressure") # get the part of the path that is after "myExperiments/"
-
-# # LEGEND:
-# # get the position of the plot so I can add the legend to it 
-# box = ax2.get_position()
 
 # # upper left = the point that I am setting wiht the second argument
 # #ax2.legend(loc='center left',bbox_to_anchor=(1.2,0.5),fancybox=True, ncol=1)   # legend for the vertical line plot

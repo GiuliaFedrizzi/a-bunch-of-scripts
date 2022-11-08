@@ -3,14 +3,21 @@ from paraview.simple import *
 #### disable automatic camera reset on 'Show'
 paraview.simple._DisableFirstRenderCameraReset()
 
-def applyTableToPoints():
-    # Properties modified on tableToPoints1
-    tableToPoints1 = TableToPoints()
-    tableToPoints1.XColumn = 'x coord'
-    tableToPoints1.YColumn = 'y coord'
-    tableToPoints1.ZColumn = 'z coord'
-    tableToPoints1.a2DPoints = 1
-    return tableToPoints1
+def applyTableToPoints(i):
+    # Properties modified on tableToPain
+    #k.
+    tableToPain = TableToPoints(Input=i)
+    #tableToPoints13 = TableToPoints(Input=nobackupscgfmyExperimentsgaussScaleFixFrac2noSize200size050)
+    tableToPain.XColumn = 'x coord'
+    tableToPain.YColumn = 'y coord'
+    tableToPain.ZColumn = 'z coord'
+    tableToPain.a2DPoints = 1
+def applyTableToPointsSingle():
+    tableToPain = TableToPoints()
+    tableToPain.XColumn = 'x coord'
+    tableToPain.YColumn = 'y coord'
+    tableToPain.ZColumn = 'z coord'
+    tableToPain.a2DPoints = 1
 
 def edit_transform_properties(transform1Display):
     # trace defaults for the display properties.
