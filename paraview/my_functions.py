@@ -217,3 +217,12 @@ def set_colormap_porosity(transform1Display):
     # Hide the scalar bar for this color map if no visible data is colored by it.
     HideScalarBarIfNotNeeded(brokenBondsLUT, renderView1)
 
+def get_scale():
+    try:
+        domain_size = float(GetActiveSource().FileName[0].split("/")[-2].replace('size',''))
+        return domain_size, 1 #  domain size = 1, found_scale = 1 (it found a scale)
+    except:
+        print("No scale found")
+        return 1.0, 0   #  domain size = 1, found_scale = 0 (it didn't find a scale)
+    else:
+        print("Scale: ",domain_size)
