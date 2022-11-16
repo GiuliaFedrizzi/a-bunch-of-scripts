@@ -22,7 +22,7 @@ plot_figure = 1
 #dir_labels = ['020','030','040']#,'050','060','070','080','090','100']   
 dir_labels = ['050','060','070']#,'080','090','100']   
 #dir_labels = ['090','100']   
-resolution = 200
+filenames = ["my_experiment00010.csv","my_experiment00020.csv","my_experiment00030.csv","my_experiment00040.csv","my_experiment00050.csv"]
 
 # some variables for the subplots:
 tot_subpl = len(dir_labels)*2  # is going to be the total number of subplots. Times two because there are two resolutions (200 and 400)
@@ -32,10 +32,10 @@ ncol = 2;
 
 dir_list = []
 
-first_part_of_path = '/nobackup/scgf/myExperiments/gaussScaleFixFrac2/'
+first_part_of_path = '/nobackup/scgf/myExperiments/gaussScaleFixFrac/'
 for i in dir_labels:
-    dir_list.append(first_part_of_path+'noSize200/size'+str(i))
-    dir_list.append(first_part_of_path+'noSize400/size'+str(i))
+    dir_list.append(first_part_of_path+'fixedfrac100res200/size'+str(i))  # res200
+    dir_list.append(first_part_of_path+'fixedfrac100/size'+str(i))        # res400
     # dir_list.append(first_part_of_path+'radiusSq400/size'+str(i))
 
 
@@ -97,18 +97,18 @@ def read_calculate_plot(filename,scale_factor,res):
     #print(cov_matrix)
 
     w, v = np.linalg.eig(cov_matrix)  # eigenvalues and eigenvectors
-    #print("eigenvalues: " + str(w)+ ", \neigenvectors: "+ str(v))
+    print("eigenvalues: " + str(w)+ ", \neigenvectors: "+ str(v))
 
     theta_rad = np.pi/2 - np.arctan2(2*cov_matrix[0][1],(cov_matrix[0][0]-cov_matrix[1][1]))/2  # orientation in rad   2*b,a-c
     theta_deg = theta_rad % 180 - 90         # orientation in degrees
     # if (a-c)*math.cos(2*theta)+b*math.sin(2*theta) > 0: # it's maximising the second moment. wrong theta.
     #     theta = theta + math.pi
 
-    #print("theta (rad) = ",theta_rad," theta (deg) = ",theta_deg)
+    print("theta (rad) = ",theta_rad," theta (deg) = ",theta_deg)
     # TO DO: weight sum by n of bb
 
     if plot_figure:
-        print("dirnum: ",dirnum)
+        #print("dirnum: ",dirnum)
         plt.sca(all_axes[int(dirnum)])   # set the current active subplot        
         # sns.scatterplot(data=bb_df,x="xcoord100",y="ycoord100",hue="Broken Bonds",linewidth=0,alpha=0.8,marker="h",size=0.6).set_aspect('equal')
         sns.scatterplot(data=bb_df,x="xcoord100",y="ycoord100",hue="Broken Bonds",linewidth=0,alpha=0.8,marker="h",size=0.3).set_aspect('equal')
@@ -139,8 +139,6 @@ def get_resolution(dir):
     else:
         return "0"
     
-
-filenames = ["my_experiment00010.csv","my_experiment00020.csv","my_experiment00030.csv","my_experiment00040.csv","my_experiment00050.csv"]
 
 # get the time step used in the simulation (do it once, from the first simulation)
 input_tstep = float(getTimeStep(dir_list[0]+"/input.txt")) 
