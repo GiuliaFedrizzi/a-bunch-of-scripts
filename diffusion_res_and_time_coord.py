@@ -54,13 +54,13 @@ from pathlib import Path
 #dir_labels = ['200','100','50']
 # dir_labels = ['400','200']  # res400.elle, res200.elle
 #dir_labels = ['fdf00','fdf01','fdf02','fdf03']  # scale 200m, 100m or 50m
-dir_labels = ['040','050','075','100','150']
-resolution = 400
+dir_labels = ['050','060','070']
+resolution = 200
 
 dir_list = []
 
 for i in dir_labels:
-    dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac/fixedfracs3/size'+str(i))
+    dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/area200/size'+str(i))
     # '/nobackup/scgf/myExperiments/gaussScaleFixFrac/fixedfraclong/size075',
     # '/nobackup/scgf/myExperiments/gaussScaleFixFrac/fixedfraclong/size100',
     # '/nobackup/scgf/myExperiments/gaussScaleFixFrac/fixedfraclong/size150',
@@ -78,7 +78,7 @@ for i in dir_labels:
 
 
 fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
-first_file = 'my_experiment00010.csv'
+first_file = 'my_experiment00100.csv'
 df_x = pd.DataFrame()
 df_y = pd.DataFrame()
 
@@ -103,13 +103,13 @@ for dir in dir_list:
     dirnum+=1 # counter for directories
     dir_label = dir_labels[dirnum-1]   # get the label that corresponds to the directory
     
-    scale_factor = float(dir_label)/200.0# factor for scaling the axes
+    scale_factor = float(dir_label)/100.0# factor for scaling the axes. Normalised by the standard size = 100
 
     # open the first file after melt addition to find the max P
     myExp = pd.read_csv(first_file, header=0)
     xmax = myExp.loc[myExp['Pressure'].idxmax(), 'x coord']
     ymax = myExp.loc[myExp['Pressure'].idxmax(), 'y coord']
-    max_id = myExp['Pressure'].idxmax() 
+    max_id = myExp['Pressure'].idxmax()   #  index of the point with the maximum pressure value
     
     offset = max_id%resolution
 
@@ -117,17 +117,17 @@ for dir in dir_list:
     # get the y coordinates of all x in range of tolerance
     x_array = myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('x coord')] 
     
-    y_array = myExp.iloc[offset::400,myExp.columns.get_loc('y coord')] # first: the point with coorinate = offset. Then every point above it (with a period of 400 = resolution) 
+    y_array = myExp.iloc[offset::resolution,myExp.columns.get_loc('y coord')] # first: the point with coorinate = offset. Then every point above it (with a period of 'resolution') 
 
-    for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[2:36:5]): #[beg:end:step]
+    for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[0:21:5]): #[beg:end:step]  set which timesteps (based on file number) to plot
         myfile = Path(os.getcwd()+'/'+filename)  # build file name including path
         if myfile.is_file():
             myExp = pd.read_csv(filename, header=0)
 
             pressure_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Pressure')] 
-            pressure_array_y = myExp.iloc[offset::400,myExp.columns.get_loc('Pressure')]
+            pressure_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Pressure')]
             stress_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Mean Stress')] 
-            stress_array_y = myExp.iloc[offset::400,myExp.columns.get_loc('Mean Stress')]
+            stress_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Mean Stress')]
             
             input_tstep = float(getTimeStep("input.txt"))
             input_viscosity = float(getViscosity("input.txt"))
@@ -154,8 +154,8 @@ g_x = sns.lineplot(data=df_x ,x="x",y="Fluid Pressure (MPa)",ax=ax1,hue='time',s
 g_y = sns.lineplot(data=df_y ,x="y",y="Fluid Pressure (MPa)",ax=ax2,hue='time',style='scale',alpha=0.5)
 #ax1.set_ylabel("Stress")
 ax1.set_title("Horizontal Profile")
-ax1.set_xlim([-0.06,+0.06])  # zoom in. Limits are max location +- 0.06
-ax2.set_xlim([-0.06,+0.06])  # zoom in. Limits are max location +- 0.06
+ax1.set_xlim([-0.1,+0.1])  # zoom in. Limits are location of max pressure +- 0.1
+ax2.set_xlim([-0.1,+0.1])  # zoom in. Limits are location of max pressure +- 0.1
 #ax1.set_ylim([1e8,1.3e8])  # zoom in.
 #ax2.set_ylim([1e8,1.3e8])  # zoom in. 
 #ax2.plot(y_array, pressure_array_y,plotStyle,label=labelName)
