@@ -2,7 +2,8 @@
 
 """ plots the cumulative number of broken bonds with increasing time
  Giulia Oct 2022
-version for gaussShearFixed
+version for gaussShearFixed, where the 'inner' directories are called 'size020', 'size030', etc
+The number of broken bonds can be normalised to account for the different size of a roken bond if 
 
 """
 # goes through multiple directories
@@ -14,16 +15,16 @@ import sys
 #timestep_dir = "tstep04_3_5e3"
 
 dir_labels = ['020','030', '040','050','060','070','080','090','100']
-resolution = 400
+resolution = 200
 
 normalise=True
 
 parent_directories = []
+first_part_of_path = '/nobackup/scgf/myExperiments/gaussScaleFixFrac2/widthscaleOnly200/size'
 
 for i in dir_labels:
-    parent_directories.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac/fixedfrac100/size'+str(i))
+    parent_directories.append(first_part_of_path+str(i))
 
-# parent_directories = ["sigma_3_0"]
 fig, axs = plt.subplots(nrows=1, ncols=1)
 
 broken_bond_string = "Broken Bonds"
@@ -61,19 +62,21 @@ def plot_bb_in_time(parent_directory):
     domain_size=parent_directory.split("/")[-1].replace("size","")
     my_label = "size = " + domain_size
     if normalise:
-        print(int(domain_size))
-        axs.plot(time_bb_array,bb_array, '--o',linewidth=1,markersize=2,label=my_label)  # ...and plot it
+        bb_array_norm = [x / (float(domain_size)) for x in bb_array]  # number of broken bonds normalised by the domain scale
+        axs.plot(time_bb_array,bb_array_norm, '--o',linewidth=1,markersize=1,label=my_label)  # ...and plot it
+        axs.set(ylabel='Number of broken bonds (normalised)')
     else:    
-        axs.plot(time_bb_array,bb_array, '--o',linewidth=1,markersize=2,label=my_label)  # ...and plot it
+        axs.plot(time_bb_array,bb_array, '--o',linewidth=1,markersize=1,label=my_label)  # ...and plot it
+        axs.set(ylabel='Number of broken bonds')
     #axs.set_xscale('log')
     #axs.set_yscale('log')
 
 for parent_directory in parent_directories:   # sigma_*
     plot_bb_in_time(parent_directory)
 
-fig_title = "Number of broken bonds (cumulative) in time\n " + "resolution =" + res_string 
+fig_title = "Number of broken bonds (cumulative) in time\n " + first_part_of_path + "*"
 
-axs.set(title=fig_title, xlabel='Time (s)', ylabel='Number of broken bonds',)
+axs.set(title=fig_title, xlabel='Time (s)')
 axs.grid(linestyle='--',alpha=0.6)#(linestyle='-', linewidth=2)
 # #axs.set_xscale('log')
 # #figure_name = parent_directory.replace("/","-")+"_time_first_bb.png"
