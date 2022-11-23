@@ -22,7 +22,7 @@ plot_figure = 1
 #dir_labels = ['020','030','040']#,'050','060','070','080','090','100']   
 dir_labels = ['050','060','070']#,'080','090','100']   
 #dir_labels = ['090','100']   
-filenames = ["my_experiment00010.csv","my_experiment00020.csv","my_experiment00030.csv","my_experiment00040.csv","my_experiment00050.csv"]
+filenames = ["my_experiment00090.csv","my_experiment00100.csv"]
 
 # some variables for the subplots:
 tot_subpl = len(dir_labels)*2  # is going to be the total number of subplots. Times two because there are two resolutions (200 and 400)
@@ -126,7 +126,8 @@ def read_calculate_plot(filename,scale_factor,res):
         plt.axhline(y=100, color='k', linestyle='-')
         plt.xlabel('x')
         plt.ylabel('y')
-        plt.xlim([25,75])
+        plt.xlim([40,60])
+        plt.ylim([85,95])
         #y1 = com_y - math.sin(theta_rad)*0.5*min(w)
         # plt.arrow(com_x,com_y,v[0][0]/4,v[0][1]/4, head_width=0.03, head_length=0.03)  # first eigenvector: arrow from 0,0 (origin) to the coordinates of 1st eigv
         # plt.arrow(com_x,com_y,v[1][0]/4,v[1][1]/4, head_width=0.03, head_length=0.03)
