@@ -14,8 +14,8 @@ import sys
 
 #timestep_dir = "tstep04_3_5e3"
 
-dir_labels = ['020','030', '040','050','060','070','080','090','100']
-resolution = 200
+#dir_labels = ['020','030', '040','050','060','070','080','090','100']
+dir_labels = ['tstep_1_1e1','tstep_2_1e2','tstep_3_1e3','tstep_4_1e4']
 
 normalise=True
 
@@ -32,7 +32,6 @@ time_string = "time is "
 
 # get the scale from the path
 scale_string = os.getcwd().split("/")[-1]
-res_string = "400"
 
 def getBrokenBondTime(lattefile):
     """ every time you find "Broken Bonds", save the number of bb present and the relative time"""
@@ -64,7 +63,7 @@ def plot_bb_in_time(parent_directory):
     if normalise:
         bb_array_norm = [x / (float(domain_size)) for x in bb_array]  # number of broken bonds normalised by the domain scale
         axs.plot(time_bb_array,bb_array_norm, '--o',linewidth=1,markersize=1,label=my_label)  # ...and plot it
-        axs.set(ylabel='Number of broken bonds (normalised)')
+        axs.set(ylabel='Number of broken bonds (normalised)',ylim=[0,20])
     else:    
         axs.plot(time_bb_array,bb_array, '--o',linewidth=1,markersize=1,label=my_label)  # ...and plot it
         axs.set(ylabel='Number of broken bonds')

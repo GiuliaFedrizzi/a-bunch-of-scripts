@@ -11,13 +11,12 @@
 import matplotlib.pyplot as plt
 import glob
 import os as os
-from joblib import Parallel, delayed
-import multiprocessing
 import sys
 
 #timestep_dir = "tstep04_3_5e3"
-sigma_dir = sys.argv[1]  # give the path of the last directory (e.g. tstep04_3_5e3). 
-tstep_dir_list = ["tstep04_3_1e3", "tstep04_3_5e3", "tstep04_4_1e4", "tstep04_4_5e4", "tstep04_5_1e5", "tstep04_5_5e5", "tstep04_6_1e6", "tstep04_6_5e6"]
+#sigma_dir = sys.argv[1]  # give the path of the last directory (e.g. tstep04_3_5e3). 
+# tstep_dir_list = ["tstep04_3_1e3", "tstep04_3_5e3", "tstep04_4_1e4", "tstep04_4_5e4", "tstep04_5_1e5", "tstep04_5_5e5", "tstep04_6_1e6", "tstep04_6_5e6"]
+tstep_dir_list = ["tstep_1_1e1", "tstep_2_1e2", "tstep_3_1e3", "tstep_4_1e4"]
 
 fig, axs = plt.subplots(nrows=1, ncols=1)
 broken_bond_string = "Broken Bonds"
@@ -69,19 +68,17 @@ def plot_bb_in_time(timestep_dir):
     #axs.set_yscale('log')
     #os.chdir("../..")
 
-os.chdir(sigma_dir)
-os.chdir(sigma_dir.replace("/","") + "_gaussTime05")  # build the path
+#os.chdir(sigma_dir)
+#os.chdir(sigma_dir.replace("/","") + "_gaussTime05")  # build the path
 for timestep_dir in tstep_dir_list:   # tstep_*
     plot_bb_in_time(timestep_dir)
 
-fig_title = "Number of broken bonds (cumulative) in time for different time steps, \n$\sigma$ = " + sigma_dir.split("_")[1] + "." + sigma_dir.split("_")[2].replace("/","") + "\nscale = "+scale_string
-axs.set(title=fig_title, xlabel='Time (s)', ylabel='Number of broken bonds')
+fig_title = "Number of broken bonds (cumulative) in time for different time steps, \n"+str(os.getcwd())#$\sigma$ = " + sigma_dir.split("_")[1] + "." + sigma_dir.split("_")[2].replace("/","") + "\nscale = "+scale_string
+axs.set(title=fig_title, xlabel='Time (s)', ylabel='Number of broken bonds',ylim=[0,2000])
 axs.grid(linestyle='--',alpha=0.6)#(linestyle='-', linewidth=2)
 axs.set_xscale('log')
 # #figure_name = parent_directory.replace("/","-")+"_time_first_bb.png"
 # #plt.savefig(figure_name, dpi=600)
 plt.legend()
 plt.show()
-
-
 
