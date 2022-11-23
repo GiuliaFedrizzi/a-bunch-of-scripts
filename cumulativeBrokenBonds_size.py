@@ -14,8 +14,8 @@ import sys
 
 #timestep_dir = "tstep04_3_5e3"
 
-#dir_labels = ['020','030', '040','050','060','070','080','090','100']
-dir_labels = ['tstep_1_1e1','tstep_2_1e2','tstep_3_1e3','tstep_4_1e4']
+dir_labels = ['020','030', '040','050','060','070','080','090','100']
+resolution = 200
 
 normalise=True
 
