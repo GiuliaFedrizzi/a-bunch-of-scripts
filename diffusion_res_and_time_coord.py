@@ -54,13 +54,14 @@ from pathlib import Path
 #dir_labels = ['200','100','50']
 # dir_labels = ['400','200']  # res400.elle, res200.elle
 #dir_labels = ['fdf00','fdf01','fdf02','fdf03']  # scale 200m, 100m or 50m
-dir_labels = ['050','060','070']
+dir_labels = ['020','030','040','050','060','070','080','090','100']
+#dir_labels = ['060','070','080','090','100']
 resolution = 200
 
 dir_list = []
 
 for i in dir_labels:
-    dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/area200/size'+str(i))
+    dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/sxx_rad200/size'+str(i))
     # '/nobackup/scgf/myExperiments/gaussScaleFixFrac/fixedfraclong/size075',
     # '/nobackup/scgf/myExperiments/gaussScaleFixFrac/fixedfraclong/size100',
     # '/nobackup/scgf/myExperiments/gaussScaleFixFrac/fixedfraclong/size150',
@@ -78,7 +79,7 @@ for i in dir_labels:
 
 
 fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
-first_file = 'my_experiment00100.csv'
+first_file = 'my_experiment00200.csv'
 df_x = pd.DataFrame()
 df_y = pd.DataFrame()
 
@@ -111,7 +112,7 @@ for dir in dir_list:
     ymax = myExp.loc[myExp['Pressure'].idxmax(), 'y coord']
     max_id = myExp['Pressure'].idxmax()   #  index of the point with the maximum pressure value
     
-    offset = max_id%resolution
+    offset = max_id%resolution   # so that they are all centered around 0 on the x axis
 
     # find the x coordinates that correspond to the max pressure
     # get the y coordinates of all x in range of tolerance
@@ -119,7 +120,7 @@ for dir in dir_list:
     
     y_array = myExp.iloc[offset::resolution,myExp.columns.get_loc('y coord')] # first: the point with coorinate = offset. Then every point above it (with a period of 'resolution') 
 
-    for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[0:21:5]): #[beg:end:step]  set which timesteps (based on file number) to plot
+    for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[0:5:1]): #[beg:end:step]  set which timesteps (based on file number) to plot
         myfile = Path(os.getcwd()+'/'+filename)  # build file name including path
         if myfile.is_file():
             myExp = pd.read_csv(filename, header=0)
@@ -128,6 +129,10 @@ for dir in dir_list:
             pressure_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Pressure')]
             stress_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Mean Stress')] 
             stress_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Mean Stress')]
+            sigma1_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Sigma_1')] 
+            sigma1_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Sigma_1')]
+            sigma2_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Sigma_2')] 
+            sigma2_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Sigma_2')]
             
             input_tstep = float(getTimeStep("input.txt"))
             input_viscosity = float(getViscosity("input.txt"))
@@ -135,36 +140,43 @@ for dir in dir_list:
             # name of the line
             labelName = "t/$\mu$=" + str('{:.1e}'.format(input_tstep*file_num/input_viscosity))
 
-            # x                  shift array by the max value so that the maximum is at zero and scale it 
-            #data1_x = {'x': (x_array - ymax)*scale_factor,'Fluid Pressure': pressure_array_x, 'scale': dir_label,'time': labelName}  # save temporarily
+            # y                  shift array by the max value so that the maximum is at zero and scale it 
+            #data1_y = {'y': (y_array - ymax)*scale_factor,'Sigma_2 (MPa)': sigma1_array_y/1e6, 'scale': dir_label,'time': labelName}  # save temporarily
+            data1_y = {'y': (y_array - ymax)*scale_factor,'Sigma_1 (MPa)': sigma1_array_y/1e6, 'scale': dir_label,'time': labelName}  # save temporarily
             #data1_y = {'y': (y_array - ymax)*scale_factor,'Stress (MPa)': stress_array_y/1e6, 'scale': dir_label,'time': labelName}  # save temporarily
-            data1_y = {'y': (y_array - ymax)*scale_factor,'Fluid Pressure (MPa)': pressure_array_y/1e6, 'scale': dir_label,'time': labelName}  # save temporarily
+            #data1_y = {'y': (y_array - ymax)*scale_factor,'Fluid Pressure (MPa)': pressure_array_y/1e6, 'scale': dir_label,'time': labelName}  # save temporarily
             df1_y = pd.DataFrame(data1_y)
             df_y = pd.concat([df_y,df1_y], ignore_index=True) # append to old one
 
-            # y                  shift array by the max value so that the maximum is at zero
+            # x                  shift array by the max value so that the maximum is at zero
             #data1_y = {'y': (y_array - xmax)*scale_factor,'Fluid Pressure': pressure_array_y, 'scale': dir_label,'time': labelName}  # save temporarily
-            data1_x = {'x': (x_array - xmax)*scale_factor,'Fluid Pressure (MPa)': pressure_array_x/1e6, 'scale': dir_label,'time': labelName}  # save temporarily
+            #data1_x = {'x': (x_array - xmax)*scale_factor,'Stress (MPa)': stress_array_x/1e6, 'scale': dir_label,'time': labelName}  # save temporarily
+            data1_x = {'x': (x_array - xmax)*scale_factor,'Sigma_1 (MPa)': sigma1_array_x/1e6, 'scale': dir_label,'time': labelName}  # save temporarily
+            #data1_x = {'x': (x_array - xmax)*scale_factor,'Sigma_2 (MPa)': sigma1_array_x/1e6, 'scale': dir_label,'time': labelName}  # save temporarily
+            #data1_x = {'x': (x_array - xmax)*scale_factor,'Fluid Pressure (MPa)': pressure_array_x/1e6, 'scale': dir_label,'time': labelName}  # save temporarily
             df1_x = pd.DataFrame(data1_x)
             df_x = pd.concat([df_x,df1_x], ignore_index=True) # append to old one
 
-#g_x = sns.lineplot(data=df_x ,x="x",y="Stress (MPa)",ax=ax1,hue='time',style='scale',alpha=0.5)
-#g_y = sns.lineplot(data=df_y ,x="y",y="Stress (MPa)",ax=ax2,hue='time',style='scale',alpha=0.5)
-g_x = sns.lineplot(data=df_x ,x="x",y="Fluid Pressure (MPa)",ax=ax1,hue='time',style='scale',alpha=0.5)
-g_y = sns.lineplot(data=df_y ,x="y",y="Fluid Pressure (MPa)",ax=ax2,hue='time',style='scale',alpha=0.5)
+g_x = sns.lineplot(data=df_x ,x="x",y='Sigma_1 (MPa)',ax=ax1,hue='time',style='scale',alpha=0.5)
+g_y = sns.lineplot(data=df_y ,x="y",y='Sigma_1 (MPa)',ax=ax2,hue='time',style='scale',alpha=0.5)
+#g_x = sns.lineplot(data=df_x ,x="x",y="Fluid Pressure (MPa)",ax=ax1,hue='time',style='scale',alpha=0.5)
+#g_y = sns.lineplot(data=df_y ,x="y",y="Fluid Pressure (MPa)",ax=ax2,hue='time',style='scale',alpha=0.5)
 #ax1.set_ylabel("Stress")
 ax1.set_title("Horizontal Profile")
-ax1.set_xlim([-0.1,+0.1])  # zoom in. Limits are location of max pressure +- 0.1
+ax1.set_xlim([-0.1,+0.1])  # zoom in. Limits are (location of max pressure) +- 0.1
 ax2.set_xlim([-0.1,+0.1])  # zoom in. Limits are location of max pressure +- 0.1
-#ax1.set_ylim([1e8,1.3e8])  # zoom in.
+#ax1.set_ylim([-34,-28.5])  # zoom in.
+#x2.set_ylim([-34,-28.5])  # zoom in.
+#ax2.set_ylim([1e8,1.3e8])  # zoom in. 
 #ax2.set_ylim([1e8,1.3e8])  # zoom in. 
 #ax2.plot(y_array, pressure_array_y,plotStyle,label=labelName)
 #ax2.legend()
 ax2.set_title("Vertical Profile")
 
 g_x.legend_.remove()
+fig.suptitle(os.getcwd()) # get the part of the path that is after "myExperiments/"
 #fig.suptitle("$\sigma$ = "+sigma_str.replace("/sigma_","").replace("_",".")+", tstep = " + time_str.split("_")[1]) # get the part of the path that is after "myExperiments/"
-fig.suptitle("Fluid Pressure") # get the part of the path that is after "myExperiments/"
+#fig.suptitle("Fluid Pressure") # get the part of the path that is after "myExperiments/"
 
 # LEGEND:
 # get the position of the plot so I can add the legend to it 

@@ -3,7 +3,8 @@
 """ plots the cumulative number of broken bonds with increasing time
  Giulia Oct 2022
 version for gaussShearFixed, where the 'inner' directories are called 'size020', 'size030', etc
-The number of broken bonds can be normalised to account for the different size of a roken bond if 
+The number of broken bonds can be normalised to account for the different size of a broken bond 
+if normalise=True is set 
 
 """
 # goes through multiple directories
@@ -20,7 +21,7 @@ resolution = 200
 normalise=True
 
 parent_directories = []
-first_part_of_path = '/nobackup/scgf/myExperiments/gaussScaleFixFrac2/widthscaleOnly200/size'
+first_part_of_path = '/nobackup/scgf/myExperiments/gaussScaleFixFrac2/rr_only200/size'
 
 for i in dir_labels:
     parent_directories.append(first_part_of_path+str(i))
@@ -61,9 +62,9 @@ def plot_bb_in_time(parent_directory):
     domain_size=parent_directory.split("/")[-1].replace("size","")
     my_label = "size = " + domain_size
     if normalise:
-        bb_array_norm = [x / (float(domain_size)) for x in bb_array]  # number of broken bonds normalised by the domain scale
+        bb_array_norm = [x / (float(domain_size)**2) for x in bb_array]  # number of broken bonds normalised by the domain scale
         axs.plot(time_bb_array,bb_array_norm, '--o',linewidth=1,markersize=1,label=my_label)  # ...and plot it
-        axs.set(ylabel='Number of broken bonds (normalised)',ylim=[0,20])
+        axs.set(ylabel='Number of broken bonds (normalised)')#,ylim=[0,2.5])
     else:    
         axs.plot(time_bb_array,bb_array, '--o',linewidth=1,markersize=1,label=my_label)  # ...and plot it
         axs.set(ylabel='Number of broken bonds')

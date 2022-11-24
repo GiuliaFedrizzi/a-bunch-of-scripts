@@ -22,7 +22,7 @@ plot_figure = 1
 #dir_labels = ['020','030','040']#,'050','060','070','080','090','100']   
 dir_labels = ['050','060','070']#,'080','090','100']   
 #dir_labels = ['090','100']   
-filenames = ["my_experiment00090.csv","my_experiment00100.csv"]
+filenames = ["my_experiment04200.csv","my_experiment04900.csv"]
 
 # some variables for the subplots:
 tot_subpl = len(dir_labels)*2  # is going to be the total number of subplots. Times two because there are two resolutions (200 and 400)
@@ -32,10 +32,10 @@ ncol = 2;
 
 dir_list = []
 
-first_part_of_path = '/nobackup/scgf/myExperiments/gaussScaleFixFrac/'
+first_part_of_path = '/nobackup/scgf/myExperiments/gaussScaleFixFrac2/'
 for i in dir_labels:
-    dir_list.append(first_part_of_path+'fixedfrac100res200/size'+str(i))  # res200
-    dir_list.append(first_part_of_path+'fixedfrac100/size'+str(i))        # res400
+    dir_list.append(first_part_of_path+'sxx_rad200/size'+str(i))  # res200
+    dir_list.append(first_part_of_path+'sxx_rad400/size'+str(i))        # res400
     # dir_list.append(first_part_of_path+'radiusSq400/size'+str(i))
 
 
