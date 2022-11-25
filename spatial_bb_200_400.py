@@ -17,6 +17,7 @@ from pathlib import Path
 import re   # regex
 
 from useful_functions import * 
+from useful_functions_moments import *
 
 plot_figure = 1
 #dir_labels = ['020','030','040']#,'050','060','070','080','090','100']   
@@ -32,40 +33,14 @@ ncol = 2;
 
 dir_list = []
 
-first_part_of_path = '/nobackup/scgf/myExperiments/gaussScaleFixFrac2/'
+first_part_of_path = '/nobackup/scgf/myExperiments/gaussScaleFixFrac2/sxx_rad'
 for i in dir_labels:
-    dir_list.append(first_part_of_path+'sxx_rad200/size'+str(i))  # res200
-    dir_list.append(first_part_of_path+'sxx_rad400/size'+str(i))        # res400
+    dir_list.append(first_part_of_path+'200/size'+str(i))        # res200
+    dir_list.append(first_part_of_path+'400/size'+str(i))        # res400
     # dir_list.append(first_part_of_path+'radiusSq400/size'+str(i))
 
 
-def build_cov_matrix(bb_df,tot_bb):
-    """ Calculate the first order moment = centre of mass (com_x and com_y are the coordinates),
-    build the covariant matrix from the broken bonds dataframe
-     """
 
-    cov_matrix = np.empty([2,2])  # initialise covariant matrix. 2x2
-    
-    # 1st order moment: position of centre of mass (COM)
-    com_x = (bb_df['xcoord100']*bb_df['Broken Bonds']).sum()/tot_bb  # multiplies row by row, then sums everything
-    com_y = (bb_df['ycoord100']*bb_df['Broken Bonds']).sum()/tot_bb  # multiplies row by row, then sums everything
-    
-    #bb_df['x_coord_shifted'] = bb_df['xcoord100']-com_x
-    #bb_df['y_coord_shifted'] = bb_df['ycoord100']-com_y
-    a = ((bb_df['xcoord100']-com_x)**2*bb_df['Broken Bonds']).sum()/tot_bb  # multiplies tow by row, then sums everything
-    b = ((bb_df['xcoord100']-com_x)*(bb_df['ycoord100']-com_y)*bb_df['Broken Bonds']).sum()/tot_bb  # multiplies tow by row, then sums everything
-    c = ((bb_df['ycoord100']-com_y)**2*bb_df['Broken Bonds']).sum()/tot_bb  # multiplies tow by row, then sums everything
-    
-    # a = ((bb_df['x coord']-com_x)**2).sum()/tot_bb  # multiplies tow by row, then sums everything
-    # b = ((bb_df['x coord']-com_x)*(bb_df['y coord']-com_y)).sum()/tot_bb  # multiplies tow by row, then sums everything
-    # c = ((bb_df['y coord']-com_y)**2).sum()/tot_bb  # multiplies tow by row, then sums everything
-    
-    cov_matrix[0][0]=a
-    cov_matrix[0][1]=b
-    cov_matrix[1][0]=b
-    cov_matrix[1][1]=c
-
-    return cov_matrix,com_x,com_y
 
 def read_calculate_plot(filename,scale_factor,res):
     """
@@ -111,7 +86,7 @@ def read_calculate_plot(filename,scale_factor,res):
         #print("dirnum: ",dirnum)
         plt.sca(all_axes[int(dirnum)])   # set the current active subplot        
         # sns.scatterplot(data=bb_df,x="xcoord100",y="ycoord100",hue="Broken Bonds",linewidth=0,alpha=0.8,marker="h",size=0.6).set_aspect('equal')
-        sns.scatterplot(data=bb_df,x="xcoord100",y="ycoord100",hue="Broken Bonds",linewidth=0,alpha=0.8,marker="h",size=0.3).set_aspect('equal')
+        sns.scatterplot(data=bb_df,x="xcoord100",y="ycoord100",hue="Broken Bonds",linewidth=0,alpha=0.8,marker="h",size=0.3,vmin=0, vmax=6).set_aspect('equal')
         
         plt.plot(com_x,com_y,'.',markersize=10)
 
@@ -131,14 +106,6 @@ def read_calculate_plot(filename,scale_factor,res):
         #y1 = com_y - math.sin(theta_rad)*0.5*min(w)
         # plt.arrow(com_x,com_y,v[0][0]/4,v[0][1]/4, head_width=0.03, head_length=0.03)  # first eigenvector: arrow from 0,0 (origin) to the coordinates of 1st eigv
         # plt.arrow(com_x,com_y,v[1][0]/4,v[1][1]/4, head_width=0.03, head_length=0.03)
-
-def get_resolution(dir):
-    if "200" in dir:
-        return "200"
-    elif "400" in dir:
-        return "400"
-    else:
-        return "0"
     
 
 # get the time step used in the simulation (do it once, from the first simulation)
@@ -178,7 +145,7 @@ for filename in filenames:
         # upper left = the point that I am setting wiht the second argument
         all_axes[-1].legend(loc='center left',bbox_to_anchor=(1.1,0.5),fancybox=True, ncol=1)   # legend for the vertical line plot
         plt.tight_layout()
-        fig_name = first_part_of_path+"fixedfrac2_radiusSq200_400_"+''.join(dir_labels)+"t"+str(timestep_number)+".png" # join together all elements of the list of sizes (directories)
+        fig_name = first_part_of_path+''.join(dir_labels)+"t"+str(timestep_number)+".png" # join together all elements of the list of sizes (directories)
         #plt.savefig(fig_name, dpi=600)#,transparent=True)
         plt.show()
 
@@ -190,7 +157,6 @@ for filename in filenames:
 # #ax2.legend(loc='center left',bbox_to_anchor=(1.2,0.5),fancybox=True, ncol=1)   # legend for the vertical line plot
 # ax2.legend(fancybox=True, ncol=1)   # legend for the vertical line plot
 # # save:
-# #os.chdir('/nobackup/scgf/myExperiments/gaussScale')
 # #plt.savefig("gaussScale50-100-200_diff_hrz-vrt.png", dpi=600,transparent=True)
 # #plt.tight_layout()
 # plt.show()
