@@ -19,15 +19,13 @@ import re   # regex
 from useful_functions import * 
 from useful_functions_moments import *
 
+# options to set:
 plot_figure = 1
-#dir_labels = ['020','030','040']#,'050','060','070','080','090','100']   
-dir_label = '020'#,'080','090','100']   
-#dir_labels = ['090','100']   
-filename = "my_experiment07000.csv"
+dir_label = '100'
+filename = "my_experiment00130.csv"
+first_part_of_path = '/nobackup/scgf/myExperiments/gaussScaleFixFrac/fixedfrac100res200/'
 
-
-first_part_of_path = '/nobackup/scgf/myExperiments/gaussScaleFixFrac2/sxx_rad200'
-dir = first_part_of_path+'/size'+str(dir_label)        # res200
+dir = first_part_of_path+'size'+str(dir_label)        # res200
 
 
 def read_calculate_plot(filename,scale_factor,res):
@@ -126,10 +124,11 @@ if plot_figure:
     # upper left = the point that I am setting wiht the second argument
     #all_axes[-1].legend(loc='center left',bbox_to_anchor=(1.1,0.5),fancybox=True, ncol=1)   # legend for the vertical line plot
     plt.tight_layout()
-    fig_name = "ssx_rad200_py_"+dir_label+"_bb_"+str(timestep_number)+".png" # join together all elements of the list of sizes (directories)
-    # ssx_rad200_py_s060_bb_6900
+    fig_name = first_part_of_path.split('/')[-2]+"_py_"+dir_label+"_bb_"+str(timestep_number)+".png" # join together all elements of the list of sizes (directories)
+    # first_part_of_path -> take the second to last part (parts are separated by "/"). py because image is made with python. bb = broken bonds
+    # e.g. ssx_rad200_py_060_bb_6900
     os.chdir('..')  # back to the original folder
-    #plt.savefig(fig_name, dpi=150)#,transparent=True)
+    plt.savefig(fig_name, dpi=150)#,transparent=True)
     plt.show()
 
 
