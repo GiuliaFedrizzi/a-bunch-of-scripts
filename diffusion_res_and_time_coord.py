@@ -30,7 +30,6 @@ finds the max P, then uses the id of that point to get the coordinates of the po
 
 # I use this ^ to run python in VS code in interactive mode
 import pandas as pd
-from matplotlib import colors
 import matplotlib.pyplot as plt
 import numpy as np
 import math
@@ -51,7 +50,8 @@ from useful_functions import *
 
 
 # dir_labels = ['400','200']  # res400.elle, res200.elle
-dir_labels = ['020','030','040','050','060','070','080','090','100']
+# dir_labels = ['020','030','040','050','060','070','080','090','100']
+dir_labels = ['200','300','400','500','600','700','800','900','1000']
 # dir_labels = ['100']
 #dir_labels = ['01','03','05','07','09','11','13','15','17','19']
 #dir_labels = ['11']#,'03','05','07','09','11','13','15','17','19']
@@ -61,7 +61,7 @@ resolution = 200
 dir_list = []
 
 for i in dir_labels:
-    dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/g2_13_rad_wGrav200/size'+str(i))
+    dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/g2_15_large10NoGrav200/size'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/g2_02_trueGrad400/size'+str(i))
     
@@ -110,22 +110,22 @@ for dir in dir_list:
             # pressure_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Pressure')]
             # poro_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Porosity')] 
             # poro_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Porosity')]
-            # stress_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Mean Stress')] 
-            # stress_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Mean Stress')]
+            stress_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Mean Stress')] 
+            stress_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Mean Stress')]
             # sigma1_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Sigma_1')] 
             # sigma1_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Sigma_1')]
             # sigma2_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Sigma_2')] 
             # sigma2_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Sigma_2')]
             # FPx_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('F_P_x')] 
             # FPy_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('F_P_y')]
-            # real_radius =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('real_radius')] 
             # pf_grad_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('pf_grad_x')] 
             # pf_grad_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('pf_grad_y')]
             # box_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('fluid_box')] 
             # box_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('fluid_box')]
-            # real_radius_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('real_radius')] 
-            grav_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Gravity')]
-            grav_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Gravity')] 
+            # real_radius_x = myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('real_radius')] 
+            # real_radius_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('real_radius')]
+            # grav_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Gravity')]
+            # grav_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Gravity')] 
             # print(dir_label,str(pf_grad_x[pf_grad_x>0].mean()),str(pf_grad_y[pf_grad_y>0].mean()))
             
             input_tstep = float(getTimeStep("input.txt"))
@@ -139,11 +139,12 @@ for dir in dir_list:
             # data1_y = {'y': (y_array - ymax)*scale_factor,'F_P_y': FPy_array_y, 'scale': dir_label,'time': labelName}  # save temporarily
             # data1_y = {'y': (y_array - ymax)*scale_factor,'Sigma_1 (MPa)': sigma1_array_y/1e6, 'scale': dir_label,'time': labelName}  # save temporarily
             # data1_y = {'y': (y_array - ymax)*scale_factor,'P Gradient': pf_grad_y, 'scale': dir_label,'time': labelName}  # save temporarily
-            # data1_y = {'y': (y_array - ymax)*scale_factor,'Mean Stress (MPa)': stress_array_y/1e6, 'scale': dir_label,'time': labelName}  # save temporarily
+            data1_y = {'y': (y_array - ymax)*scale_factor,'Mean Stress (MPa)': stress_array_y/1e6, 'scale': dir_label,'time': labelName}  # save temporarily
             # data1_y = {'y': (y_array - ymax)*scale_factor,'Fluid Pressure (MPa)': pressure_array_y/1e6, 'scale': dir_label,'time': labelName}  # save temporarily
             # data1_y = {'y': (y_array - ymax)*scale_factor,'box': box_y, 'Porosity': poro_array_y, 'scale': dir_label,'time': labelName}  # save temporarily
             # data1_y = {'y': (y_array - ymax)*scale_factor,'Porosity': poro_array_y, 'scale': dir_label,'time': labelName}  # save temporarily
-            data1_y = {'y': (y_array - ymax)*scale_factor,'Gravity': grav_y, 'scale': dir_label,'time': labelName}  # save temporarily
+            # data1_y = {'y': (y_array - ymax)*scale_factor,'Gravity': grav_y, 'scale': dir_label,'time': labelName}  # save temporarily
+            # data1_y = {'y': (y_array - ymax)*scale_factor,'real_radius': real_radius_y, 'scale': dir_label,'time': labelName}  # save temporarily
             df1_y = pd.DataFrame(data1_y)
             df_y = pd.concat([df_y,df1_y], ignore_index=True) # append to old one
 
@@ -152,16 +153,17 @@ for dir in dir_list:
             # data1_x = {'x': (x_array - xmax)*scale_factor,'P Gradient': pf_grad_x, 'scale': dir_label,'time': labelName}  # save temporarily
             # data1_x = {'x': (x_array - xmax)*scale_factor,'Sigma_1': sigma1_array_x, 'scale': dir_label,'time': labelName}  # save temporarily
             # data1_x = {'x': (x_array - xmax)*scale_factor,'Sigma_1 (MPa)': sigma1_array_x/1e6, 'scale': dir_label,'time': labelName}  # save temporarily
-            # data1_x = {'x': (x_array - xmax)*scale_factor,'Mean Stress (MPa)': stress_array_x/1e6, 'scale': dir_label,'time': labelName}  # save temporarily
+            data1_x = {'x': (x_array - xmax)*scale_factor,'Mean Stress (MPa)': stress_array_x/1e6, 'scale': dir_label,'time': labelName}  # save temporarily
             # data1_x = {'x': (x_array - xmax)*scale_factor,'Fluid Pressure (MPa)': pressure_array_x/1e6, 'scale': dir_label,'time': labelName}  # save temporarily
             # data1_x = {'x': (x_array - xmax)*scale_factor,'box': box_x, 'scale': dir_label,'time': labelName}  # save temporarily
             # data1_x = {'x': (x_array - xmax)*scale_factor,'Porosity': poro_array_x, 'scale': dir_label,'time': labelName}  # save temporarily
-            data1_x = {'x': (x_array - xmax)*scale_factor,'Gravity': grav_x, 'scale': dir_label,'time': labelName}  # save temporarily
+            # data1_x = {'x': (x_array - xmax)*scale_factor,'real_radius': real_radius_x, 'scale': dir_label,'time': labelName}  # save temporarily
+            # data1_x = {'x': (x_array - xmax)*scale_factor,'Gravity': grav_x, 'scale': dir_label,'time': labelName}  # save temporarily
             df1_x = pd.DataFrame(data1_x)
             df_x = pd.concat([df_x,df1_x], ignore_index=True) # append to old one
 
-g_x = sns.lineplot(data=df_x ,x="x",y='Gravity',ax=ax1,hue='time',style='scale',alpha=0.5)  # or sns.scatterplot
-g_y = sns.lineplot(data=df_y ,x="y",y='Gravity',ax=ax2,hue='time',style='scale',alpha=0.5)
+g_x = sns.lineplot(data=df_x ,x="x",y='Mean Stress (MPa)',ax=ax1,hue='time',style='scale',alpha=0.5)  # or sns.scatterplot
+g_y = sns.lineplot(data=df_y ,x="y",y='Mean Stress (MPa)',ax=ax2,hue='time',style='scale',alpha=0.5)
 # ax3 = g_y.twinx()
 # g_y_1 = sns.lineplot(data=df_y ,x="y",y='F_P_y',ax=ax3,hue='time',markers=True,alpha=0.5)
 # g_y_1 = sns.scatterplot(data=df_y ,x="y",y='Porosity',ax=ax3,hue='time',alpha=0.5)
@@ -173,7 +175,6 @@ ax1.set_xlim([-0.12,+0.12])  # zoom in. Limits are (location of max pressure) +-
 ax2.set_xlim([-0.12,+0.12])  # zoom in. Limits are location of max pressure +- 0.1
 # ax1.set_xlim([-0.08,+0.08])  # zoom in. Limits are (location of max pressure) +- 0.1
 # ax2.set_xlim([-0.08,0.08])  # zoom in. Limits are location of max pressure +- 0.1
-# ax2.set_ylim([60000,80000])  # zoom in.
 ax2.set_title("Vertical Profile")
 
 # g_x.legend_.remove()

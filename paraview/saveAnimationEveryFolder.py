@@ -263,52 +263,6 @@ annotateTimeFilter1.Scale = (time_step_num*frequency)   # time between timesteps
 annotateTimeFilter1Display.WindowLocation = 'AnyLocation'
 
 renderView1.Update()
-# ------- POROSITY viz --------
-# set properties for porosity
-# porosityLUT = GetColorTransferFunction('Porosity')
-# porosityLUTColorBar = GetScalarBar(porosityLUT, renderView1)
-
-# # Properties modified on porosityLUTColorBar
-# porosityLUTColorBar.TitleBold = 1
-# porosityLUTColorBar.TitleFontSize = 21
-# porosityLUTColorBar.LabelBold = 1
-# porosityLUTColorBar.LabelFontSize = 20
-
-# # Properties modified on porosityLUTColorBar
-# porosityLUTColorBar.AutomaticLabelFormat = 0
-# porosityLUTColorBar.RangeLabelFormat = '%-#6.1g'
-
-# # Properties modified on porosityLUTColorBar
-# porosityLUTColorBar.AutomaticLabelFormat = 1
-
-# # Properties modified on porosityLUTColorBar
-# porosityLUTColorBar.Title = 'Porosity'
-# porosityLUTColorBar.ComponentTitle = '\nMelt Fraction'
-
-# # change scalar bar placement
-# porosityLUTColorBar.WindowLocation = 'AnyLocation'
-# porosityLUTColorBar.Position = [0.7700414230019493, 0.35016025641025644]
-# porosityLUTColorBar.ScalarBarLength = 0.33
-
-# ColorBy(glyph1Display,('POINTS','Porosity'))
-
-# # Rescale - set limits
-# porosityLUT.RescaleTransferFunction(0.02, 0.3)
-
-# # get opacity transfer function/opacity map for 'Porosity'
-# porosityPWF = GetOpacityTransferFunction('Porosity')
-
-# # Rescale transfer function
-# porosityPWF.RescaleTransferFunction(0.02, 0.3)
-
-# # -----------
-
-# # save animation
-# pathAndName = thisDirectory+'/animation_porosity.png'
-# SaveAnimation(pathAndName, renderView1, ImageResolution=[2054, 1248],
-#     FrameWindow=rangeForAnimation, 
-#     # PNG options
-#     SuffixFormat='_%05d')
 
 # ------ start broken bonds viz map -------
 # get color transfer function/color map for 'BrokenBonds'
