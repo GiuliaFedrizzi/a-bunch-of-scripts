@@ -4,10 +4,18 @@ from paraview.simple import *
 import glob
 import os
 import time
+import re
 # add the path to directory with macros to the sys path
 sys.path.append('/home/home01/scgf/myscripts/paraview')  # change if path to my_functions.py is different
 
 from my_functions import * 
+
+def get_file_number(fileName):
+    searchResult = re.search("([0-9]{5})",fileName)
+    if searchResult is None:
+        raise Exception("File name formatting incorrect")
+    return int(searchResult.group())
+
 
 #### disable automatic camera reset on 'Show'
 paraview.simple._DisableFirstRenderCameraReset()
@@ -20,13 +28,29 @@ thisDirectory = os.getcwd()
 
 # ======== OPEN FILES ================
 # find files
-allFiles = []
-for i in sorted(glob.glob("my_experiment*.csv")):
-    allFiles.append(os.getcwd() + "/" +i)
-    
-numberOfFiles = len(allFiles)
+allInputFiles = []
+latestFile = None 
 
-rangeForAnimation = [0,numberOfFiles-1] # from 0 to n-1, because 0 is included (and the last number too)
+
+sortedInputFiles = sorted(glob.glob("my_experiment*.csv"))
+for i in sortedInputFiles:
+    fileName = os.getcwd() + "/" +i
+    allInputFiles.append(fileName)
+
+
+
+allOutputFiles = []
+for i in sorted(glob.glob("a_porosity_*.png")):
+    allOutputFiles.append(os.getcwd() + "/" +i)
+    
+numberOfFiles = len(allInputFiles)
+
+if len(allOutputFiles) == 0:
+    rangeForAnimation = [0,numberOfFiles-1]# from 0 to n-1, because 0 is included (and the last number too)
+else:
+    latestOutputFileNumber = get_file_number(allOutputFiles[len(allOutputFiles)-1])
+    allInputFiles = allInputFiles[latestOutputFileNumber:]
+    rangeForAnimation = [latestOutputFileNumber + 1,numberOfFiles - 1]
 
 
 # ========== GET THE TIMESTEP ==========
@@ -57,7 +81,7 @@ print("frequency when files were saved: " + str(frequency))
 # =========== PARAVIEW STUFF ========
 
 # create a new 'CSV Reader'
-my_experiment = CSVReader(FileName=allFiles)
+my_experiment = CSVReader(FileName=allInputFiles)
 
 # get animation scene
 animationScene1 = GetAnimationScene()
@@ -121,7 +145,11 @@ renderView1.Update()
 annotateTimeFilter1 = AnnotateTimeFilter(registrationName='AnnotateTimeFilter1', Input=transform1)
 annotateTimeFilter1Display = Show(annotateTimeFilter1, renderView1)#, 'TextSourceRepresentation')
 annotateTimeFilter1.Format = 'Time (s): %9.2e'
-annotateTimeFilter1.Shift = 0   # first timestep
+# .........................
+if len(allOutputFiles) == 0:
+    annotateTimeFilter1.Shift = 0   # first timestep
+else:
+    annotateTimeFilter1.Shift = (latestOutputFileNumber + 1)*frequency  # if there are already pngs, shift the time
 annotateTimeFilter1.Scale = (time_step_num*frequency)   # time between timesteps, extracted from input.txt, times the frequency for saving files
 # location of filter
 annotateTimeFilter1Display.WindowLocation = 'AnyLocation'
