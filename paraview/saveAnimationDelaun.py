@@ -8,7 +8,9 @@ import re
 # add the path to directory with macros to the sys path
 sys.path.append('/home/home01/scgf/myscripts/paraview')  # change if path to my_functions.py is different
 
+print(os.getcwd())
 from my_functions import * 
+import paravParam
 
 def get_file_number(fileName):
     searchResult = re.search("([0-9]{5})",fileName)
@@ -28,29 +30,35 @@ thisDirectory = os.getcwd()
 
 # ======== OPEN FILES ================
 # find files
-allInputFiles = []
+allInputCsvFiles = []
 latestFile = None 
 
 
 sortedInputFiles = sorted(glob.glob("my_experiment*.csv"))
 for i in sortedInputFiles:
     fileName = os.getcwd() + "/" +i
-    allInputFiles.append(fileName)
+    allInputCsvFiles.append(fileName)
 
 
 
-allOutputFiles = []
+allOutputPngFiles = []
 for i in sorted(glob.glob("a_porosity_*.png")):
-    allOutputFiles.append(os.getcwd() + "/" +i)
+    allOutputPngFiles.append(os.getcwd() + "/" +i)
     
-numberOfFiles = len(allInputFiles)
+numberOfInputCsvFiles = len(allInputCsvFiles)
+print("numberOfInputCsvFiles ",str(numberOfInputCsvFiles))
+print("len(allOutputPngFiles) ",str(len(allOutputPngFiles)))
 
-if len(allOutputFiles) == 0:
-    rangeForAnimation = [0,numberOfFiles-1]# from 0 to n-1, because 0 is included (and the last number too)
+if numberOfInputCsvFiles > 101:
+    numberOfInputCsvFiles = 101   # if too many files, stop earlier
+
+if len(allOutputPngFiles) == 0:
+    rangeForAnimation = [0,numberOfInputCsvFiles-1]# from 0 to n-1, because 0 is included (and the last number too)
+    latestOutputPngFileNumber = 0
 else:
-    latestOutputFileNumber = get_file_number(allOutputFiles[len(allOutputFiles)-1])
-    allInputFiles = allInputFiles[latestOutputFileNumber:]
-    rangeForAnimation = [latestOutputFileNumber + 1,numberOfFiles - 1]
+    latestOutputPngFileNumber = get_file_number(allOutputPngFiles[len(allOutputPngFiles)-1])
+    allInputCsvFiles = allInputCsvFiles[latestOutputPngFileNumber:]
+    rangeForAnimation = [latestOutputPngFileNumber + 1,numberOfInputCsvFiles - 1]
 
 
 # ========== GET THE TIMESTEP ==========
@@ -81,7 +89,7 @@ print("frequency when files were saved: " + str(frequency))
 # =========== PARAVIEW STUFF ========
 
 # create a new 'CSV Reader'
-my_experiment = CSVReader(FileName=allInputFiles)
+my_experiment = CSVReader(FileName=allInputCsvFiles)
 
 # get animation scene
 animationScene1 = GetAnimationScene()
@@ -146,10 +154,11 @@ annotateTimeFilter1 = AnnotateTimeFilter(registrationName='AnnotateTimeFilter1',
 annotateTimeFilter1Display = Show(annotateTimeFilter1, renderView1)#, 'TextSourceRepresentation')
 annotateTimeFilter1.Format = 'Time (s): %9.2e'
 # .........................
-if len(allOutputFiles) == 0:
-    annotateTimeFilter1.Shift = 0   # first timestep
-else:
-    annotateTimeFilter1.Shift = (latestOutputFileNumber + 1)*frequency  # if there are already pngs, shift the time
+# if len(allOutputPngFiles) == 0:
+#     annotateTimeFilter1.Shift = 0   # first timestep
+# else:
+#     annotateTimeFilter1.Shift = (latestOutputPngFileNumber + 1)*frequency  # if there are already pngs, shift the time
+annotateTimeFilter1.Shift = (latestOutputPngFileNumber + 1)*frequency  # if there are already pngs, shift the time
 annotateTimeFilter1.Scale = (time_step_num*frequency)   # time between timesteps, extracted from input.txt, times the frequency for saving files
 # location of filter
 annotateTimeFilter1Display.WindowLocation = 'AnyLocation'
@@ -157,36 +166,58 @@ annotateTimeFilter1Display.WindowLocation = 'AnyLocation'
 renderView1.Update()
 
 # ===  PRESSURE  ===
-set_colormap_pressure(transform1Display)
-# save animation
-pathAndName = thisDirectory+'/a_f_pressure.png'
-SaveAnimation(pathAndName, renderView1, ImageResolution=[2054, 1248],
-    FrameWindow=rangeForAnimation, 
-    # PNG options
-    SuffixFormat='_%05d')
-pressureLUT = GetColorTransferFunction('Pressure')
+if paravParam.pressure:
+    set_colormap_pressure(transform1Display)
+    # save animation
+    pathAndName = thisDirectory+'/a_f_pressure.png'
+    SaveAnimation(pathAndName, renderView1, ImageResolution=[2054, 1248],
+        FrameWindow=rangeForAnimation, 
+        # PNG options
+        SuffixFormat='_%05d',FontScaling='Do not scale fonts')
+    pressureLUT = GetColorTransferFunction('Pressure')
 
 # ===  BROKEN BONDS  ===
-set_colormap_broken_bonds(transform1Display)
-brokenBondsLUT = GetColorTransferFunction('BrokenBonds')
-HideScalarBarIfNotNeeded(pressureLUT, renderView1)
-# save animation
-pathAndName = thisDirectory+'/a_brokenBonds.png'
-SaveAnimation(pathAndName, renderView1, ImageResolution=[2054, 1248],
-    FrameWindow=rangeForAnimation, 
-    # PNG options
-    SuffixFormat='_%05d')
+if paravParam.broken_bonds:
+    set_colormap_broken_bonds(transform1Display)
+    brokenBondsLUT = GetColorTransferFunction('BrokenBonds')
+    # HideScalarBarIfNotNeeded(pressureLUT, renderView1)
+    # save animation
+    pathAndName = thisDirectory+'/a_brokenBonds.png'
+    SaveAnimation(pathAndName, renderView1, ImageResolution=[2054, 1248],
+        FrameWindow=rangeForAnimation, 
+        # PNG options
+        SuffixFormat='_%05d',FontScaling='Do not scale fonts')
 
 # ===  POROSITY  ===
-set_colormap_porosity(transform1Display)
-HideScalarBarIfNotNeeded(brokenBondsLUT, renderView1)
-# save animation
-pathAndName = thisDirectory+'/a_porosity.png'
-SaveAnimation(pathAndName, renderView1, ImageResolution=[2054, 1248],
-    FrameWindow=rangeForAnimation, 
-    # PNG options
-    SuffixFormat='_%05d')
+if paravParam.porosity:
+    set_colormap_porosity(transform1Display)
+    #HideScalarBarIfNotNeeded(brokenBondsLUT, renderView1)
+    # save animation
+    pathAndName = thisDirectory+'/a_porosity.png'
+    SaveAnimation(pathAndName, renderView1, ImageResolution=[2054, 1248],
+        FrameWindow=rangeForAnimation, 
+        # PNG options
+        SuffixFormat='_%05d',FontScaling='Do not scale fonts')
 
+if paravParam.mean_stress:
+    set_colormap_mean_stress(transform1Display)
+    # HideScalarBarIfNotNeeded(brokenBondsLUT, renderView1)
+    # save animation
+    pathAndName = thisDirectory+'/a_meanStress.png'
+    SaveAnimation(pathAndName, renderView1, ImageResolution=[2054, 1248],
+        FrameWindow=rangeForAnimation, 
+        # PNG options
+        SuffixFormat='_%05d',FontScaling='Do not scale fonts')
+
+if paravParam.actual_movement:
+    set_colormap_actualMovement(transform1Display)
+    # HideScalarBarIfNotNeeded(brokenBondsLUT, renderView1)
+    # save animation
+    pathAndName = thisDirectory+'/a_actualMovement.png'
+    SaveAnimation(pathAndName, renderView1, ImageResolution=[2054, 1248],
+        FrameWindow=rangeForAnimation, 
+        # PNG options
+        SuffixFormat='_%05d',FontScaling='Do not scale fonts')
 
 # toggle 3D widget visibility (only when running from the GUI)
 Hide3DWidgets(proxy=transform1.Transform)
