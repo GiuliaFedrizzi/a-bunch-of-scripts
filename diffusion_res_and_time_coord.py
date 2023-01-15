@@ -42,6 +42,9 @@ from pathlib import Path
 # import functions from external file
 from useful_functions import * 
 
+var_to_plot = "Mean Stress"
+# options: Pressure, Mean Stress, Actual Movement
+
 # dir_list = ['/nobackup/scgf/myExperiments/gaussTime/sigma_3_0/sigma_3_0_gaussTime05/tstep04_5_1e5',
 #      '/nobackup/scgf/myExperiments/gaussScale/scale200_r200/sigma_3_0/sigma_3_0_gaussTime05/tstep04_5_1e5']
 
@@ -61,7 +64,7 @@ resolution = 200
 dir_list = []
 
 for i in dir_labels:
-    dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/g2_15_large10NoGrav200/size'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
+    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj01/size'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/g2_02_trueGrad400/size'+str(i))
     
@@ -81,9 +84,9 @@ for dir in dir_list:
     dir_label = dir_labels[dirnum-1]   # get the label that corresponds to the directory
     
     if "size" in dir.split("/")[-1]:      # try to get the size automatically. If the last subdirectory contains the scale
-        scale_factor = float(dir_label)/100.0 # factor for scaling the axes. Normalised by the standard size = 100
+        scale_factor = float(dir_label)/1000.0 # factor for scaling the axes. Normalised by the standard size = 100
     elif "press0" in dir.split("/")[-2]:   # If the second to last subdirectory contains the scale
-        scale_factor = float(dir_label)/100.0 # factor for scaling the axes. Normalised by the standard size = 100
+        scale_factor = float(dir_label)/1000.0 # factor for scaling the axes. Normalised by the standard size = 100
 
     else:  # set manually
         scale_factor = 20.0/100.0 # factor for scaling the axes. Normalised by the standard size = 100
@@ -106,12 +109,17 @@ for dir in dir_list:
         myfile = Path(os.getcwd()+'/'+filename)  # build file name including path
         if myfile.is_file():
             myExp = pd.read_csv(filename, header=0)
-            # pressure_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Pressure')] 
-            # pressure_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Pressure')]
+            if var_to_plot == "Pressure":
+                var_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Pressure')] 
+                var_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Pressure')]
+            elif var_to_plot == "Mean Stress":
+                var_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Mean Stress')] 
+                var_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Mean Stress')]                
+            elif var_to_plot == "Actual Movement":
+                var_array_x = myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Actual Movement')] 
+                var_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Actual Movement')]                
             # poro_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Porosity')] 
             # poro_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Porosity')]
-            stress_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Mean Stress')] 
-            stress_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Mean Stress')]
             # sigma1_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Sigma_1')] 
             # sigma1_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Sigma_1')]
             # sigma2_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Sigma_2')] 
@@ -136,10 +144,11 @@ for dir in dir_list:
             labelName = "t=" + str('{:.1e}'.format(input_tstep*file_num))
 
             # y                  shift array by the max value so that the maximum is at zero and scale it 
+            data1_y = {'y': (y_array - ymax)*scale_factor,var_to_plot: var_array_y, 'scale': dir_label,'time': labelName}  # save temporarily
             # data1_y = {'y': (y_array - ymax)*scale_factor,'F_P_y': FPy_array_y, 'scale': dir_label,'time': labelName}  # save temporarily
             # data1_y = {'y': (y_array - ymax)*scale_factor,'Sigma_1 (MPa)': sigma1_array_y/1e6, 'scale': dir_label,'time': labelName}  # save temporarily
             # data1_y = {'y': (y_array - ymax)*scale_factor,'P Gradient': pf_grad_y, 'scale': dir_label,'time': labelName}  # save temporarily
-            data1_y = {'y': (y_array - ymax)*scale_factor,'Mean Stress (MPa)': stress_array_y/1e6, 'scale': dir_label,'time': labelName}  # save temporarily
+            # data1_y = {'y': (y_array - ymax)*scale_factor,'Mean Stress (MPa)': stress_array_y/1e6, 'scale': dir_label,'time': labelName}  # save temporarily
             # data1_y = {'y': (y_array - ymax)*scale_factor,'Fluid Pressure (MPa)': pressure_array_y/1e6, 'scale': dir_label,'time': labelName}  # save temporarily
             # data1_y = {'y': (y_array - ymax)*scale_factor,'box': box_y, 'Porosity': poro_array_y, 'scale': dir_label,'time': labelName}  # save temporarily
             # data1_y = {'y': (y_array - ymax)*scale_factor,'Porosity': poro_array_y, 'scale': dir_label,'time': labelName}  # save temporarily
@@ -149,11 +158,12 @@ for dir in dir_list:
             df_y = pd.concat([df_y,df1_y], ignore_index=True) # append to old one
 
             # x                  shift array by the max value so that the maximum is at zero
+            data1_x = {'x': (x_array - xmax)*scale_factor,var_to_plot: var_array_x, 'scale': dir_label,'time': labelName}  # save temporarily
             # data1_x = {'x': (x_array - xmax)*scale_factor,'F_P_x': FPx_array_x, 'scale': dir_label,'time': labelName}  # save temporarily
             # data1_x = {'x': (x_array - xmax)*scale_factor,'P Gradient': pf_grad_x, 'scale': dir_label,'time': labelName}  # save temporarily
             # data1_x = {'x': (x_array - xmax)*scale_factor,'Sigma_1': sigma1_array_x, 'scale': dir_label,'time': labelName}  # save temporarily
             # data1_x = {'x': (x_array - xmax)*scale_factor,'Sigma_1 (MPa)': sigma1_array_x/1e6, 'scale': dir_label,'time': labelName}  # save temporarily
-            data1_x = {'x': (x_array - xmax)*scale_factor,'Mean Stress (MPa)': stress_array_x/1e6, 'scale': dir_label,'time': labelName}  # save temporarily
+            # data1_x = {'x': (x_array - xmax)*scale_factor,'Mean Stress (MPa)': stress_array_x/1e6, 'scale': dir_label,'time': labelName}  # save temporarily
             # data1_x = {'x': (x_array - xmax)*scale_factor,'Fluid Pressure (MPa)': pressure_array_x/1e6, 'scale': dir_label,'time': labelName}  # save temporarily
             # data1_x = {'x': (x_array - xmax)*scale_factor,'box': box_x, 'scale': dir_label,'time': labelName}  # save temporarily
             # data1_x = {'x': (x_array - xmax)*scale_factor,'Porosity': poro_array_x, 'scale': dir_label,'time': labelName}  # save temporarily
@@ -162,17 +172,17 @@ for dir in dir_list:
             df1_x = pd.DataFrame(data1_x)
             df_x = pd.concat([df_x,df1_x], ignore_index=True) # append to old one
 
-g_x = sns.lineplot(data=df_x ,x="x",y='Mean Stress (MPa)',ax=ax1,hue='time',style='scale',alpha=0.5)  # or sns.scatterplot
-g_y = sns.lineplot(data=df_y ,x="y",y='Mean Stress (MPa)',ax=ax2,hue='time',style='scale',alpha=0.5)
+# g_x = sns.lineplot(data=df_x ,x="x",y='Mean Stress (MPa)',ax=ax1,hue='time',style='scale',alpha=0.5)  # or sns.scatterplot
+# g_y = sns.lineplot(data=df_y ,x="y",y='Mean Stress (MPa)',ax=ax2,hue='time',style='scale',alpha=0.5)
 # ax3 = g_y.twinx()
 # g_y_1 = sns.lineplot(data=df_y ,x="y",y='F_P_y',ax=ax3,hue='time',markers=True,alpha=0.5)
 # g_y_1 = sns.scatterplot(data=df_y ,x="y",y='Porosity',ax=ax3,hue='time',alpha=0.5)
 
-#g_x = sns.lineplot(data=df_x ,x="x",y="Fluid Pressure (MPa)",ax=ax1,hue='time',style='scale',alpha=0.5)
-#g_y = sns.lineplot(data=df_y ,x="y",y="Fluid Pressure (MPa)",ax=ax2,hue='time',style='scale',alpha=0.5)
+g_x = sns.lineplot(data=df_x ,x="x",y=var_to_plot,ax=ax1,hue='time',style='scale',alpha=0.5)
+g_y = sns.lineplot(data=df_y ,x="y",y=var_to_plot,ax=ax2,hue='time',style='scale',alpha=0.5)
 ax1.set_title("Horizontal Profile")
-ax1.set_xlim([-0.12,+0.12])  # zoom in. Limits are (location of max pressure) +- 0.1
-ax2.set_xlim([-0.12,+0.12])  # zoom in. Limits are location of max pressure +- 0.1
+ax1.set_xlim([-0.05,+0.05])  # zoom in. Limits are (location of max pressure) +- 0.05
+ax2.set_xlim([-0.05,+0.05])  # zoom in. Limits are location of max pressure +- 0.05
 # ax1.set_xlim([-0.08,+0.08])  # zoom in. Limits are (location of max pressure) +- 0.1
 # ax2.set_xlim([-0.08,0.08])  # zoom in. Limits are location of max pressure +- 0.1
 ax2.set_title("Vertical Profile")
