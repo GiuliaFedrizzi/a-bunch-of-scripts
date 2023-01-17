@@ -54,8 +54,10 @@ var_to_plot = "Mean Stress"
 
 # dir_labels = ['400','200']  # res400.elle, res200.elle
 # dir_labels = ['020','030','040','050','060','070','080','090','100']
-dir_labels = ['2000','3000','4000','5000','6000','7000','8000','9000']
-# dir_labels = ['200','300','400','500','600','700','800','900','1000']
+# dir_labels = ['200','400','600','800','1000']
+dir_labels = ['2000','4000','6000','8000']  # remember to adjust the scaling factor (scale_factor)
+# dir_labels = ['0200', '0400','0600','0800','1000']
+# dir_labels = ['2000', '4000']
 # dir_labels = ['100']
 #dir_labels = ['01','03','05','07','09','11','13','15','17','19']
 #dir_labels = ['11']#,'03','05','07','09','11','13','15','17','19']
@@ -65,29 +67,32 @@ resolution = 200
 dir_list = []
 
 for i in dir_labels:
-    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj02/size'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
+    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj07/size'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/g2_02_trueGrad400/size'+str(i))
     
 
 
 fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
-first_file = 'my_experiment00000.csv'
+first_file = 'my_experiment00100.csv'
 df_x = pd.DataFrame()
 df_y = pd.DataFrame()
 
+max_dir_size = 10000.0
+# max_dir_size = float(dir_labels[-1])  # maximum size for the scaling of the plots: take the last directory (largest)
 dirnum = 0
 for dir in dir_list:
     print(dir)
     """ loop through directories"""
     os.chdir(dir)
+    
+    dir_label = dir_labels[dirnum]   # get the label that corresponds to the directory
     dirnum+=1 # counter for directories
-    dir_label = dir_labels[dirnum-1]   # get the label that corresponds to the directory
     
     if "size" in dir.split("/")[-1]:      # try to get the size automatically. If the last subdirectory contains the scale
-        scale_factor = float(dir_label)/10000.0 # factor for scaling the axes. Normalised by the standard size
+        scale_factor = float(dir_label)/max_dir_size # factor for scaling the axes. Normalised by the maximum size (e.g. 1000)
     elif "press0" in dir.split("/")[-2]:   # If the second to last subdirectory contains the scale
-        scale_factor = float(dir_label)/10000.0 # factor for scaling the axes. Normalised by the standard size
+        scale_factor = float(dir_label)/1000.0 # factor for scaling the axes. Normalised by the standard size
 
     else:  # set manually
         scale_factor = 20.0/100.0 # factor for scaling the axes. Normalised by the standard size = 100
@@ -99,13 +104,13 @@ for dir in dir_list:
     ymax = myExp.loc[myExp['Pressure'].idxmax(), 'y coord']
     max_id = myExp['Pressure'].idxmax()   #  index of the point with the maximum pressure value
     
-    offset = max_id%resolution   # so that they are all centered around 0 on the x axis
+    offset = max_id%resolution   # so that they are all centered around 0 on the x axis. It's the shift in the x direction.
 
     # find the x coordinates that correspond to the max pressure, based on their index
     x_array = myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('x coord')] 
     y_array = myExp.iloc[offset::resolution,myExp.columns.get_loc('y coord')] # first: the point with coorinate = offset. Then every point above it (with a period of 'resolution') 
 
-    for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[10:70:20]): #[beg:end:step]  set which timesteps (based on FILE NUMBER) to plot
+    for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[0:21:10]): #[beg:end:step]  set which timesteps (based on FILE NUMBER) to plot
     # for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[0:16:1]): #[beg:end:step]  set which timesteps (based on FILE NUMBER) to plot
         myfile = Path(os.getcwd()+'/'+filename)  # build file name including path
         if myfile.is_file():
@@ -165,7 +170,8 @@ for dir in dir_list:
 g_x = sns.lineplot(data=df_x ,x="x",y=var_to_plot,ax=ax1,hue='time',style='scale',alpha=0.5)
 g_y = sns.lineplot(data=df_y ,x="y",y=var_to_plot,ax=ax2,hue='time',style='scale',alpha=0.5)
 ax1.set_title("Horizontal Profile")
-ax1.set_xlim([-0.05,+0.05])  # zoom in. Limits are (location of max pressure) +- 0.05
+# ax1.set_xlim([-0.05,+0.05])  # zoom in. Limits are (location of max pressure) +- 0.05
+ax1.set_xlim([-0.51,+0.51])  # zoom in. Limits are location of max pressure +- 0.05
 ax2.set_xlim([-1.01,+0.12])  # zoom in. Limits are location of max pressure +- 0.05
 # ax1.set_xlim([-0.08,+0.08])  # zoom in. Limits are (location of max pressure) +- 0.1
 # ax2.set_xlim([-0.08,0.08])  # zoom in. Limits are location of max pressure +- 0.1

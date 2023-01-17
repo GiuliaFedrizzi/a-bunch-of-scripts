@@ -10,13 +10,12 @@ import os as os
 import numpy as np
 
 
-dir_labels = ['020','030', '040','050','060','070','080','090','100']
-resolution = 200
+dir_labels = ['2000', '4000','6000','8000']
 cmap = plt.get_cmap("tab10")  # default colormap (blue,orange,green etc)
 plot_num = 0    # a counter for the number of lines. It's used to assign the same colour to lines of the same directory (one real, one from the linear fit)
 
 parent_directories = []
-first_part_of_path = '/nobackup/scgf/myExperiments/gaussScaleFixFrac2/g2_13_rad_wGrav200/size'
+first_part_of_path = '/nobackup/scgf/myExperiments/gaussJan2022/gj07/size'
 
 for i in dir_labels:
     parent_directories.append(first_part_of_path+str(i))
@@ -31,7 +30,6 @@ scale_string = os.getcwd().split("/")[-1]
 
 def getRelaxAndTime(lattefile):
     """ every time you find "relax times", save the number after the string and the relative time"""
-    time_line = 0
     found_t0 = False;
     relax_times_array = [];relax_array = []  # reset these two arrays
     with open(lattefile) as expFile:
@@ -40,16 +38,14 @@ def getRelaxAndTime(lattefile):
                 found_t0 = True    # ok, it found the first timestep
             if found_t0:           # so it can go on and search for "relax times"
                 if time_string in line:
-                    time_line = num  # gets overwritten every time until I find "relax times". Then the value stays
-                    time_line_whole = line   # save the whole line where you found  "time is "
-                
+                    time_line_whole = line   # save the whole line where you found  "time is ". gets overwritten every time until I find "relax times". Then the value stays.
                 if relax_string in line:  # every time you find "relax times", save the number and the relative time
                     x = time_line_whole.split("time is ") # split the line with the info about time around the string "time is"
                     time_relax_times = x[1]    # take the second part, which is the one that comes after the string "time is"
                     time_relax_times = time_relax_times.replace("\n","")  # get rid of \n
                     relax_times = line.replace("relax times: ","")  # take what comes after "relax times"
                     relax_times = relax_times.split(",")[0]   # take what comes before the space and comma
-                    if float(relax_times) > 1:
+                    if float(relax_times) > 0:
                         relax_array.append(float(relax_times))  # build the array with the number of relax times at the time
                         relax_times_array.append(float(time_relax_times))              # build the array with the relative time 
                     if float(time_relax_times) == 5e6:
@@ -63,10 +59,11 @@ def plot_relax_v_time(parent_directory,plot_num):
     my_label = "size = " + domain_size
     axs.plot(time_array,rel_array, 'o',linewidth=1,markersize=0.8,label=my_label,color=cmap(plot_num),alpha=0.6)  # ...and plot it
     axs.set(ylabel='Relaxation times')
+    print(domain_size,time_array[-1])
     # fit a line
-    m2,q2 = np.polyfit(time_array,rel_array,1) #  fit a line, get m and q
-    predict2 = [m2*i+q2 for i in time_array]  # save the array with predicted values 
-    plt.plot(time_array,predict2,color=cmap(plot_num))
+    # m2,q2 = np.polyfit(time_array,rel_array,1) #  fit a line, get m and q
+    # predict2 = [m2*i+q2 for i in time_array]  # save the array with predicted values 
+    #plt.plot(time_array,predict2,color=cmap(plot_num))
     plot_num+=1
     return plot_num
     # color=
