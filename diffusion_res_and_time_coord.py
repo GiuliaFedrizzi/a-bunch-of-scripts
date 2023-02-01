@@ -43,31 +43,22 @@ from pathlib import Path
 from useful_functions import * 
 
 var_to_plot = "Mean Stress"
-# options: Pressure, Mean Stress, Actual Movement
-
-# dir_list = ['/nobackup/scgf/myExperiments/gaussTime/sigma_3_0/sigma_3_0_gaussTime05/tstep04_5_1e5',
-#      '/nobackup/scgf/myExperiments/gaussScale/scale200_r200/sigma_3_0/sigma_3_0_gaussTime05/tstep04_5_1e5']
-
-# sigma_str = "/sigma_2_0"
-# time_str = '$10^{-2}$'
-
+# options: Pressure, Mean Stress, Actual Movement, Gravity, Porosity
 
 # dir_labels = ['400','200']  # res400.elle, res200.elle
 # dir_labels = ['020','030','040','050','060','070','080','090','100']
 # dir_labels = ['200','400','600','800','1000']
-dir_labels = ['2000','4000','6000','8000']  # remember to adjust the scaling factor (scale_factor)
-# dir_labels = ['0200', '0400','0600','0800','1000']
+# dir_labels = ['02000','04000','08000','10000'] 
+dir_labels = ['00200', '00400','00800','01000']
 # dir_labels = ['2000', '4000']
-# dir_labels = ['100']
 #dir_labels = ['01','03','05','07','09','11','13','15','17','19']
-#dir_labels = ['11']#,'03','05','07','09','11','13','15','17','19']
 
 resolution = 200
 
 dir_list = []
 
 for i in dir_labels:
-    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj07/size'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
+    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj08/size'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/g2_02_trueGrad400/size'+str(i))
     
@@ -78,12 +69,12 @@ first_file = 'my_experiment00100.csv'
 df_x = pd.DataFrame()
 df_y = pd.DataFrame()
 
-max_dir_size = 10000.0
-# max_dir_size = float(dir_labels[-1])  # maximum size for the scaling of the plots: take the last directory (largest)
+# max_dir_size = 10000.0
+max_dir_size = float(dir_labels[-1])  # maximum size for the scaling of the plots: take the last directory (largest)
 dirnum = 0
 for dir in dir_list:
-    print(dir)
     """ loop through directories"""
+    print(dir)
     os.chdir(dir)
     
     dir_label = dir_labels[dirnum]   # get the label that corresponds to the directory
@@ -97,20 +88,23 @@ for dir in dir_list:
     else:  # set manually
         scale_factor = 20.0/100.0 # factor for scaling the axes. Normalised by the standard size = 100
 
-    print("scale: ",str(scale_factor))
+    print("scale factor: ",str(scale_factor))
     # open the first file after melt addition to find the max P
+    if not os.path.exists(os.getcwd()+'/'+first_file):  # if it can't find the file after my_experiment00000.csv
+        continue
     myExp = pd.read_csv(first_file, header=0)
     xmax = myExp.loc[myExp['Pressure'].idxmax(), 'x coord']
     ymax = myExp.loc[myExp['Pressure'].idxmax(), 'y coord']
     max_id = myExp['Pressure'].idxmax()   #  index of the point with the maximum pressure value
     
     offset = max_id%resolution   # so that they are all centered around 0 on the x axis. It's the shift in the x direction.
+    print("offset: ",str(offset))
 
     # find the x coordinates that correspond to the max pressure, based on their index
     x_array = myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('x coord')] 
     y_array = myExp.iloc[offset::resolution,myExp.columns.get_loc('y coord')] # first: the point with coorinate = offset. Then every point above it (with a period of 'resolution') 
 
-    for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[0:21:10]): #[beg:end:step]  set which timesteps (based on FILE NUMBER) to plot
+    for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[5:6:5]): #[beg:end:step]  set which timesteps (based on FILE NUMBER) to plot
     # for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[0:16:1]): #[beg:end:step]  set which timesteps (based on FILE NUMBER) to plot
         myfile = Path(os.getcwd()+'/'+filename)  # build file name including path
         if myfile.is_file():
@@ -127,6 +121,9 @@ for dir in dir_list:
             elif var_to_plot == "Porosity":
                 var_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Porosity')] 
                 var_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Porosity')]
+            elif var_to_plot == "Gravity":
+                var_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Gravity')] 
+                var_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Gravity')]
 
             # sigma1_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Sigma_1')] 
             # sigma1_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Sigma_1')]
@@ -136,12 +133,7 @@ for dir in dir_list:
             # FPy_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('F_P_y')]
             # pf_grad_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('pf_grad_x')] 
             # pf_grad_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('pf_grad_y')]
-            # box_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('fluid_box')] 
-            # box_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('fluid_box')]
-            # real_radius_x = myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('real_radius')] 
-            # real_radius_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('real_radius')]
-            # grav_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Gravity')]
-            # grav_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Gravity')] 
+
             # print(dir_label,str(pf_grad_x[pf_grad_x>0].mean()),str(pf_grad_y[pf_grad_y>0].mean()))
             
             input_tstep = float(getTimeStep("input.txt"))
@@ -173,8 +165,7 @@ ax1.set_title("Horizontal Profile")
 # ax1.set_xlim([-0.05,+0.05])  # zoom in. Limits are (location of max pressure) +- 0.05
 ax1.set_xlim([-0.51,+0.51])  # zoom in. Limits are location of max pressure +- 0.05
 ax2.set_xlim([-1.01,+0.12])  # zoom in. Limits are location of max pressure +- 0.05
-# ax1.set_xlim([-0.08,+0.08])  # zoom in. Limits are (location of max pressure) +- 0.1
-# ax2.set_xlim([-0.08,0.08])  # zoom in. Limits are location of max pressure +- 0.1
+# ax2.set_ylim([2.942975e7,2.943020e7])  
 ax2.set_title("Vertical Profile")
 
 # g_x.legend_.remove()
