@@ -42,15 +42,15 @@ from pathlib import Path
 # import functions from external file
 from useful_functions import * 
 
-var_to_plot = "Mean Stress"
+var_to_plot = "Pressure"
 # options: Pressure, Mean Stress, Actual Movement, Gravity, Porosity
 
 # dir_labels = ['400','200']  # res400.elle, res200.elle
 # dir_labels = ['020','030','040','050','060','070','080','090','100']
 # dir_labels = ['200','400','600','800','1000']
 # dir_labels = ['02000','04000','08000','10000'] 
-dir_labels = ['00200', '00400','00800','01000']
-# dir_labels = ['2000', '4000']
+# dir_labels = ['00200', '00400','00800','01000']
+dir_labels = ['test01']
 #dir_labels = ['01','03','05','07','09','11','13','15','17','19']
 
 resolution = 200
@@ -58,10 +58,11 @@ resolution = 200
 dir_list = []
 
 for i in dir_labels:
-    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj08/size'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
+    dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/wd05_visc/'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
+    # dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj08/size'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
-    # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/g2_02_trueGrad400/size'+str(i))
     
+print(dir_list)
 
 
 fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
@@ -70,13 +71,18 @@ df_x = pd.DataFrame()
 df_y = pd.DataFrame()
 
 # max_dir_size = 10000.0
-max_dir_size = float(dir_labels[-1])  # maximum size for the scaling of the plots: take the last directory (largest)
+
+# check if labels only contain numbers (it means they are the dimensions of the domain = scales)
+if dir_labels[-1].isdigit():
+    max_dir_size = float(dir_labels[-1])  # maximum size for the scaling of the plots: take the last directory (largest)
+else:
+    max_dir_size = 1
 dirnum = 0
 for dir in dir_list:
     """ loop through directories"""
     print(dir)
     os.chdir(dir)
-    
+    print(os.getcwd())
     dir_label = dir_labels[dirnum]   # get the label that corresponds to the directory
     dirnum+=1 # counter for directories
     
@@ -86,11 +92,12 @@ for dir in dir_list:
         scale_factor = float(dir_label)/1000.0 # factor for scaling the axes. Normalised by the standard size
 
     else:  # set manually
-        scale_factor = 20.0/100.0 # factor for scaling the axes. Normalised by the standard size = 100
+        scale_factor = 1 # default factor for scaling the axes. 
 
     print("scale factor: ",str(scale_factor))
     # open the first file after melt addition to find the max P
     if not os.path.exists(os.getcwd()+'/'+first_file):  # if it can't find the file after my_experiment00000.csv
+        print('skipping '+os.getcwd())
         continue
     myExp = pd.read_csv(first_file, header=0)
     xmax = myExp.loc[myExp['Pressure'].idxmax(), 'x coord']
@@ -104,7 +111,7 @@ for dir in dir_list:
     x_array = myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('x coord')] 
     y_array = myExp.iloc[offset::resolution,myExp.columns.get_loc('y coord')] # first: the point with coorinate = offset. Then every point above it (with a period of 'resolution') 
 
-    for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[5:6:5]): #[beg:end:step]  set which timesteps (based on FILE NUMBER) to plot
+    for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[0:20:5]): #[beg:end:step]  set which timesteps (based on FILE NUMBER) to plot
     # for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[0:16:1]): #[beg:end:step]  set which timesteps (based on FILE NUMBER) to plot
         myfile = Path(os.getcwd()+'/'+filename)  # build file name including path
         if myfile.is_file():
@@ -162,29 +169,17 @@ for dir in dir_list:
 g_x = sns.lineplot(data=df_x ,x="x",y=var_to_plot,ax=ax1,hue='time',style='scale',alpha=0.5)
 g_y = sns.lineplot(data=df_y ,x="y",y=var_to_plot,ax=ax2,hue='time',style='scale',alpha=0.5)
 ax1.set_title("Horizontal Profile")
-# ax1.set_xlim([-0.05,+0.05])  # zoom in. Limits are (location of max pressure) +- 0.05
-ax1.set_xlim([-0.51,+0.51])  # zoom in. Limits are location of max pressure +- 0.05
-ax2.set_xlim([-1.01,+0.12])  # zoom in. Limits are location of max pressure +- 0.05
-# ax2.set_ylim([2.942975e7,2.943020e7])  
+#ax1.set_xlim([-0.51,+0.51])  # zoom in. Limits are location of max pressure +- 0.05
+#ax2.set_xlim([-1.01,+0.12])  # zoom in. Limits are location of max pressure +- 0.05
+# ax2.set_ylim([2.942975e7,2.943020e7])  # for pressure
 ax2.set_title("Vertical Profile")
 
-# g_x.legend_.remove()
 g_y.legend_.remove()
 os.chdir('..')
 fig.suptitle(os.getcwd()) # get the part of the path that is after "myExperiments/"
-#fig.suptitle("$\sigma$ = "+sigma_str.replace("/sigma_","").replace("_",".")+", tstep = " + time_str.split("_")[1]) # get the part of the path that is after "myExperiments/"
-#fig.suptitle("Fluid Pressure") # get the part of the path that is after "myExperiments/"
 
-# LEGEND:
-# get the position of the plot so I can add the legend to it 
-# box = ax2.get_position()
-
-# upper left = the point that I am setting wiht the second argument
-# ax2.legend(loc='center left',bbox_to_anchor=(1.2,0.5),fancybox=True, ncol=1)   # legend for the vertical line plot
-# ax2.legend(fancybox=True, ncol=1)   # legend for the vertical line plot
 ax1.legend(fancybox=True, ncol=1)   # legend for the horizontal line plot
 # save:
-#os.chdir('/nobackup/scgf/myExperiments/gaussScale')
 #plt.savefig("gaussScale50-100-200_diff_hrz-vrt.png", dpi=600,transparent=True)
 plt.tight_layout()
 plt.show()

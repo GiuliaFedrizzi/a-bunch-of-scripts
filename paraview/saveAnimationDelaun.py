@@ -5,12 +5,13 @@ import glob
 import os
 import time
 import re
+
+sys.path.append(os.getcwd())  # so that it looks for 'modules' (paravParam.py) in the current directory
+import paravParam
+
 # add the path to directory with macros to the sys path
 sys.path.append('/home/home01/scgf/myscripts/paraview')  # change if path to my_functions.py is different
-
-print(os.getcwd())
 from my_functions import * 
-import paravParam
 
 def get_file_number(fileName):
     searchResult = re.search("([0-9]{5})",fileName)
@@ -159,9 +160,11 @@ annotateTimeFilter1.Format = 'Time (s): %9.2e'
 # else:
 #     annotateTimeFilter1.Shift = (latestOutputPngFileNumber + 1)*frequency  # if there are already pngs, shift the time
 annotateTimeFilter1.Shift = (latestOutputPngFileNumber + 1)*frequency  # if there are already pngs, shift the time
+print("latestOutputPngFileNumber = ",str(latestOutputPngFileNumber)," shift = ",str((latestOutputPngFileNumber + 1)*frequency))
 annotateTimeFilter1.Scale = (time_step_num*frequency)   # time between timesteps, extracted from input.txt, times the frequency for saving files
 # location of filter
 annotateTimeFilter1Display.WindowLocation = 'AnyLocation'
+annotateTimeFilter1Display.FontSize = 60
 
 renderView1.Update()
 
