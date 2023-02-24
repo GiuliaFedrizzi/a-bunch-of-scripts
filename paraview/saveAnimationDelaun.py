@@ -110,7 +110,7 @@ SetActiveView(renderView1)
 # rename source object
 RenameSource('mf0001_freq1e1', my_experiment)
 
-LoadPalette(paletteName='WhiteBackground')
+# LoadPalette(paletteName='WhiteBackground')
 
 applyTableToPointsSingle()
 
@@ -164,43 +164,53 @@ print("latestOutputPngFileNumber = ",str(latestOutputPngFileNumber)," shift = ",
 annotateTimeFilter1.Scale = (time_step_num*frequency)   # time between timesteps, extracted from input.txt, times the frequency for saving files
 # location of filter
 annotateTimeFilter1Display.WindowLocation = 'AnyLocation'
-annotateTimeFilter1Display.FontSize = 60
+annotateTimeFilter1Display.FontSize = 120
 
 renderView1.Update()
 
 # ===  PRESSURE  ===
 if paravParam.pressure:
-    set_colormap_pressure(transform1Display)
-    # save animation
-    pathAndName = thisDirectory+'/a_f_pressure.png'
-    SaveAnimation(pathAndName, renderView1, ImageResolution=[2054, 1248],
-        FrameWindow=rangeForAnimation, 
-        # PNG options
-        SuffixFormat='_%05d',FontScaling='Do not scale fonts')
-    pressureLUT = GetColorTransferFunction('Pressure')
+    try:
+        set_colormap_pressure(transform1Display)
+        # save animation
+        pathAndName = thisDirectory+'/a_f_pressure.png'
+        SaveAnimation(pathAndName, renderView1, ImageResolution=[2054, 1248],
+            FrameWindow=rangeForAnimation, 
+            # PNG options
+            SuffixFormat='_%05d',FontScaling='Do not scale fonts')
+        pressureLUT = GetColorTransferFunction('Pressure')
+    except:
+        pass
 
 # ===  BROKEN BONDS  ===
 if paravParam.broken_bonds:
-    set_colormap_broken_bonds(transform1Display)
-    brokenBondsLUT = GetColorTransferFunction('BrokenBonds')
-    # HideScalarBarIfNotNeeded(pressureLUT, renderView1)
-    # save animation
-    pathAndName = thisDirectory+'/a_brokenBonds.png'
-    SaveAnimation(pathAndName, renderView1, ImageResolution=[2054, 1248],
-        FrameWindow=rangeForAnimation, 
-        # PNG options
-        SuffixFormat='_%05d',FontScaling='Do not scale fonts')
+    try:
+        set_colormap_broken_bonds(transform1Display)
+        brokenBondsLUT = GetColorTransferFunction('BrokenBonds')
+        # HideScalarBarIfNotNeeded(pressureLUT, renderView1)
+        # save animation
+        pathAndName = thisDirectory+'/a_brokenBonds.png'
+        SaveAnimation(pathAndName, renderView1, ImageResolution=[2054, 1248],
+            FrameWindow=rangeForAnimation, 
+            # PNG options
+            SuffixFormat='_%05d',FontScaling='Do not scale fonts')
+    except:
+        pass
 
 # ===  POROSITY  ===
 if paravParam.porosity:
-    set_colormap_porosity(transform1Display)
-    #HideScalarBarIfNotNeeded(brokenBondsLUT, renderView1)
-    # save animation
-    pathAndName = thisDirectory+'/a_porosity.png'
-    SaveAnimation(pathAndName, renderView1, ImageResolution=[2054, 1248],
-        FrameWindow=rangeForAnimation, 
-        # PNG options
-        SuffixFormat='_%05d',FontScaling='Do not scale fonts')
+    try:
+        set_colormap_porosity(transform1Display)
+        #HideScalarBarIfNotNeeded(brokenBondsLUT, renderView1)
+        # save animation
+        pathAndName = thisDirectory+'/a_porosity.png'
+        SaveAnimation(pathAndName, renderView1, ImageResolution=[2054, 1248],
+            FrameWindow=rangeForAnimation, 
+            # PNG options
+            SuffixFormat='_%05d',FontScaling='Do not scale fonts')
+    except:
+        pass
+
 
 if paravParam.mean_stress:
     set_colormap_mean_stress(transform1Display)

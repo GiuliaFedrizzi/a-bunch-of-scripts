@@ -42,15 +42,13 @@ from pathlib import Path
 # import functions from external file
 from useful_functions import * 
 
-var_to_plot = "Pressure"
-# options: Pressure, Mean Stress, Actual Movement, Gravity, Porosity
+var_to_plot = "Sigma_1"
+# options: Pressure, Mean Stress, Actual Movement, Gravity, Porosity, Sigma_1, Sigma_2
 
 # dir_labels = ['400','200']  # res400.elle, res200.elle
 # dir_labels = ['020','030','040','050','060','070','080','090','100']
-# dir_labels = ['200','400','600','800','1000']
-# dir_labels = ['02000','04000','08000','10000'] 
 # dir_labels = ['00200', '00400','00800','01000']
-dir_labels = ['test01']
+dir_labels = ['02000','04000','08000','10000'] 
 #dir_labels = ['01','03','05','07','09','11','13','15','17','19']
 
 resolution = 200
@@ -58,34 +56,28 @@ resolution = 200
 dir_list = []
 
 for i in dir_labels:
-    dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/wd05_visc/'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
-    # dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj08/size'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
+    # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/gaussJan2022/gj07'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
+    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj23/size'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
     
 print(dir_list)
 
 
 fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
-first_file = 'my_experiment00100.csv'
+first_file = 'my_experiment00500.csv'
 df_x = pd.DataFrame()
 df_y = pd.DataFrame()
-
-# max_dir_size = 10000.0
 
 # check if labels only contain numbers (it means they are the dimensions of the domain = scales)
 if dir_labels[-1].isdigit():
     max_dir_size = float(dir_labels[-1])  # maximum size for the scaling of the plots: take the last directory (largest)
 else:
     max_dir_size = 1
-dirnum = 0
-for dir in dir_list:
+for dirnum,dir in enumerate(dir_list):
     """ loop through directories"""
-    print(dir)
     os.chdir(dir)
-    print(os.getcwd())
     dir_label = dir_labels[dirnum]   # get the label that corresponds to the directory
-    dirnum+=1 # counter for directories
-    
+    print(dir_label)
     if "size" in dir.split("/")[-1]:      # try to get the size automatically. If the last subdirectory contains the scale
         scale_factor = float(dir_label)/max_dir_size # factor for scaling the axes. Normalised by the maximum size (e.g. 1000)
     elif "press0" in dir.split("/")[-2]:   # If the second to last subdirectory contains the scale
@@ -100,19 +92,25 @@ for dir in dir_list:
         print('skipping '+os.getcwd())
         continue
     myExp = pd.read_csv(first_file, header=0)
-    xmax = myExp.loc[myExp['Pressure'].idxmax(), 'x coord']
-    ymax = myExp.loc[myExp['Pressure'].idxmax(), 'y coord']
-    max_id = myExp['Pressure'].idxmax()   #  index of the point with the maximum pressure value
+    if dir_label == '10000':
+        xmax = myExp.loc[45707, 'x coord']
+        ymax = myExp.loc[45707, 'y coord']
+        max_id = 45707   #  index of the point with the maximum pressure value
+        offset = 100   # so that they are all centered around 0 on the x axis. It's the shift in the x direction.
+    else:        
+        xmax = myExp.loc[myExp['Pressure'].idxmax(), 'x coord']
+        ymax = myExp.loc[myExp['Pressure'].idxmax(), 'y coord']
+        max_id = myExp['Pressure'].idxmax()   #  index of the point with the maximum pressure value
+        offset = max_id%resolution   # so that they are all centered around 0 on the x axis. It's the shift in the x direction.
     
-    offset = max_id%resolution   # so that they are all centered around 0 on the x axis. It's the shift in the x direction.
-    print("offset: ",str(offset))
+    
+    print("max_id: "+str(max_id)+ ", offset: ",str(offset))
 
     # find the x coordinates that correspond to the max pressure, based on their index
     x_array = myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('x coord')] 
     y_array = myExp.iloc[offset::resolution,myExp.columns.get_loc('y coord')] # first: the point with coorinate = offset. Then every point above it (with a period of 'resolution') 
 
-    for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[0:20:5]): #[beg:end:step]  set which timesteps (based on FILE NUMBER) to plot
-    # for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[0:16:1]): #[beg:end:step]  set which timesteps (based on FILE NUMBER) to plot
+    for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[0:6:5]): #[beg:end:step]  set which timesteps (based on FILE NUMBER) to plot
         myfile = Path(os.getcwd()+'/'+filename)  # build file name including path
         if myfile.is_file():
             myExp = pd.read_csv(filename, header=0)
@@ -131,18 +129,17 @@ for dir in dir_list:
             elif var_to_plot == "Gravity":
                 var_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Gravity')] 
                 var_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Gravity')]
-
-            # sigma1_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Sigma_1')] 
-            # sigma1_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Sigma_1')]
-            # sigma2_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Sigma_2')] 
-            # sigma2_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Sigma_2')]
+            elif var_to_plot == "Sigma_1":
+                var_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Sigma_1')] 
+                var_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Sigma_1')]
+            elif var_to_plot == "Sigma_2":
+                var_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Sigma_2')] 
+                var_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Sigma_2')]
             # FPx_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('F_P_x')] 
             # FPy_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('F_P_y')]
             # pf_grad_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('pf_grad_x')] 
             # pf_grad_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('pf_grad_y')]
 
-            # print(dir_label,str(pf_grad_x[pf_grad_x>0].mean()),str(pf_grad_y[pf_grad_y>0].mean()))
-            
             input_tstep = float(getTimeStep("input.txt"))
             input_viscosity = float(getViscosity("input.txt"))
             file_num = float(filename.split("experiment")[1].split(".")[0])  # first take the part after "experiment", then the one before the "."

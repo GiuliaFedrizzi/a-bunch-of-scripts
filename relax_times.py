@@ -15,7 +15,7 @@ cmap = plt.get_cmap("tab10")  # default colormap (blue,orange,green etc)
 plot_num = 0    # a counter for the number of lines. It's used to assign the same colour to lines of the same directory (one real, one from the linear fit)
 
 parent_directories = []
-first_part_of_path = '/nobackup/scgf/myExperiments/gaussJan2022/gj08/size'
+first_part_of_path = '/nobackup/scgf/myExperiments/gaussJan2022/gj23/size'
 
 for i in dir_labels:
     parent_directories.append(first_part_of_path+str(i))
@@ -48,7 +48,7 @@ def getRelaxAndTime(lattefile):
                     if float(relax_times) > 1:
                         relax_array.append(float(relax_times))  # build the array with the number of relax times at the time
                         relax_times_array.append(float(time_relax_times))              # build the array with the relative time 
-                    if float(time_relax_times) == 5e6:
+                    if float(time_relax_times) == 5e8:
                         break
     return relax_times_array,relax_array  
     

@@ -128,7 +128,7 @@ if plot_figure:
     # first_part_of_path -> take the second to last part (parts are separated by "/"). py because image is made with python. bb = broken bonds
     # e.g. ssx_rad200_py_060_bb_6900
     os.chdir('..')  # back to the original folder
-    plt.savefig(fig_name, dpi=150)#,transparent=True)
+    #plt.savefig(fig_name, dpi=150)#,transparent=True)
     plt.show()
 
 
