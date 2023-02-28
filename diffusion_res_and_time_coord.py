@@ -47,9 +47,11 @@ var_to_plot = "Sigma_1"
 
 # dir_labels = ['400','200']  # res400.elle, res200.elle
 # dir_labels = ['020','030','040','050','060','070','080','090','100']
-# dir_labels = ['00200', '00400','00800','01000']
-dir_labels = ['02000','04000','08000','10000'] 
+dir_labels = ['00200', '00400','00800','01000']
+# dir_labels = ['02000','04000','08000','10000'] 
 #dir_labels = ['01','03','05','07','09','11','13','15','17','19']
+# dir_labels = ['01','02','03','04','05','06','07','08','09','10'] 
+
 
 resolution = 200
 
@@ -57,6 +59,7 @@ dir_list = []
 
 for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/gaussJan2022/gj07'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
+    # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/wd_viscTest/vis_'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
     dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj23/size'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
     
@@ -69,21 +72,29 @@ df_x = pd.DataFrame()
 df_y = pd.DataFrame()
 
 # check if labels only contain numbers (it means they are the dimensions of the domain = scales)
-if dir_labels[-1].isdigit():
+if dir_labels[-1].startswith('size'):
     max_dir_size = float(dir_labels[-1])  # maximum size for the scaling of the plots: take the last directory (largest)
 else:
     max_dir_size = 1
 for dirnum,dir in enumerate(dir_list):
     """ loop through directories"""
     os.chdir(dir)
-    dir_label = dir_labels[dirnum]   # get the label that corresponds to the directory
-    print(dir_label)
+
     if "size" in dir.split("/")[-1]:      # try to get the size automatically. If the last subdirectory contains the scale
+        dir_label = dir_labels[dirnum]   # get the label that corresponds to the directory
         scale_factor = float(dir_label)/max_dir_size # factor for scaling the axes. Normalised by the maximum size (e.g. 1000)
+        depth = getDepth("input.txt")
+        print("Sigma_1 top: ",str(3000*8.9*1000/1e6),str("MPa"))
+        print("Sigma_1 bottom: ",str(3000*8.9*(1000+float(dir_label))/1e6),str("MPa"))
+
     elif "press0" in dir.split("/")[-2]:   # If the second to last subdirectory contains the scale
         scale_factor = float(dir_label)/1000.0 # factor for scaling the axes. Normalised by the standard size
-
+        dir_label = dir_labels[dirnum]   # get the label that corresponds to the directory
+    elif "vis" in dir.split("/")[-1]: 
+        dir_label = str(int(dir_labels[dirnum])-4)   # get the label that corresponds to the directory. The viscosity is shifted by 4.
+        scale_factor = 1 # default factor for scaling the axes. 
     else:  # set manually
+        dir_label = dir_labels[dirnum]   # get the label that corresponds to the directory
         scale_factor = 1 # default factor for scaling the axes. 
 
     print("scale factor: ",str(scale_factor))
@@ -104,7 +115,7 @@ for dirnum,dir in enumerate(dir_list):
         offset = max_id%resolution   # so that they are all centered around 0 on the x axis. It's the shift in the x direction.
     
     
-    print("max_id: "+str(max_id)+ ", offset: ",str(offset))
+    # print("max_id: "+str(max_id)+ ", offset: ",str(offset))
 
     # find the x coordinates that correspond to the max pressure, based on their index
     x_array = myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('x coord')] 
