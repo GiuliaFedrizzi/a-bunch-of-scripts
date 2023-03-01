@@ -28,7 +28,6 @@ finds the max P, then uses the id of that point to get the coordinates of the po
 
 """
 
-# I use this ^ to run python in VS code in interactive mode
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -60,7 +59,7 @@ dir_list = []
 for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/gaussJan2022/gj07'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
     # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/wd_viscTest/vis_'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
-    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj23/size'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
+    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj24/size'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
     
 print(dir_list)
