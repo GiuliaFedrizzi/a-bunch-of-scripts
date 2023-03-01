@@ -46,6 +46,6 @@ fig_title = "Weight, Move\n " + first_part_of_path + "*"
 # #axs.set_xscale('log')
 # #plt.savefig(figure_name, dpi=600)
 # plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
-plt.legend()
+# plt.legend()
 plt.show()
 
