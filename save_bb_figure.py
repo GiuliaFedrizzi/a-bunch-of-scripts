@@ -28,7 +28,10 @@ first_part_of_path = '/nobackup/scgf/myExperiments/wavedec2022/wd05_visc/visc_2_
 
 Line2D.markers.items() 
 #mark_styles = Line2D.filled_markers
-mark_styles = Line2D.markers.keys()
+#mark_styles = Line2D.markers.keys()
+mark_styles = ['11','s','.']
+mark_size = []
+
 print(Line2D.markers.items())
 print(Line2D.markers.keys())
 

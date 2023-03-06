@@ -27,7 +27,6 @@ fig, axs = plt.subplots(nrows=1, ncols=2)  # 2 subplots, 1 for weight, 1 for mov
 
 for a,parent_directory in enumerate(parent_directories):
     inputFile = parent_directory + "/latte.log"
-    print(inputFile)
     weight[a] = float(getParameterFromLatte(inputFile,"Weight")) # find "Weight" in latte
     move[a] = float(getParameterFromLatte(inputFile,"Move"))
 

@@ -59,7 +59,7 @@ dir_list = []
 for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/gaussJan2022/gj07'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
     # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/wd_viscTest/vis_'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
-    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj24/size'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
+    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj27/size'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
     
 print(dir_list)
