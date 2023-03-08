@@ -450,5 +450,5 @@ def analyse_png(png_file: str) -> dict:
 
     return branch_info
 
-os.chdir("extract-raster-network/myexp_python2/")
-branch_info = analyse_png("python_bb_0.0001.png")
+os.chdir("/Users/giuliafedrizzi/Library/CloudStorage/OneDrive-UniversityofLeeds/PhD/arc/myExperiments/wavedec2022/wd05_visc/visc_2_1e2/vis1e2_mR_1")
+branch_info = analyse_png("python_bb_9.png")

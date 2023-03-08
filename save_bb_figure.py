@@ -21,17 +21,11 @@ from useful_functions import *
 from useful_functions_moments import *
  
 dir_labels = ['vis1e2_mR_1']#,'vis1e2_mR_2']
-filenames = ["my_experiment05000.csv"]# ,"my_experiment05300.csv"]
+filenames = ["my_experiment05000.csv","my_experiment05300.csv"]
 
 dir_list = []
 # first_part_of_path = '/nobackup/scgf/myExperiments/wavedec2022/wd05_visc/visc_2_1e2/'
 first_part_of_path = '/Users/giuliafedrizzi/Library/CloudStorage/OneDrive-UniversityofLeeds/PhD/arc/myExperiments/wavedec2022/wd05_visc/visc_2_1e2/'
-
-Line2D.markers.items() 
-#mark_styles = Line2D.filled_markers
-#mark_styles = Line2D.markers.keys()
-mark_styles = ['o','.']
-mark_size = np.arange(0.0001,0.003,0.0005)
 
 # print(Line2D.markers.items())
 # print(Line2D.markers.keys())
@@ -40,25 +34,24 @@ for i in dir_labels:
     dir_list.append(first_part_of_path+str(i))  
 
 
-def read_calculate_plot(filename):
+def read_calculate_plot(filename,input_tstep):
     """
     read the csv file, plot fractures
     """
-    bb_df = pd.read_csv(filename, header=0)
-    #mask = myExp['Broken Bonds'] > 0    # create a mask: find the true value of each row's 'xcoord' column being greater than 0, then using those truth values to identify which rows to keep
-    #bb_df = myExp[mask].copy()  # keep only the rows found by mask
+    timestep_number = int(re.findall(r'\d+',filename)[0])   # regex to find numbers in string. Then convert to float. Will be used to get "time" once multiplied by timestep.
 
-    # bb_df.reset_index(drop=True, inplace=True)
+    bb_df = pd.read_csv(filename, header=0)
 
     # if len(bb_df)==0:
     #     print("No broken bonds.")
     #     return
-    for ms in mark_size:
-        plt.figure()
-        #sns.scatterplot(data=bb_df,x="xcoord100",y="ycoord100",hue="Broken Bonds",linewidth=0,alpha=0.8,marker="h",size=0.6).set_aspect('equal')
-        sns.scatterplot(data=bb_df,x="x coord",y="y coord",hue="Fracrures",palette=['white','black'],linewidth=0,marker='.',size=ms,legend=False).set_aspect('equal') #,alpha=0.8  hue="Fracrures",
-        plt.title(ms)
-        plt.savefig("python_bb_"+str(ms)+".png",dpi=200)
+    time = str(input_tstep*timestep_number)
+    print(f'time {time}, tstep: {input_tstep}')
+    plt.figure()
+    #sns.scatterplot(data=bb_df,x="xcoord100",y="ycoord100",hue="Broken Bonds",linewidth=0,alpha=0.8,marker="h",size=0.6).set_aspect('equal')
+    sns.scatterplot(data=bb_df,x="x coord",y="y coord",hue="Fracrures",marker='.',s=9,palette=['white','black'],linewidth=0,legend=False).set_aspect('equal') #,alpha=0.8  hue="Fracrures",
+    plt.title(time)
+    plt.savefig("python_bb_"+str(timestep_number)+".png",dpi=300)
     # plt.show()
         ##    .set_aspect('equal') to keep the same scale for x and y
     
@@ -72,14 +65,13 @@ for dir in dir_list:
     #for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[2:36:5]): #[beg:end:step]  # loop through files
     for filename in filenames:
         """ loop through files"""
-        timestep_number = int(re.findall(r'\d+',filename)[0])   # regex to find numbers in string. Then convert to float. Will be used to get "time" once multiplied by timestep.
+        print(f'filename: {filename}')
     
         myfile = Path(os.getcwd()+'/'+filename)  # build file name including path
         if myfile.is_file():
-            read_calculate_plot(filename)
+            read_calculate_plot(filename,input_tstep)
         
         #fig.suptitle("t = "+str('{:.1e}'.format(input_tstep*timestep_number))) 
-        print("---filename: ",filename,", timestep_number:",timestep_number,", input timestep: ",input_tstep,", input_tstep*timestep_number: ",input_tstep*timestep_number)
         plt.tight_layout()
         #fig_name = first_part_of_path+''.join(dir_labels)+"t"+str(timestep_number)+".png" # join together all elements of the list of sizes (directories)
         #plt.savefig(fig_name, dpi=600)#,transparent=True)
