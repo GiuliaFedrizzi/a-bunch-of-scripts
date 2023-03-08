@@ -20,20 +20,21 @@ from matplotlib.lines import Line2D
 from useful_functions import * 
 from useful_functions_moments import *
  
-dir_labels = ['vis1e2_mR_1','vis1e2_mR_2']
-filenames = ["my_experiment02100.csv","my_experiment02200.csv"]
+dir_labels = ['vis1e2_mR_1']#,'vis1e2_mR_2']
+filenames = ["my_experiment05000.csv"]# ,"my_experiment05300.csv"]
 
 dir_list = []
-first_part_of_path = '/nobackup/scgf/myExperiments/wavedec2022/wd05_visc/visc_2_1e2/'
+# first_part_of_path = '/nobackup/scgf/myExperiments/wavedec2022/wd05_visc/visc_2_1e2/'
+first_part_of_path = '/Users/giuliafedrizzi/Library/CloudStorage/OneDrive-UniversityofLeeds/PhD/arc/myExperiments/wavedec2022/wd05_visc/visc_2_1e2/'
 
 Line2D.markers.items() 
 #mark_styles = Line2D.filled_markers
 #mark_styles = Line2D.markers.keys()
-mark_styles = ['11','s','.']
-mark_size = []
+mark_styles = ['o','.']
+mark_size = np.arange(0.0001,0.003,0.0005)
 
-print(Line2D.markers.items())
-print(Line2D.markers.keys())
+# print(Line2D.markers.items())
+# print(Line2D.markers.keys())
 
 for i in dir_labels:
     dir_list.append(first_part_of_path+str(i))  
@@ -52,12 +53,13 @@ def read_calculate_plot(filename):
     # if len(bb_df)==0:
     #     print("No broken bonds.")
     #     return
-    for ms in mark_styles:
+    for ms in mark_size:
         plt.figure()
         #sns.scatterplot(data=bb_df,x="xcoord100",y="ycoord100",hue="Broken Bonds",linewidth=0,alpha=0.8,marker="h",size=0.6).set_aspect('equal')
-        sns.scatterplot(data=bb_df,x="x coord",y="y coord",hue="Fracrures",linewidth=0,marker=ms,size=0.3,legend=False).set_aspect('equal') #,alpha=0.8  # P (only small resol)
+        sns.scatterplot(data=bb_df,x="x coord",y="y coord",hue="Fracrures",palette=['white','black'],linewidth=0,marker='.',size=ms,legend=False).set_aspect('equal') #,alpha=0.8  hue="Fracrures",
         plt.title(ms)
-    plt.show()
+        plt.savefig("python_bb_"+str(ms)+".png",dpi=200)
+    # plt.show()
         ##    .set_aspect('equal') to keep the same scale for x and y
     
 
