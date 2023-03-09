@@ -420,10 +420,8 @@ def analyse_png(png_file: str) -> dict:
 
     im = Image.open(png_file)
     # Setting the points for cropped image
-    left = 316    # limit
-    top = 147     # limit. 0 is at top, so top < bottom
-    right = 996   # limit
-    bottom = 819  # limit. 0 is at top, so bottom > top
+    # left = 316; top = 147; right = 996; bottom = 819 # worked when images were generated on my laptop
+    left = 475; top = 223; right = 1490; bottom = 1228 # worked when images were generated on ARC
 
     # Cropped image of above dimension
     im = im.crop((left, top, right, bottom))
@@ -453,9 +451,9 @@ def analyse_png(png_file: str) -> dict:
 
 branch_info = []  # create an empty list. One row = one dictionary for each simulation
 
-# os.chdir("/Users/giuliafedrizzi/Library/CloudStorage/OneDrive-UniversityofLeeds/PhD/arc/myExperiments/wavedec2022/wd05_visc/visc_2_1e2/vis1e2_mR_1")
+os.chdir("/Users/giuliafedrizzi/Library/CloudStorage/OneDrive-UniversityofLeeds/PhD/arc/myExperiments/wavedec2022/wd05_visc/visc_2_1e2/vis1e2_mR_1")
 
-os.chdir("/nobackup/scgf/myExperiments/wavedec2022/wd05_visc/visc_2_1e2/vis1e2_mR_1")
+# os.chdir("/nobackup/scgf/myExperiments/wavedec2022/wd05_visc/visc_2_1e2/vis1e2_mR_1")
 branch_info.append(analyse_png("py_bb_06000.png"))
 
 keys = branch_info[0].keys()
