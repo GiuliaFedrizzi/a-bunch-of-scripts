@@ -44,6 +44,7 @@ from PIL import Image, ImageFilter
 from skimage import morphology, segmentation
 import matplotlib.pyplot as plt
 import os
+import csv
 
 
 def find_color(im: Image, rgb: Tuple[int]) -> np.ndarray:
@@ -52,7 +53,7 @@ def find_color(im: Image, rgb: Tuple[int]) -> np.ndarray:
     print(f'px shape: {px.shape}')
     print(f'im size: {im.size}')
     width, height = im.size  # get width and height because I need to invert these
-    print(f'width {width}, height {height}')
+    # print(f'width {width}, height {height}')
     out = np.zeros((height,width), dtype=np.uint8)  # h,w instead of w,h because PIL treats them the other way round
     print(f'out shape: {out.shape}')
 
@@ -450,5 +451,17 @@ def analyse_png(png_file: str) -> dict:
 
     return branch_info
 
-os.chdir("/Users/giuliafedrizzi/Library/CloudStorage/OneDrive-UniversityofLeeds/PhD/arc/myExperiments/wavedec2022/wd05_visc/visc_2_1e2/vis1e2_mR_1")
-branch_info = analyse_png("python_bb_9.png")
+branch_info = []  # create an empty list. One row = one dictionary for each simulation
+
+# os.chdir("/Users/giuliafedrizzi/Library/CloudStorage/OneDrive-UniversityofLeeds/PhD/arc/myExperiments/wavedec2022/wd05_visc/visc_2_1e2/vis1e2_mR_1")
+
+os.chdir("/nobackup/scgf/myExperiments/wavedec2022/wd05_visc/visc_2_1e2/vis1e2_mR_1")
+branch_info.append(analyse_png("py_bb_06000.png"))
+
+keys = branch_info[0].keys()
+
+# write to csv file
+with open('branch_info.csv', 'w', newline='') as output_file:
+    dict_writer = csv.DictWriter(output_file, keys)
+    dict_writer.writeheader()
+    dict_writer.writerows(branch_info)
