@@ -27,7 +27,7 @@ bottom = 819  # limit. 0 is at top, so bottom > top
 # (It will not change original image)
 im1 = im.crop((left, top, right, bottom))
 
-
+ARC: python 3.6
 """
 
 import sys
@@ -41,10 +41,13 @@ import numpy as np
 import scipy.ndimage.measurements
 import shapely.geometry
 from PIL import Image, ImageFilter
-from skimage import morphology, segmentation
+from skimage import morphology, segmentation  # most problematic: install this first
 import matplotlib.pyplot as plt
 import os
 import csv
+import glob
+import re   # regex
+from useful_functions import getTimeStep
 
 
 def find_color(im: Image, rgb: Tuple[int]) -> np.ndarray:
@@ -321,7 +324,7 @@ def simplify_paths(g: nx.Graph, tolerance=1) -> nx.Graph:
     return g
 
 
-def extract_network(px: np.ndarray, im: Image, min_distance=8) -> nx.Graph:
+def extract_network(px: np.ndarray, im: Image, min_distance=12) -> nx.Graph:
     skel = morphology.thin(px)
     print(f'Skeleton px={skel.sum()}')
     g = connect_graph(skel, min_distance)
@@ -371,7 +374,7 @@ def draw_nx_graph(im: Image, g: nx.Graph) -> None:
     #plt.savefig(out_path)  
     # plt.show()
 
-def topo_analysis(g: nx.Graph) -> dict:
+def topo_analysis(g: nx.Graph,tstep_number: float) -> dict:
     """
     Perform topological analysis. 
     Mostly based on Sanderson, D. J., & Nixon, C.
@@ -379,35 +382,39 @@ def topo_analysis(g: nx.Graph) -> dict:
     of Structural Geology, 72, 55-66. https://doi.org/10.1016/j.jsg.2015.01.005
 
     """
+    input_tstep = float(getTimeStep("input.txt"))  # needed to calculate time (1st row of csv)
     edge_lengths = [d for (u,v,d) in g.edges.data('d')]  # distance values are stored under the attribute "d"
     print(f'n of branches: {len(edge_lengths)}')
     print(f'branch lengths: {edge_lengths}')
     # print(f'edge_d: {edge_d}, type: {type(edge_d)}') 
     # all_degrees = (nx.degree(g)).values()
     all_degrees = [x for ((u,v),x) in list(g.degree)]
-    n_I = all_degrees.count(1) # number of isolated (I) nodes
+    n_1 = all_degrees.count(1) # number of isolated (I) nodes
     n_2 = all_degrees.count(2) # numbner of nodes with 2 connections
     n_3 = all_degrees.count(3) # number of nodes with 3 connections
     n_4 = all_degrees.count(4) # etc
     n_5 = all_degrees.count(5) 
+    n_0 = all_degrees.count(0) 
 
+    n_I = n_1 + n_0   # I nodes
     n_Y = n_2 + n_3   # Y nodes
     n_X = n_4 + n_5   # X nodes
 
-    connected = [x for x in all_degrees if (x!=1)]
+    #connected = [x for x in all_degrees if (x!=1)]
     print(f'all_degrees: {all_degrees}')
     print(f'num of I: {n_I}, Y: {n_Y}, X: {n_X}. tot = {n_I+n_Y+n_X}')
 
-    assert len(g.nodes())==n_I+n_Y+n_X, "Error: some of the nodes have not been taken into account. There might have too many connections."
+    # assert len(g.nodes())==n_I+n_Y+n_X, "Error: some of the nodes have not been taken into account. There might have too many connections."
     
     n_of_lines = 0.5*(n_I+n_Y)
     print(f'lines: {n_of_lines}')
-    n_of_branches = 0.5*(n_I+3*n_3+4*n_4+5*n_5) + n_2
+    n_of_branches = 0.5*(n_I+3*n_3+4*n_4+5*n_5) + n_2 + n_0
     # branches_to_line = n_of_branches / n_of_lines
     # print(f'branches/lines: {branches_to_line}')
     branches_tot_length = sum(edge_lengths)
     print(f'branches tot length: {branches_tot_length}')
-    branch_info = {"n_I":n_I,"n_2":n_2,"n_3":n_3,"n_4":n_4,"n_5":n_5,"branches_tot_length":branches_tot_length} # dictionary with info that I just calculated
+    branch_info = {"time":tstep_number*input_tstep,"n_I":n_I,"n_2":n_2,"n_3":n_3,"n_4":n_4,"n_5":n_5,
+                   "branches_tot_length":branches_tot_length} # dictionary with info that I just calculated
     return branch_info
 
 def analyse_png(png_file: str) -> dict:
@@ -417,7 +424,8 @@ def analyse_png(png_file: str) -> dict:
     rgb = tuple(int(v) for v in color[1:-1].split(','))
     assert len(rgb) == 3
     assert png_file.endswith('.png')
-
+    
+    timestep_number = float(re.findall(r'\d+',png_file)[0])   # regex to find numbers in string. Then convert to float. Will be used to name the csv file 
     im = Image.open(png_file)
     # Setting the points for cropped image
     # left = 316; top = 147; right = 996; bottom = 819 # worked when images were generated on my laptop
@@ -427,7 +435,9 @@ def analyse_png(png_file: str) -> dict:
     im = im.crop((left, top, right, bottom))
     # Apply median filter to smooth the edges
     im = im.filter(ImageFilter.ModeFilter(size=7)) # https://stackoverflow.com/questions/62078016/smooth-the-edges-of-binary-images-face-using-python-and-open-cv 
-    # im.save('medianfilter.png')
+    out_path = png_file.replace('.png', '_median.png')
+    im.save(out_path)
+
 
     px = find_color(im, rgb).T
 
@@ -439,7 +449,7 @@ def analyse_png(png_file: str) -> dict:
     print(f'  - {len(g.edges())} edges')
     
     # do some statistics
-    branch_info = topo_analysis(g)
+    branch_info = topo_analysis(g,timestep_number)
 
     # viz grid with networkx's plot
     out_path = png_file.replace('.png', '_nx.grid.png')
@@ -449,17 +459,35 @@ def analyse_png(png_file: str) -> dict:
 
     return branch_info
 
-branch_info = []  # create an empty list. One row = one dictionary for each simulation
+def file_loop(parent_dir: str) -> None:
+    """ given the parent directory, cd there and go through all png files"""
+    # os.chdir("/Users/giuliafedrizzi/Library/CloudStorage/OneDrive-UniversityofLeeds/PhD/arc/myExperiments/wavedec2022/wd05_visc/visc_4_5e4/vis5e4_mR_09")
+    os.chdir(parent_dir)
+    print(os.getcwd())
+    print(f'n of files: {len(glob.glob("py_bb_*0.png"))}')
 
-os.chdir("/Users/giuliafedrizzi/Library/CloudStorage/OneDrive-UniversityofLeeds/PhD/arc/myExperiments/wavedec2022/wd05_visc/visc_2_1e2/vis1e2_mR_1")
+    branch_info = []  # create an empty list. One row = one dictionary for each simulation
+    for f,filename in enumerate(sorted(glob.glob("py_bb_*.png"))):
+        """ Get the file name, run 'analyse_png', get the info on the branches,
+        save it into a csv   """
+        # if f == 8 or f == 14:
+        branch_info.append(analyse_png(filename))  # build the list of dictionaries
+        print(f'branch info = {branch_info}')
+    
+    keys = branch_info[0].keys()
 
-# os.chdir("/nobackup/scgf/myExperiments/wavedec2022/wd05_visc/visc_2_1e2/vis1e2_mR_1")
-branch_info.append(analyse_png("py_bb_06000.png"))
+    csv_file_name = "py_branch_info.csv" 
+    # write to csv file
+    with open(csv_file_name, 'w', newline='') as output_file:
+        dict_writer = csv.DictWriter(output_file, keys)
+        dict_writer.writeheader()
+        dict_writer.writerows(branch_info)
 
-keys = branch_info[0].keys()
+# starting here:           
+os.chdir("/Users/giuliafedrizzi/Library/CloudStorage/OneDrive-UniversityofLeeds/PhD/arc/myExperiments/wavedec2022/wd05_visc/")
 
-# write to csv file
-with open('branch_info.csv', 'w', newline='') as output_file:
-    dict_writer = csv.DictWriter(output_file, keys)
-    dict_writer.writeheader()
-    dict_writer.writerows(branch_info)
+for i,d in enumerate(sorted(glob.glob("visc_*/vis*"))):
+    if i == 1:
+        file_loop(d)
+        os.chdir("/Users/giuliafedrizzi/Library/CloudStorage/OneDrive-UniversityofLeeds/PhD/arc/myExperiments/wavedec2022/wd05_visc/")
+    
