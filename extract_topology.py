@@ -484,10 +484,12 @@ def file_loop(parent_dir: str) -> None:
         dict_writer.writerows(branch_info)
 
 # starting here:           
-os.chdir("/Users/giuliafedrizzi/Library/CloudStorage/OneDrive-UniversityofLeeds/PhD/arc/myExperiments/wavedec2022/wd05_visc/")
+# os.chdir("/Users/giuliafedrizzi/Library/CloudStorage/OneDrive-UniversityofLeeds/PhD/arc/myExperiments/wavedec2022/wd05_visc/")
+d = os.getcwd()
 
-for i,d in enumerate(sorted(glob.glob("visc_*/vis*"))):
-    if i == 1:
-        file_loop(d)
-        os.chdir("/Users/giuliafedrizzi/Library/CloudStorage/OneDrive-UniversityofLeeds/PhD/arc/myExperiments/wavedec2022/wd05_visc/")
+# for i,d in enumerate(sorted(glob.glob("visc_*/vis*"))):
+#     if i == 0:
+# if (('visc_1_1e1/vis1e1_mR_01' in d) or ('visc_1_1e1/vis1e1_mR_02' in d)) == False:  # skip those two
+file_loop(d)
+# os.chdir("/Users/giuliafedrizzi/Library/CloudStorage/OneDrive-UniversityofLeeds/PhD/arc/myExperiments/wavedec2022/wd05_visc/")
     
