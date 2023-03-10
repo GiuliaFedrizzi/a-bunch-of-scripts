@@ -35,7 +35,7 @@ from collections import Counter
 from dataclasses import dataclass
 from typing import List, Tuple
 
-import cv2
+import cv2          #  conda install -c conda-forge opencv
 import networkx as nx
 import numpy as np
 import scipy.ndimage.measurements
@@ -435,8 +435,8 @@ def analyse_png(png_file: str) -> dict:
     im = im.crop((left, top, right, bottom))
     # Apply median filter to smooth the edges
     im = im.filter(ImageFilter.ModeFilter(size=7)) # https://stackoverflow.com/questions/62078016/smooth-the-edges-of-binary-images-face-using-python-and-open-cv 
-    out_path = png_file.replace('.png', '_median.png')
-    im.save(out_path)
+    # out_path = png_file.replace('.png', '_median.png')
+    # im.save(out_path)
 
 
     px = find_color(im, rgb).T
@@ -455,6 +455,7 @@ def analyse_png(png_file: str) -> dict:
     out_path = png_file.replace('.png', '_nx.grid.png')
     ax = draw_nx_graph(im, g)
     plt.savefig("p_"+out_path,dpi=300)
+    plt.clf()
     # plt.show()
 
     return branch_info
@@ -472,7 +473,6 @@ def file_loop(parent_dir: str) -> None:
         save it into a csv   """
         # if f == 8 or f == 14:
         branch_info.append(analyse_png(filename))  # build the list of dictionaries
-        print(f'branch info = {branch_info}')
     
     keys = branch_info[0].keys()
 
