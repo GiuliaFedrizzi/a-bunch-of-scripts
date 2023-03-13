@@ -3,6 +3,15 @@
 """Extract a graph given a raster image.
 source of original script: https://github.com/danvk/extract-raster-network
 
+
+USE: 
+python3 /path/to/extract_topology.py w
+(whole domain)
+or 
+python3 /path/to/extract_topology.py t
+python3 /path/to/extract_topology.py b
+(top part or bottom part only)
+
 Giulia's edits: 
 - use thin instead of skeletonize
 - can open rectangular images, not just square
@@ -499,8 +508,9 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
 # starting here:           
 # os.chdir("/Users/giuliafedrizzi/Library/CloudStorage/OneDrive-UniversityofLeeds/PhD/arc/myExperiments/wavedec2022/wd05_visc/")
 d = os.getcwd()
-part_to_analyse = sys.argv[0]
-assert (part_to_analyse == 'b' or part_to_analyse == 't' or part_to_analyse == 'b'), "Error: specify w for whole domain, b for bottom (melt zone), t for top (through zone)"
+part_to_analyse = sys.argv[1]
+print(f'sys arg: {sys.argv[1]}')
+assert (part_to_analyse == 'w' or part_to_analyse == 't' or part_to_analyse == 'b'), "Error: specify w for whole domain, b for bottom (melt zone), t for top (through zone)"
 
 
 # for i,d in enumerate(sorted(glob.glob("visc_*/vis*"))):
