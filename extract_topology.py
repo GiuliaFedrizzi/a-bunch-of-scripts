@@ -431,10 +431,13 @@ def analyse_png(png_file: str, part_to_analyse: str) -> dict:
     # Setting the points for cropped image
     # left = 316; top = 147; right = 996; bottom = 819 # worked when images were generated on my laptop
         left = 475; top = 223; right = 1490; bottom = 1228 # worked when images were generated on ARC
+        out_path = "p_"+png_file.replace('.png', '_nx.grid.png')
     elif part_to_analyse == 'b':
         left = 475; top = 1027; right = 1490; bottom = 1228 # BOTTOM - melt-production zone
+        out_path = "p_bot_"+png_file.replace('.png', '_nx.grid.png')
     elif part_to_analyse == 't':
         left = 475; top = 223; right = 1490; bottom = 1027 # TOP - melt-production zone
+        out_path = "p_top_"+png_file.replace('.png', '_nx.grid.png')
 
     # im.show()
     # Cropped image of above dimension
@@ -458,9 +461,8 @@ def analyse_png(png_file: str, part_to_analyse: str) -> dict:
     branch_info = topo_analysis(g,timestep_number)
 
     # viz grid with networkx's plot
-    out_path = png_file.replace('.png', '_nx.grid.png')
     ax = draw_nx_graph(im, g)
-    plt.savefig("p_top_"+out_path,dpi=300)
+    plt.savefig(out_path,dpi=300)
     plt.clf()
     # plt.show()
 
@@ -481,8 +483,13 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
         branch_info.append(analyse_png(filename,part_to_analyse))  # build the list of dictionaries
     
     keys = branch_info[0].keys()
+    if part_to_analyse == 'w': # whole domain
+        csv_file_name = "py_branch_info.csv" 
+    elif part_to_analyse == 'b':
+        csv_file_name = "py_branch_info_bot.csv" 
+    elif part_to_analyse == 't':
+        csv_file_name = "py_branch_info_top.csv" 
 
-    csv_file_name = "py_branch_info_top.csv" 
     # write to csv file
     with open(csv_file_name, 'w', newline='') as output_file:
         dict_writer = csv.DictWriter(output_file, keys)
