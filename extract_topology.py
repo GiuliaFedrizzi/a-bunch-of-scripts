@@ -417,7 +417,7 @@ def topo_analysis(g: nx.Graph,tstep_number: float) -> dict:
                    "branches_tot_length":branches_tot_length} # dictionary with info that I just calculated
     return branch_info
 
-def analyse_png(png_file: str) -> dict:
+def analyse_png(png_file: str, part_to_analyse: str) -> dict:
     color = '(255, 255, 255)'  # do the analysis on the white parts
     assert color[0] == '('
     assert color[-1] == ')'
@@ -427,11 +427,14 @@ def analyse_png(png_file: str) -> dict:
     
     timestep_number = float(re.findall(r'\d+',png_file)[0])   # regex to find numbers in string. Then convert to float. Will be used to name the csv file 
     im = Image.open(png_file)
+    if part_to_analyse == 'w': # whole domain
     # Setting the points for cropped image
     # left = 316; top = 147; right = 996; bottom = 819 # worked when images were generated on my laptop
-    # left = 475; top = 223; right = 1490; bottom = 1228 # worked when images were generated on ARC
-    # left = 475; top = 1027; right = 1490; bottom = 1228 # BOTTOM - melt-production zone
-    left = 475; top = 223; right = 1490; bottom = 1027 # TOP - melt-production zone
+        left = 475; top = 223; right = 1490; bottom = 1228 # worked when images were generated on ARC
+    elif part_to_analyse == 'b':
+        left = 475; top = 1027; right = 1490; bottom = 1228 # BOTTOM - melt-production zone
+    elif part_to_analyse == 't':
+        left = 475; top = 223; right = 1490; bottom = 1027 # TOP - melt-production zone
 
     # im.show()
     # Cropped image of above dimension
@@ -463,7 +466,7 @@ def analyse_png(png_file: str) -> dict:
 
     return branch_info
 
-def file_loop(parent_dir: str) -> None:
+def file_loop(parent_dir: str,part_to_analyse: str) -> None:
     """ given the parent directory, cd there and go through all png files"""
     # os.chdir("/Users/giuliafedrizzi/Library/CloudStorage/OneDrive-UniversityofLeeds/PhD/arc/myExperiments/wavedec2022/wd05_visc/visc_4_5e4/vis5e4_mR_09")
     os.chdir(parent_dir)
@@ -475,7 +478,7 @@ def file_loop(parent_dir: str) -> None:
         """ Get the file name, run 'analyse_png', get the info on the branches,
         save it into a csv   """
         # if f == 8 or f == 14:
-        branch_info.append(analyse_png(filename))  # build the list of dictionaries
+        branch_info.append(analyse_png(filename,part_to_analyse))  # build the list of dictionaries
     
     keys = branch_info[0].keys()
 
@@ -489,10 +492,13 @@ def file_loop(parent_dir: str) -> None:
 # starting here:           
 # os.chdir("/Users/giuliafedrizzi/Library/CloudStorage/OneDrive-UniversityofLeeds/PhD/arc/myExperiments/wavedec2022/wd05_visc/")
 d = os.getcwd()
+part_to_analyse = sys.argv[0]
+assert (part_to_analyse == 'b' or part_to_analyse == 't' or part_to_analyse == 'b'), "Error: specify w for whole domain, b for bottom (melt zone), t for top (through zone)"
+
 
 # for i,d in enumerate(sorted(glob.glob("visc_*/vis*"))):
 #     if i == 0:
 # if (('visc_1_1e1/vis1e1_mR_01' in d) or ('visc_1_1e1/vis1e1_mR_02' in d)) == False:  # skip those two
-file_loop(d)
+file_loop(d,part_to_analyse)
 # os.chdir("/Users/giuliafedrizzi/Library/CloudStorage/OneDrive-UniversityofLeeds/PhD/arc/myExperiments/wavedec2022/wd05_visc/")
     
