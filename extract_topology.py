@@ -429,8 +429,11 @@ def analyse_png(png_file: str) -> dict:
     im = Image.open(png_file)
     # Setting the points for cropped image
     # left = 316; top = 147; right = 996; bottom = 819 # worked when images were generated on my laptop
-    left = 475; top = 223; right = 1490; bottom = 1228 # worked when images were generated on ARC
+    # left = 475; top = 223; right = 1490; bottom = 1228 # worked when images were generated on ARC
+    # left = 475; top = 1027; right = 1490; bottom = 1228 # BOTTOM - melt-production zone
+    left = 475; top = 223; right = 1490; bottom = 1027 # TOP - melt-production zone
 
+    # im.show()
     # Cropped image of above dimension
     im = im.crop((left, top, right, bottom))
     # Apply median filter to smooth the edges
@@ -454,7 +457,7 @@ def analyse_png(png_file: str) -> dict:
     # viz grid with networkx's plot
     out_path = png_file.replace('.png', '_nx.grid.png')
     ax = draw_nx_graph(im, g)
-    plt.savefig("p_"+out_path,dpi=300)
+    plt.savefig("p_top_"+out_path,dpi=300)
     plt.clf()
     # plt.show()
 
@@ -476,7 +479,7 @@ def file_loop(parent_dir: str) -> None:
     
     keys = branch_info[0].keys()
 
-    csv_file_name = "py_branch_info.csv" 
+    csv_file_name = "py_branch_info_top.csv" 
     # write to csv file
     with open(csv_file_name, 'w', newline='') as output_file:
         dict_writer = csv.DictWriter(output_file, keys)
