@@ -42,11 +42,11 @@ from pathlib import Path
 from useful_functions import * 
 
 var_to_plot = "Sigma_1"
-# options: Pressure, Mean Stress, Actual Movement, Gravity, Porosity, Sigma_1, Sigma_2
+# options: Pressure, Mean Stress, Actual Movement, Gravity, Porosity, Sigma_1, Sigma_2, Youngs Modulus
 
 # dir_labels = ['400','200']  # res400.elle, res200.elle
 # dir_labels = ['020','030','040','050','060','070','080','090','100']
-dir_labels = ['00200', '00400','00800','01000']
+dir_labels = ['00200', '00400','00600','00800','01000']
 # dir_labels = ['02000','04000','08000','10000'] 
 #dir_labels = ['01','03','05','07','09','11','13','15','17','19']
 # dir_labels = ['01','02','03','04','05','06','07','08','09','10'] 
@@ -59,7 +59,7 @@ dir_list = []
 for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/gaussJan2022/gj07'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
     # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/wd_viscTest/vis_'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
-    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj27/size'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
+    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj33/size'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
     
 print(dir_list)
@@ -145,6 +145,13 @@ for dirnum,dir in enumerate(dir_list):
             elif var_to_plot == "Sigma_2":
                 var_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Sigma_2')] 
                 var_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Sigma_2')]
+            elif var_to_plot == "real_radius":
+                var_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('real_radius')] 
+                var_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('real_radius')]
+            elif var_to_plot == "Youngs Modulus":
+                var_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Youngs Modulus')] 
+                var_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Youngs Modulus')]
+            
             # FPx_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('F_P_x')] 
             # FPy_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('F_P_y')]
             # pf_grad_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('pf_grad_x')] 
@@ -158,7 +165,7 @@ for dirnum,dir in enumerate(dir_list):
             labelName = "t=" + str('{:.1e}'.format(input_tstep*file_num))
 
             # y                  shift array by the max value so that the maximum is at zero and scale it 
-            data1_y = {'y': (y_array - ymax)*scale_factor,var_to_plot: var_array_y, 'scale': dir_label,'time': labelName}  # save temporarily
+            data1_y = {'y': (y_array - ymax)*scale_factor,var_to_plot: var_array_y, 'scale': dir_label,'time': labelName}  # save temporarily. dictionary with y coord, the variable, the scale and time
             df1_y = pd.DataFrame(data1_y)
             df_y = pd.concat([df_y,df1_y], ignore_index=True) # append to old one
 
@@ -166,7 +173,8 @@ for dirnum,dir in enumerate(dir_list):
             data1_x = {'x': (x_array - xmax)*scale_factor,var_to_plot: var_array_x, 'scale': dir_label,'time': labelName}  # save temporarily
             df1_x = pd.DataFrame(data1_x)
             df_x = pd.concat([df_x,df1_x], ignore_index=True) # append to old one
-
+    print(var_array_y.values[:2]/1e6)
+    print(var_array_y.values[-2:]/1e6)
 # g_x = sns.lineplot(data=df_x ,x="x",y='Mean Stress (MPa)',ax=ax1,hue='time',style='scale',alpha=0.5)  # or sns.scatterplot
 # g_y = sns.lineplot(data=df_y ,x="y",y='Mean Stress (MPa)',ax=ax2,hue='time',style='scale',alpha=0.5)
 # ax3 = g_y.twinx()
