@@ -56,7 +56,7 @@ import os
 import csv
 import glob
 import re   # regex
-sys.path.append('../')
+sys.path.append('../')   # where to look for useful_functions.py
 from useful_functions import getTimeStep
 
 
