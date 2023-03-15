@@ -15,7 +15,10 @@ import glob
 import seaborn as sns
 from pathlib import Path
 import re   # regex
+import sys
 from matplotlib.lines import Line2D
+
+sys.path.append('/home/home01/scgf/myscripts/post_processing')   # where to look for useful_functions.py
 
 from useful_functions import * 
 from useful_functions_moments import *
@@ -43,11 +46,13 @@ def read_calculate_plot(filename,input_tstep):
     #     return
     time = str(input_tstep*timestep_number)
     print(f'time {time}, tstep: {input_tstep}')
-    plt.figure()
+    #plt.figure()
     #sns.scatterplot(data=bb_df,x="xcoord100",y="ycoord100",hue="Broken Bonds",linewidth=0,alpha=0.8,marker="h",size=0.6).set_aspect('equal')
     sns.scatterplot(data=bb_df,x="x coord",y="y coord",hue="Fracrures",marker='.',s=9,palette=palette_option,linewidth=0,legend=False).set_aspect('equal') #,alpha=0.8  hue="Fracrures",
     plt.title(time)
+    plt.tight_layout()
     plt.savefig("py_bb_"+str(timestep_number).zfill(5)+".png",dpi=300)
+    plt.clf()
     # plt.show()
         ##    .set_aspect('equal') to keep the same scale for x and y
 
@@ -65,7 +70,7 @@ for filename in sorted(glob.glob("my_experiment*.csv")):
         read_calculate_plot(filename,input_tstep)
     
     #fig.suptitle("t = "+str('{:.1e}'.format(input_tstep*timestep_number))) 
-    plt.tight_layout()
+    
     #fig_name = first_part_of_path+''.join(dir_labels)+"t"+str(timestep_number)+".png" # join together all elements of the list of sizes (directories)
     #plt.savefig(fig_name, dpi=600)#,transparent=True)
     # plt.show()

@@ -56,7 +56,8 @@ import os
 import csv
 import glob
 import re   # regex
-sys.path.append('../')   # where to look for useful_functions.py
+
+sys.path.append('/home/home01/scgf/myscripts/post_processing')   # where to look for useful_functions.py
 from useful_functions import getTimeStep
 
 
