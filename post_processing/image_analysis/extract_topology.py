@@ -56,6 +56,7 @@ import os
 import csv
 import glob
 import re   # regex
+sys.path.append('../')
 from useful_functions import getTimeStep
 
 

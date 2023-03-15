@@ -1,11 +1,13 @@
-""" plot a line = pressure diffusion
+""" 
+plot a profile
  1st plot: horizontal, 2nd plot: vertical
 
 line:
   colour: time
-  style: resolution
+  style: resolution - label is the size of the domain
 
-can plot from different directories (e.g. sigma, resolution)
+takes the name of the subdirectories in a list - dir_labels
+  
 builds 2 pandas dataframes of the type:
 
       x_coord    pressure  dir      time
@@ -21,11 +23,12 @@ builds 2 pandas dataframes of the type:
 1198  0.99625  40024800.0    1  t=9.0e+06
 1199  0.99875  40024800.0    1  t=9.0e+06
 
-and the second one for x_coord
+and the second one for y_coord
 
 same as  diffusion_res_and_time, but uses coordinates instead of proximity threshold to get the points to plot
 finds the max P, then uses the id of that point to get the coordinates of the points in the horizontal and vertical line
 
+It's called "diffusion" because it was made to plot pressure diffusion in time
 """
 
 import pandas as pd
@@ -46,10 +49,11 @@ var_to_plot = "Sigma_1"
 
 # dir_labels = ['400','200']  # res400.elle, res200.elle
 # dir_labels = ['020','030','040','050','060','070','080','090','100']
-dir_labels = ['00200', '00400','00600','00800','01000']
+# dir_labels = ['00200', '00400','00600','00800','01000']
 # dir_labels = ['02000','04000','08000','10000'] 
 #dir_labels = ['01','03','05','07','09','11','13','15','17','19']
 # dir_labels = ['01','02','03','04','05','06','07','08','09','10'] 
+dir_labels = ['102','104','106','108','110']
 
 
 resolution = 200
@@ -59,7 +63,8 @@ dir_list = []
 for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/gaussJan2022/gj07'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
     # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/wd_viscTest/vis_'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
-    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj33/size'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
+    # dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj33/size'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
+    dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/pr02/por'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
     
 print(dir_list)
