@@ -1,0 +1,5 @@
+copy all baseFiles dirs only
+rsync -vr --exclude={*.sh.e*,*.sh.o*,*.csv,*.png,brok*,*.log,vis1*,vis5*} ../prod/p01/ th01/
+
+cleans conda only in my personal/home directory 
+CONDA_PKGS_DIRS=$HOME/.conda/pkgs conda clean -a
