@@ -3,3 +3,11 @@ rsync -vr --exclude={*.sh.e*,*.sh.o*,*.csv,*.png,brok*,*.log,vis1*,vis5*} ../pro
 
 cleans conda only in my personal/home directory 
 CONDA_PKGS_DIRS=$HOME/.conda/pkgs conda clean -a
+
+sort directories by size, include hidden dirs
+du -h -d 0 .[^.]* * | sort -h
+
+clean up vs code:
+> Remote-SSH: Uninstall VS Code Server from Host.... 
+rm -rf $HOME/.vscode-server
+
