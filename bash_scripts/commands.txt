@@ -11,3 +11,6 @@ clean up vs code:
 > Remote-SSH: Uninstall VS Code Server from Host.... 
 rm -rf $HOME/.vscode-server
 
+activate environment in batch job submission script:
+eval "$(conda shell.bash hook)"
+conda activate extr_py39

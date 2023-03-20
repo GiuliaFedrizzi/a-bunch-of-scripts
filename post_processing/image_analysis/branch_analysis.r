@@ -113,36 +113,50 @@ p1 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_20)) + geom_point(aes(color
 p2 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_21)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
 p3 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_C)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
 p4 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_22)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
-p = p1 + p2 + p3 + p4 + plot_annotation(title = paste("time =",time)) & theme(plot.title = element_text(hjust = 0.5))
+p_b = p1 + p2 + p3 + p4 + plot_annotation(title = paste("time =",time)) & theme(plot.title = element_text(hjust = 0.5))
 
-
-print(p)
+print(p_b)
 dev.off()
 
-# p1 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_20)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10') + facet_grid(rows=vars(melt_rate))
-# p2 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_21)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10') + facet_grid(rows=vars(melt_rate))
-# p3 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_C)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10') + facet_grid(rows=vars(melt_rate))
-# p4 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_22)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10') + facet_grid(rows=vars(melt_rate))
-# pp = p1 + p2 + p3 + p4 + plot_annotation(title = paste("tstep =")) & theme(plot.title = element_text(hjust = 0.5))
-# pp
+# make separate plots for each melt rate
+png_name <- paste(base_path,"branch_plots/br_sep_t",time_string,"e07.png",sep='')  # build name of png
+png(file=png_name,width = 1400,height = 1400,res=200)
 
+p1 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_20)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10') + facet_grid(rows=vars(melt_rate))
+p2 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_21)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10') + facet_grid(rows=vars(melt_rate))
+p3 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_C)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10') + facet_grid(rows=vars(melt_rate))
+p4 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_22)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10') + facet_grid(rows=vars(melt_rate))
+ps = p1 + p2 + p3 + p4 + plot_annotation(title = paste("tstep =")) & theme(plot.title = element_text(hjust = 0.5))
 
-# ## n_I, n_Y, n_X
-# p1 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=n_I)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
-# p2 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=n_Y)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
-# p3 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=n_X)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
-# p4 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=n_B)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
-# p1 + p2 + p3 + p4 + plot_annotation(title = paste("time =",time)) & theme(plot.title = element_text(hjust = 0.5))
+print(ps)
+dev.off()
 
+## n_I, n_Y, n_X
+png_name <- paste(base_path,"branch_plots/br_n_t",time_string,"e07.png",sep='')  # build name of png
+png(file=png_name,width = 1400,height = 1400,res=200)
 
-# # branches/lines
-# df_m["n_B_n_L"] <- df_m$n_B/df_m$n_L
-# df_m["C_L"] <- 2*(df_m$n_Y+df_m$n_X)/df_m$n_L
+p1 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=n_I)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
+p2 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=n_Y)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
+p3 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=n_X)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
+p4 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=n_B)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
+pn = p1 + p2 + p3 + p4 + plot_annotation(title = paste("time =",time)) & theme(plot.title = element_text(hjust = 0.5))
 
-# p1 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=n_B_n_L)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
-# p2 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=C_L)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
-# p1 + p2 + plot_annotation(title = paste("time =",time)) & theme(plot.title = element_text(hjust = 0.5))
+print(pn)
+dev.off()
 
+# branches/lines
+df_m["n_B_n_L"] <- df_m$n_B/df_m$n_L
+df_m["C_L"] <- 2*(df_m$n_Y+df_m$n_X)/df_m$n_L
+
+png_name <- paste(base_path,"branch_plots/br_bl_t",time_string,"e07.png",sep='')  # build name of png
+png(file=png_name,width = 1400,height = 1400,res=200)
+
+p1 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=n_B_n_L)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
+p2 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=C_L)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
+pbl = p1 + p2 + plot_annotation(title = paste("time =",time)) & theme(plot.title = element_text(hjust = 0.5))
+
+print(pbl)
+dev.off()
 
 # # ternary
 
