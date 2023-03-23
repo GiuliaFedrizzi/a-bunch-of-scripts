@@ -9,7 +9,7 @@
 # specify time as command line argument e.g.
 # > Rscript $MS/post_processing/image_analysis/branch_analysis.r 6e7 
 #
-# or submit a task array job with sub_branchAn.sh
+# or submit a task array job with sub_branchAn.sh from visc_*/vis*
 #
 # Giulia March 2023
 # ------------------------------------------
@@ -19,7 +19,7 @@
 library(tidyverse)
 library(patchwork)
 # first part of path
-base_path <- "/nobackup/scgf/myExperiments/threeAreas/prod/p03/"
+base_path <- getwd( )
 
 args <- commandArgs(trailingOnly = TRUE)  # store them as vectors
 
@@ -41,7 +41,7 @@ build_branch_df <- function(x,m,time) {
             true_m_rate = as.double(m)/100
         }
         ##  build the path. unlist(strsplit(x,"e"))[2] splits '5e3' into 5 and 3 and takes the second (3)
-        file_to_open <- paste(base_path,'visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis',x,'_mR_',m,'/py_branch_info.csv',sep="")
+        file_to_open <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis',x,'_mR_',m,'/py_branch_info.csv',sep="")
         # print(file_to_open)
         if (file.exists(file_to_open)) {    
             df_bi <- read.csv(file=file_to_open)
@@ -114,7 +114,9 @@ df_m
 # time_string = as.character(time/1e7)
 time_string = sprintf("%02i",time/1e7)  # pad with zeros until string is 2 characters long
 
-png_name <- paste(base_path,"branch_plots/br_B_t",time_string,"e07.png",sep='')  # build name of png
+write.csv(df_m, paste("p03_branches_df_",time_string,".csv",sep=""), row.names=FALSE)
+
+png_name <- paste(base_path,"/branch_plots/br_B_t",time_string,"e07.png",sep='')  # build name of png
 png(file=png_name,width = 1400,height = 1400,res=200)
 
 p1 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_20)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
@@ -127,7 +129,7 @@ print(p_b)
 dev.off()
 
 # make separate plots for each melt rate
-png_name <- paste(base_path,"branch_plots/br_B_sep_t",time_string,"e07.png",sep='')  # build name of png
+png_name <- paste(base_path,"/branch_plots/br_B_sep_t",time_string,"e07.png",sep='')  # build name of png
 png(file=png_name,width = 1400,height = 1400,res=200)
 
 p1 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_20)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10') + facet_grid(rows=vars(melt_rate))
@@ -140,7 +142,7 @@ print(ps)
 dev.off()
 
 ## n_I, n_Y, n_X
-png_name <- paste(base_path,"branch_plots/br_n_t",time_string,"e07.png",sep='')  # build name of png
+png_name <- paste(base_path,"/branch_plots/br_n_t",time_string,"e07.png",sep='')  # build name of png
 png(file=png_name,width = 1400,height = 1400,res=200)
 
 p1 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=n_I)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
@@ -156,7 +158,7 @@ dev.off()
 df_m["n_B_n_L"] <- df_m$n_B/df_m$n_L
 df_m["C_L"] <- 2*(df_m$n_Y+df_m$n_X)/df_m$n_L
 
-png_name <- paste(base_path,"branch_plots/br_bl_t",time_string,"e07.png",sep='')  # build name of png
+png_name <- paste(base_path,"/branch_plots/br_bl_t",time_string,"e07.png",sep='')  # build name of png
 png(file=png_name,width = 1400,height = 1400,res=200)
 
 p1 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=n_B_n_L)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
@@ -172,38 +174,47 @@ dev.off()
 library("ggplot2")
 library("ggtern")
 
+# colour by melt rate
+png_name <- paste(base_path,"/branch_plots/br_ter_melt_t",time_string,"e07.png",sep='')  # build name of png
+png(file=png_name,width = 1400,height = 1400,res=200)
+pt1 <- ggtern(data=df_m,aes(x=n_Y,y=n_I,z=n_X))+ geom_point(aes(color=true_m_rate)) + scale_colour_continuous(trans='reverse') #,size=factor(viscosity,ordered=T,alpha=0.5))) + scale_colour_gradient2(low="#aeadef",high="#04308f")
+print(pt1)
+dev.off()
+
+# connected-connected - isolated-connected - isolated-isolated
 df_m["P_I"] <- df_m$N_I/(df_m$N_I+3*df_m$N_Y+4*df_m$N_X)   # probability of an I node
 df_m["P_C"] <- (3*df_m$N_Y+4*df_m$N_X)/(df_m$N_I+3*df_m$N_Y+4*df_m$N_X)   # probability of a C node
 df_m["P_II"] <- (df_m$P_I)^2  # probability of a branch with 2 I nodes if random distr
 df_m["P_IC"] <- (df_m$P_I)*(df_m$P_C)  # probability of a branch with 1 I node and 1 C node if random distr
 df_m["P_CC"] <- (df_m$P_C)^2  # probability of a branch with 2 C nodes if random distr
 
-# colour by melt rate
-png_name <- paste(base_path,"branch_plots/br_ter_melt_t",time_string,"e07.png",sep='')  # build name of png
-png(file=png_name,width = 1400,height = 1400,res=200)
-pt1 <- ggtern(data=df_m,aes(x=n_Y,y=n_I,z=n_X))+ geom_point(aes(color = true_m_rate))
-print(pt1)
-dev.off()
+#png_name <- paste(base_path,"/branch_plots/br_ter_IC_t",time_string,"e07.png",sep='')  # build name of png
+#png(file=png_name,width = 1400,height = 1400,res=200)
+#pt2 <- ggtern(data=df_m,aes(x=P_IC,y=P_II,z=P_CC))+ geom_point(aes(color = factor(viscosity,ordered=T)))
+#print(pt2)
+#dev.off()
 
-# connected-connected - isolated-connected - isolated-isolated
-png_name <- paste(base_path,"branch_plots/br_ter_IC_t",time_string,"e07.png",sep='')  # build name of png
+png_name <- paste(base_path,"/branch_plots/br_ter_visc_t",time_string,"e07.png",sep='')  # build name of png
 png(file=png_name,width = 1400,height = 1400,res=200)
-pt2 <- ggtern(data=df_m,aes(x=P_IC,y=P_II,z=P_CC))+ geom_point(aes(color = viscosity))
-print(pt2)
-dev.off()
-
-# plot isolated v isolated-connected v connected-connected
-png_name <- paste(base_path,"branch_plots/br_ter_visc_t",time_string,"e07.png",sep='')  # build name of png
-png(file=png_name,width = 1400,height = 1400,res=200)
-ptv <- ggtern(data=df_m,aes(x=n_Y,y=n_I,z=n_X)) + geom_point(aes(color = viscosity)) #+ geom_path()
+ptv <- ggtern(data=df_m,aes(x=n_Y,y=n_I,z=n_X)) + geom_point(aes(color = viscosity)) + scale_colour_continuous(trans='reverse') #+ geom_path()
 print(ptv)
 dev.off()
 
-png_name <- paste(base_path,"branch_plots/br_ter_meltPanels_t",time_string,"e07.png",sep='')  # build name of png
-png(file=png_name,width = 1400,height = 1400,res=200)
-p <- ggtern(data=df_m,aes(x=n_Y,y=n_I,z=n_X))+ geom_point(aes(color = melt_rate))
+#png_name <- paste(base_path,"/branch_plots/br_ter_meltPanels_t",time_string,"e07.png",sep='')  # build name of png
+#png(file=png_name,width = 1400,height = 1400,res=200)
+#p <- ggtern(data=df_m,aes(x=n_Y,y=n_I,z=n_X))+ geom_point(aes(color = melt_rate))
 # p + facet_grid(rows = vars(melt_rate),cols = vars(viscosity))
-pt3 <- p + facet_grid(cols = vars(viscosity))
-print(pt3)
+#pt3 <- p + facet_grid(cols = vars(viscosity))
+#print(pt3)
+#dev.off()
+
+# heatmap
+png_name <- paste(base_path,"/branch_plots/br_heat_B20_",time_string,"e07.png",sep='')  # build name of png
+png(file=png_name,width = 1400,height = 1400,res=200)
+phm <- ggplot(data=df_m,aes(factor(x=viscosity),melt_rate,fill=B_20)) + scale_fill_distiller(direction=+1) + geom_tile() # scale_fill_distiller's default is -1, which means higher values = lighter
+# p + facet_grid(rows = vars(melt_rate),cols = vars(viscosity))
+print(phm)
 dev.off()
+
+
 

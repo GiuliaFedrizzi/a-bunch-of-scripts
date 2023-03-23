@@ -50,16 +50,19 @@ numberOfInputCsvFiles = len(allInputCsvFiles)
 print("numberOfInputCsvFiles ",str(numberOfInputCsvFiles))
 print("len(allOutputPngFiles) ",str(len(allOutputPngFiles)))
 
-if numberOfInputCsvFiles > 101:
-    numberOfInputCsvFiles = 101   # if too many files, stop earlier
+if numberOfInputCsvFiles > 201:
+    numberOfInputCsvFiles = 201   # if too many files, stop earlier
 
-if len(allOutputPngFiles) == 0:
-    rangeForAnimation = [0,numberOfInputCsvFiles-1]# from 0 to n-1, because 0 is included (and the last number too)
-    latestOutputPngFileNumber = 0
-else:
-    latestOutputPngFileNumber = get_file_number(allOutputPngFiles[len(allOutputPngFiles)-1])
-    allInputCsvFiles = allInputCsvFiles[latestOutputPngFileNumber:]
-    rangeForAnimation = [latestOutputPngFileNumber + 1,numberOfInputCsvFiles - 1]
+rangeForAnimation = [0,numberOfInputCsvFiles-1]# from 0 to n-1, because 0 is included (and the last number too)
+latestOutputPngFileNumber = 0
+
+# if len(allOutputPngFiles) == 0:
+#     rangeForAnimation = [0,numberOfInputCsvFiles-1]# from 0 to n-1, because 0 is included (and the last number too)
+#     latestOutputPngFileNumber = 0
+# else:
+#     latestOutputPngFileNumber = get_file_number(allOutputPngFiles[len(allOutputPngFiles)-1])
+#     allInputCsvFiles = allInputCsvFiles[latestOutputPngFileNumber:]
+#     rangeForAnimation = [latestOutputPngFileNumber + 1,numberOfInputCsvFiles - 1]
 
 
 # ========== GET THE TIMESTEP ==========
