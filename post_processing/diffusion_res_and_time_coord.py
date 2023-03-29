@@ -50,7 +50,7 @@ var_to_plot = "Sigma_1"
 # dir_labels = ['400','200']  # res400.elle, res200.elle
 # dir_labels = ['020','030','040','050','060','070','080','090','100']
 dir_labels = ['00200', '00400','00600','00800','01000']
-# dir_labels = ['02000','04000','08000','10000'] 
+# dir_labels = ['02000','04000','06000','08000','10000'] 
 #dir_labels = ['01','03','05','07','09','11','13','15','17','19']
 # dir_labels = ['01','02','03','04','05','06','07','08','09','10'] 
 # dir_labels = ['102','104','106','108','110']
@@ -63,7 +63,7 @@ dir_list = []
 for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/gaussJan2022/gj07'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
     # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/wd_viscTest/vis_'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
-    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj34/size'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
+    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj41/size'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/pr02/por'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
     
@@ -71,7 +71,7 @@ print(dir_list)
 
 
 fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
-first_file = 'my_experiment00500.csv'
+first_file = 'my_experiment00300.csv'
 df_x = pd.DataFrame()
 df_y = pd.DataFrame()
 
@@ -87,9 +87,6 @@ for dirnum,dir in enumerate(dir_list):
     if "size" in dir.split("/")[-1]:      # try to get the size automatically. If the last subdirectory contains the scale
         dir_label = dir_labels[dirnum]   # get the label that corresponds to the directory
         scale_factor = float(dir_label)/max_dir_size # factor for scaling the axes. Normalised by the maximum size (e.g. 1000)
-        depth = getDepth("input.txt")
-        print("Sigma_1 top: ",str(3000*8.9*1000/1e6),str("MPa"))
-        print("Sigma_1 bottom: ",str(3000*8.9*(1000+float(dir_label))/1e6),str("MPa"))
 
     elif "press0" in dir.split("/")[-2]:   # If the second to last subdirectory contains the scale
         scale_factor = float(dir_label)/1000.0 # factor for scaling the axes. Normalised by the standard size
@@ -100,8 +97,8 @@ for dirnum,dir in enumerate(dir_list):
     else:  # set manually
         dir_label = dir_labels[dirnum]   # get the label that corresponds to the directory
         scale_factor = 1 # default factor for scaling the axes. 
+    #print("scale factor: ",str(scale_factor))
 
-    print("scale factor: ",str(scale_factor))
     # open the first file after melt addition to find the max P
     if not os.path.exists(os.getcwd()+'/'+first_file):  # if it can't find the file after my_experiment00000.csv
         print('skipping '+os.getcwd())
@@ -178,8 +175,20 @@ for dirnum,dir in enumerate(dir_list):
             data1_x = {'x': (x_array - xmax)*scale_factor,var_to_plot: var_array_x, 'scale': dir_label,'time': labelName}  # save temporarily
             df1_x = pd.DataFrame(data1_x)
             df_x = pd.concat([df_x,df1_x], ignore_index=True) # append to old one
-    print(var_array_y.values[:2]/1e6)
-    print(var_array_y.values[-2:]/1e6)
+        # end of file loop
+    if var_to_plot == "Sigma_1":  # print out some values about sigma_1
+        dom_size = getParameterFromLatte('input.txt','Scale')
+        depth = getDepth("input.txt")
+        sigma_1_top_theor = 3000*9.8*float(depth)  # rho * g * depth
+        sigma_1_bot_theor = 3000*9.8*(float(depth)+float(dom_size))  # rho * g * (depth+size)
+        print(f'scale: {dom_size:.05}')
+        print(f'Sigma_1 \nbottom theor: {sigma_1_bot_theor/1e6:.2f} MPa, bottom true: {-var_array_y.values[0]/1e6}. true/theor = {-var_array_y.values[0]/sigma_1_bot_theor:.4f}')
+        print(f'top theor:   {sigma_1_top_theor/1e6:.2f} MPa, top true:    {-var_array_y.values[-1]/1e6}. true/theor = {-var_array_y.values[-1]/sigma_1_top_theor:.4f}')
+        #print(f'bottom: {-var_array_y.values[0]/1e6}. true/theor = {-var_array_y.values[0]/sigma_1_bot_theor}')
+        #print(f'top:    {-var_array_y.values[-1]/1e6}. true/theor = {-var_array_y.values[-1]/sigma_1_top_theor}')
+        print(f'bot-top:    {-(var_array_y.values[0]-var_array_y.values[-1])/1e6}. theor = {(sigma_1_bot_theor-sigma_1_top_theor)/1e6:.4f}\n')
+    # end of dir loop
+
 # g_x = sns.lineplot(data=df_x ,x="x",y='Mean Stress (MPa)',ax=ax1,hue='time',style='scale',alpha=0.5)  # or sns.scatterplot
 # g_y = sns.lineplot(data=df_y ,x="y",y='Mean Stress (MPa)',ax=ax2,hue='time',style='scale',alpha=0.5)
 # ax3 = g_y.twinx()

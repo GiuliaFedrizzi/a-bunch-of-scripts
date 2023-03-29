@@ -172,7 +172,7 @@ if (FALSE) {
 # import the library to create ternary plots
 library("ggplot2")
 library("ggtern")
-if (FALSE) {
+if (TRUE) {
     # colour by melt rate
     png_name <- paste(base_path,"/branch_plots/br_ter_melt_t",time_string,"e07.png",sep='')  # build name of png
     png(file=png_name,width = 1400,height = 1400,res=200)
@@ -223,17 +223,11 @@ if (FALSE) {
     dev.off()
 }
 
-# # heatmap
-# png_name <- paste(base_path,"/branch_plots/br_heat_B21_",time_string,"e07.png",sep='')  # build name of png
-# png(file=png_name,width = 1400,height = 1400,res=200)
-# phm <- ggplot(data=df_m,aes(factor(x=viscosity),melt_rate,fill=B_21)) + scale_fill_distiller(direction=+1) + geom_tile() # scale_fill_distiller's default is -1, which means higher values = lighter
-# # p + facet_grid(rows = vars(melt_rate),cols = vars(viscosity))
-# print(phm)
-# dev.off()
-
 
 # df_grid <- expand.grid(X=df_m$viscosity)
 if (TRUE) {
+    ##  four heatmaps per figure
+    ## B_20, B_21, B_C, B_22
     png_name <- paste(base_path,"/branch_plots/br_heat_B_",time_string,"e07.png",sep='')  # build name of png
     png(file=png_name,width = 1400,height = 1400,res=200)
     p_heat1 <- ggplot(df_m,aes(factor(x=viscosity),melt_rate, fill=B_20))  + scale_fill_distiller(direction = +1)+ geom_tile()
@@ -248,9 +242,8 @@ if (TRUE) {
     phm_B = grid.arrange(p1,p2,p_heat1, p_heat2,p3,p4, p_heat3, p_heat4, ncol=2)
     print(phm_B)
     dev.off()
-}
 
-if (TRUE) {
+    ## Number of I,Y,X nodes
     png_name <- paste(base_path,"/branch_plots/br_heat_n_",time_string,"e07.png",sep='')  # build name of png
     png(file=png_name,width = 1400,height = 1400,res=200)
     p_heat1 <- ggplot(df_m,aes(factor(x=viscosity),melt_rate, fill=N_I))  + scale_fill_distiller(direction = +1)+ geom_tile()
@@ -265,15 +258,12 @@ if (TRUE) {
     phm_B = grid.arrange(p1,p2,p_heat1, p_heat2,p3,p4, p_heat3, p_heat4, ncol=2)
     print(phm_B)
     dev.off()
-}
 
-if (TRUE) {
+    ## n of branches per line, n of connections per line
     png_name <- paste(base_path,"/branch_plots/br_heat_nl_",time_string,"e07.png",sep='')  # build name of png
     png(file=png_name,width = 1400,height = 1400,res=200)
     p_heat1 <- ggplot(df_m,aes(factor(x=viscosity),melt_rate, fill=n_B_n_L))  + scale_fill_distiller(direction = +1)+ geom_tile()
     p_heat2 <- ggplot(df_m,aes(factor(x=viscosity),melt_rate, fill=C_L))  + scale_fill_distiller(direction = +1)+ geom_tile()
-    # p_heat3 <- ggplot(df_m,aes(factor(x=viscosity),melt_rate, fill=n_X))  + scale_fill_distiller(direction = +1)+ geom_tile()
-    # p_heat4 <- ggplot(df_m,aes(factor(x=viscosity),melt_rate, fill=n_B))  + scale_fill_distiller(direction = +1)+ geom_tile()
 
     p1 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=n_B_n_L)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10') 
     p2 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=C_L)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
