@@ -48,22 +48,27 @@ var_to_plot = "Sigma_1"
 # options: Pressure, Mean Stress, Actual Movement, Gravity, Porosity, Sigma_1, Sigma_2, Youngs Modulus
 
 # dir_labels = ['400','200']  # res400.elle, res200.elle
-# dir_labels = ['020','030','040','050','060','070','080','090','100']
-dir_labels = ['00200', '00400','00600','00800','01000']
+# dir_labels = ['00200', '00400','00600','00800','01000']
+dir_labels = ['00200', '00400','00600','00800','01000','02000','04000','06000','08000','10000']
 # dir_labels = ['02000','04000','06000','08000','10000'] 
 #dir_labels = ['01','03','05','07','09','11','13','15','17','19']
-# dir_labels = ['01','02','03','04','05','06','07','08','09','10'] 
+# dir_labels = ['01','02','03','04','05','06','07','08','09'] 
 # dir_labels = ['102','104','106','108','110']
 
 
 resolution = 200
 
 dir_list = []
+sigmas_top_true = []
+sigmas_bot_true = []
+sigmas_top_theor = []
+sigmas_bot_theor = []
+sizes = []
 
 for i in dir_labels:
-    # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/gaussJan2022/gj07'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
     # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/wd_viscTest/vis_'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
-    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj41/size'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
+    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj57/size'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
+    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/th04/vis1e2_mR_'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/pr02/por'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
     
@@ -72,6 +77,7 @@ print(dir_list)
 
 fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
 first_file = 'my_experiment00300.csv'
+# first_file = 'my_experiment03000.csv'
 df_x = pd.DataFrame()
 df_y = pd.DataFrame()
 
@@ -97,7 +103,6 @@ for dirnum,dir in enumerate(dir_list):
     else:  # set manually
         dir_label = dir_labels[dirnum]   # get the label that corresponds to the directory
         scale_factor = 1 # default factor for scaling the axes. 
-    #print("scale factor: ",str(scale_factor))
 
     # open the first file after melt addition to find the max P
     if not os.path.exists(os.getcwd()+'/'+first_file):  # if it can't find the file after my_experiment00000.csv
@@ -115,9 +120,6 @@ for dirnum,dir in enumerate(dir_list):
         max_id = myExp['Pressure'].idxmax()   #  index of the point with the maximum pressure value
         offset = max_id%resolution   # so that they are all centered around 0 on the x axis. It's the shift in the x direction.
     
-    
-    # print("max_id: "+str(max_id)+ ", offset: ",str(offset))
-
     # find the x coordinates that correspond to the max pressure, based on their index
     x_array = myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('x coord')] 
     y_array = myExp.iloc[offset::resolution,myExp.columns.get_loc('y coord')] # first: the point with coorinate = offset. Then every point above it (with a period of 'resolution') 
@@ -182,11 +184,16 @@ for dirnum,dir in enumerate(dir_list):
         sigma_1_top_theor = 3000*9.8*float(depth)  # rho * g * depth
         sigma_1_bot_theor = 3000*9.8*(float(depth)+float(dom_size))  # rho * g * (depth+size)
         print(f'scale: {dom_size:.05}')
-        print(f'Sigma_1 \nbottom theor: {sigma_1_bot_theor/1e6:.2f} MPa, bottom true: {-var_array_y.values[0]/1e6}. true/theor = {-var_array_y.values[0]/sigma_1_bot_theor:.4f}')
+        print(f'bottom theor: {sigma_1_bot_theor/1e6:.2f} MPa, bottom true: {-var_array_y.values[0]/1e6}. true/theor = {-var_array_y.values[0]/sigma_1_bot_theor:.4f}')
         print(f'top theor:   {sigma_1_top_theor/1e6:.2f} MPa, top true:    {-var_array_y.values[-1]/1e6}. true/theor = {-var_array_y.values[-1]/sigma_1_top_theor:.4f}')
         #print(f'bottom: {-var_array_y.values[0]/1e6}. true/theor = {-var_array_y.values[0]/sigma_1_bot_theor}')
         #print(f'top:    {-var_array_y.values[-1]/1e6}. true/theor = {-var_array_y.values[-1]/sigma_1_top_theor}')
         print(f'bot-top:    {-(var_array_y.values[0]-var_array_y.values[-1])/1e6}. theor = {(sigma_1_bot_theor-sigma_1_top_theor)/1e6:.4f}\n')
+        sigmas_top_true.append(-var_array_y.values[-2])
+        sigmas_bot_true.append(-var_array_y.values[0])
+        sigmas_top_theor.append(sigma_1_top_theor)
+        sigmas_bot_theor.append(sigma_1_bot_theor)
+        sizes.append(float(dom_size))
     # end of dir loop
 
 # g_x = sns.lineplot(data=df_x ,x="x",y='Mean Stress (MPa)',ax=ax1,hue='time',style='scale',alpha=0.5)  # or sns.scatterplot
@@ -195,21 +202,29 @@ for dirnum,dir in enumerate(dir_list):
 # g_y_1 = sns.lineplot(data=df_y ,x="y",y='F_P_y',ax=ax3,hue='time',markers=True,alpha=0.5)
 # g_y_1 = sns.scatterplot(data=df_y ,x="y",y='Porosity',ax=ax3,hue='time',alpha=0.5)
 
-g_x = sns.lineplot(data=df_x ,x="x",y=var_to_plot,ax=ax1,hue='time',style='scale',alpha=0.5)
-g_y = sns.lineplot(data=df_y ,x="y",y=var_to_plot,ax=ax2,hue='time',style='scale',alpha=0.5)
-ax1.set_title("Horizontal Profile")
-#ax1.set_xlim([-0.51,+0.51])  # zoom in. Limits are location of max pressure +- 0.05
-#ax2.set_xlim([-1.01,+0.12])  # zoom in. Limits are location of max pressure +- 0.05
-# ax2.set_ylim([2.942975e7,2.943020e7])  # for pressure
-ax2.set_title("Vertical Profile")
+if False:
+    g_x = sns.lineplot(data=df_x ,x="x",y=var_to_plot,ax=ax1,hue='time',style='scale',alpha=0.5)
+    g_y = sns.lineplot(data=df_y ,x="y",y=var_to_plot,ax=ax2,hue='time',style='scale',alpha=0.5)
+    ax1.set_title("Horizontal Profile")
+    #ax1.set_xlim([-0.51,+0.51])  # zoom in. Limits are location of max pressure +- 0.05
+    #ax2.set_xlim([-1.01,+0.12])  # zoom in. Limits are location of max pressure +- 0.05
+    # ax2.set_ylim([2.942975e7,2.943020e7])  # for pressure
+    ax2.set_title("Vertical Profile")
 
-g_y.legend_.remove()
-os.chdir('..')
-fig.suptitle(os.getcwd()) # get the part of the path that is after "myExperiments/"
+    g_y.legend_.remove()
+    os.chdir('..')
+    fig.suptitle(os.getcwd()) # get the part of the path that is after "myExperiments/"
 
-ax1.legend(fancybox=True, ncol=1)   # legend for the horizontal line plot
-# save:
-#plt.savefig("gaussScale50-100-200_diff_hrz-vrt.png", dpi=600,transparent=True)
-plt.tight_layout()
-plt.show()
-
+    ax1.legend(fancybox=True, ncol=1)   # legend for the horizontal line plot
+    # save:
+    #plt.savefig("gaussScale50-100-200_diff_hrz-vrt.png", dpi=600,transparent=True)
+    plt.tight_layout()
+    plt.show()
+if True:
+    ax1.plot(sizes,sigmas_top_true,'-o',label='top true')
+    ax2.plot(sizes,sigmas_bot_true,'-o',label='bottom true')
+    ax1.plot(sizes,sigmas_top_theor,'--',label='top theoretical')
+    ax2.plot(sizes,sigmas_bot_theor,'--',label='bottom theoretical')
+    ax1.legend()
+    ax2.legend()
+    plt.show()

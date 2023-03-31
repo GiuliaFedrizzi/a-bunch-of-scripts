@@ -202,8 +202,10 @@ def find_paths(skel: np.ndarray, nodes: List[Tuple[int]], min_distance=5) -> Lis
 
     There may be multiple distinct paths between the same nodes, or a path between a node and itself.
     """
+   
     width, height = skel.shape
-
+    # if width > 2000:
+    #     min_distance=4
     def neighbors(x, y):
         for dy in (-1, 0, 1):
             cy = y + dy
@@ -393,7 +395,9 @@ def topo_analysis(g: nx.Graph,tstep_number: float) -> dict:
     of Structural Geology, 72, 55-66. https://doi.org/10.1016/j.jsg.2015.01.005
 
     """
-    input_tstep = float(getTimeStep("input.txt"))  # needed to calculate time (1st row of csv)
+    input_tstep = 0   # in case there is no input.txt (e.g. field image)
+    if os.path.isfile("input.txt"):
+        input_tstep = float(getTimeStep("input.txt"))  # needed to calculate time (1st row of csv)
     edge_lengths = [d for (u,v,d) in g.edges.data('d')]  # distance values are stored under the attribute "d"
     print(f'n of branches: {len(edge_lengths)}')
     print(f'branch lengths: {edge_lengths}')
@@ -438,6 +442,8 @@ def analyse_png(png_file: str, part_to_analyse: str) -> dict:
     
     timestep_number = float(re.findall(r'\d+',png_file)[0])   # regex to find numbers in string. Then convert to float. Will be used to name the csv file 
     im = Image.open(png_file)
+
+    crop_im = 1 # flag for cropping the image or not. default is yes (it's no for part_to_analyse = f)
     if part_to_analyse == 'w': # whole domain
     # Setting the points for cropped image
     # left = 316; top = 147; right = 996; bottom = 819 # worked when images were generated on my laptop
@@ -450,11 +456,15 @@ def analyse_png(png_file: str, part_to_analyse: str) -> dict:
     elif part_to_analyse == 't':
         left = 475; top = 223; right = 1490; bottom = 1027 # TOP - melt-production zone
         out_path = "p_top_"+png_file.replace('.png', '_nx.grid.png')
+    elif part_to_analyse == 'f': # full, or field = do not crop
+        crop_im = 0  # in this case, do not crop 
+        out_path = "p_"+png_file.replace('.png', '_nx.grid.png')
 
     # im.show()
-    # Cropped image of above dimension
-    im = im.crop((left, top, right, bottom))
-    # Apply median filter to smooth the edges
+    if crop_im:  # crop the image if flag is true
+        # Cropped image of above dimension
+        im = im.crop((left, top, right, bottom))
+        # Apply median filter to smooth the edges
     im = im.filter(ImageFilter.ModeFilter(size=7)) # https://stackoverflow.com/questions/62078016/smooth-the-edges-of-binary-images-face-using-python-and-open-cv 
     # out_path = png_file.replace('.png', '_median.png')
     # im.save(out_path)
@@ -485,7 +495,7 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
     # os.chdir("/Users/giuliafedrizzi/Library/CloudStorage/OneDrive-UniversityofLeeds/PhD/arc/myExperiments/wavedec2022/wd05_visc/visc_4_5e4/vis5e4_mR_09")
     os.chdir(parent_dir)
     print(os.getcwd())
-    print(f'n of files: {len(glob.glob("py_bb_*0.png"))}')
+    print(f'n of files: {len(glob.glob("py_bb_*.png"))}')
 
     branch_info = []  # create an empty list. One row = one dictionary for each simulation
     for f,filename in enumerate(sorted(glob.glob("py_bb_*.png"))):
@@ -495,7 +505,7 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
         branch_info.append(analyse_png(filename,part_to_analyse))  # build the list of dictionaries
     
     keys = branch_info[0].keys()
-    if part_to_analyse == 'w': # whole domain
+    if part_to_analyse == 'w' or part_to_analyse == 'f': # whole domain
         csv_file_name = "py_branch_info.csv" 
     elif part_to_analyse == 'b':
         csv_file_name = "py_branch_info_bot.csv" 
@@ -513,7 +523,7 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
 d = os.getcwd()
 part_to_analyse = sys.argv[1]
 print(f'sys arg: {sys.argv[1]}')
-assert (part_to_analyse == 'w' or part_to_analyse == 't' or part_to_analyse == 'b'), "Error: specify w for whole domain, b for bottom (melt zone), t for top (through zone)"
+assert (part_to_analyse == 'w' or part_to_analyse == 't' or part_to_analyse == 'b' or part_to_analyse == 'f'), "Error: specify w for whole domain, b for bottom (melt zone), t for top (through zone)"
 
 
 # for i,d in enumerate(sorted(glob.glob("visc_*/vis*"))):

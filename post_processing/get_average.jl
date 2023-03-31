@@ -17,7 +17,7 @@ println("starting...")
 rad_frac_array = []
 avPhi_array = []
 # list all directories that start with lp
-dirList = filter(isdir,readdir(glob"por*"))  # name of directories
+dirList = filter(isdir,readdir(glob"vis*"))  # name of directories
 for d in dirList
 	myExp = CSV.File(d*"/my_experiment00000.csv")   # take the file with that name in every directory
 	averagePhi=mean(skipmissing(myExp.Porosity))    # calculate mean porosity
