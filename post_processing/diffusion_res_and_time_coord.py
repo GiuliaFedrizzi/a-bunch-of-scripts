@@ -66,17 +66,17 @@ sigmas_bot_theor = []
 sizes = []
 
 for i in dir_labels:
-    # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/wd_viscTest/vis_'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
-    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj57/size'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
-    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/th04/vis1e2_mR_'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
-    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/pr02/por'+str(i))  # g2_10_AdjustgOut200, g2_13_rad_wGrav200
+    # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/wd_viscTest/vis_'+str(i))  
+    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj78/size'+str(i)) 
+    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/th04/vis1e2_mR_'+str(i))  
+    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/th11/vis1e2_mR_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
     
 print(dir_list)
 
 
 fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
-first_file = 'my_experiment00300.csv'
+first_file = 'my_experiment00100.csv'
 # first_file = 'my_experiment03000.csv'
 df_x = pd.DataFrame()
 df_y = pd.DataFrame()
@@ -97,9 +97,9 @@ for dirnum,dir in enumerate(dir_list):
     elif "press0" in dir.split("/")[-2]:   # If the second to last subdirectory contains the scale
         scale_factor = float(dir_label)/1000.0 # factor for scaling the axes. Normalised by the standard size
         dir_label = dir_labels[dirnum]   # get the label that corresponds to the directory
-    elif "vis" in dir.split("/")[-1]: 
-        dir_label = str(int(dir_labels[dirnum])-4)   # get the label that corresponds to the directory. The viscosity is shifted by 4.
-        scale_factor = 1 # default factor for scaling the axes. 
+    # elif "vis" in dir.split("/")[-1]: 
+    #     dir_label = str(int(dir_labels[dirnum])-4)   # get the label that corresponds to the directory. The viscosity is shifted by 4.
+    #     scale_factor = 1 # default factor for scaling the axes. 
     else:  # set manually
         dir_label = dir_labels[dirnum]   # get the label that corresponds to the directory
         scale_factor = 1 # default factor for scaling the axes. 
@@ -179,16 +179,16 @@ for dirnum,dir in enumerate(dir_list):
             df_x = pd.concat([df_x,df1_x], ignore_index=True) # append to old one
         # end of file loop
     if var_to_plot == "Sigma_1":  # print out some values about sigma_1
-        dom_size = getParameterFromLatte('input.txt','Scale')
+        dom_size = float(getParameterFromLatte('input.txt','Scale'))
         depth = getDepth("input.txt")
-        sigma_1_top_theor = 3000*9.8*float(depth)  # rho * g * depth
-        sigma_1_bot_theor = 3000*9.8*(float(depth)+float(dom_size))  # rho * g * (depth+size)
-        print(f'scale: {dom_size:.05}')
-        print(f'bottom theor: {sigma_1_bot_theor/1e6:.2f} MPa, bottom true: {-var_array_y.values[0]/1e6}. true/theor = {-var_array_y.values[0]/sigma_1_bot_theor:.4f}')
-        print(f'top theor:   {sigma_1_top_theor/1e6:.2f} MPa, top true:    {-var_array_y.values[-1]/1e6}. true/theor = {-var_array_y.values[-1]/sigma_1_top_theor:.4f}')
+        sigma_1_top_theor = 2968.94*9.8*float(depth)  # rho * g * depth
+        sigma_1_bot_theor = 2968.94*9.8*(float(depth)+float(dom_size))  # rho * g * (depth+size)
+        print(f'scale: {dom_size}')
+        print(f'bottom theor: {sigma_1_bot_theor/1e6:.2f} MPa, bottom true: {-var_array_y.values[1]/1e6}. true/theor = {-var_array_y.values[1]/sigma_1_bot_theor:.4f}')
+        print(f'top theor:   {sigma_1_top_theor/1e6:.2f} MPa, top true:    {-var_array_y.values[-2]/1e6}. true/theor = {-var_array_y.values[-2]/sigma_1_top_theor:.4f}')
         #print(f'bottom: {-var_array_y.values[0]/1e6}. true/theor = {-var_array_y.values[0]/sigma_1_bot_theor}')
         #print(f'top:    {-var_array_y.values[-1]/1e6}. true/theor = {-var_array_y.values[-1]/sigma_1_top_theor}')
-        print(f'bot-top:    {-(var_array_y.values[0]-var_array_y.values[-1])/1e6}. theor = {(sigma_1_bot_theor-sigma_1_top_theor)/1e6:.4f}\n')
+        print(f'bot-top:    {-(var_array_y.values[1]-var_array_y.values[-2])/1e6}. theor = {(sigma_1_bot_theor-sigma_1_top_theor)/1e6:.4f}\n')
         sigmas_top_true.append(-var_array_y.values[-2])
         sigmas_bot_true.append(-var_array_y.values[0])
         sigmas_top_theor.append(sigma_1_top_theor)
@@ -227,4 +227,6 @@ if True:
     ax2.plot(sizes,sigmas_bot_theor,'--',label='bottom theoretical')
     ax1.legend()
     ax2.legend()
+    os.chdir('..')
+    fig.suptitle(os.getcwd()) # get the part of the path that is after "myExperiments/"
     plt.show()
