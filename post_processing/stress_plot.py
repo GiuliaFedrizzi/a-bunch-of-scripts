@@ -22,7 +22,7 @@ dir_labels = ['00200', '00400','00600','00800','01000','02000','04000','06000','
 # dir_labels = ['02000','04000','06000','08000','10000'] 
 gj_dirs = ['gj77','gj78']
 
-#fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
+fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
 resolution = 200
 
 def dir_loop(gjdir,dir_labels,sigma_df):
@@ -65,10 +65,12 @@ def dir_loop(gjdir,dir_labels,sigma_df):
 
         df_temp = pd.DataFrame({
             'top true': [-var_array_y.values[-2]],
-            'top teor': [sigma_1_top_theor],
+            'top theor': [sigma_1_top_theor],
+            'top ratio': [-var_array_y.values[-2]/sigma_1_top_theor],
             'bottom true': [-var_array_y.values[0]],
-            'bottom teor': [sigma_1_bot_theor],
-            'scale': [dir_label],
+            'bottom theor': [sigma_1_bot_theor],
+            'bottom ratio': [-var_array_y.values[0]/sigma_1_bot_theor],
+            'scale': [float(dir_label)],
             'gj_dir': [gjdir]}
             )  # temporary dataframe (to be merged with global df)
 
@@ -79,8 +81,21 @@ sigma_df = pd.DataFrame()
 for gjdir in gj_dirs:
     sigma_df = dir_loop(gjdir,dir_labels,sigma_df)
 
-# end of dir loop
-print(sigma_df)
+if False:
+    # ts = value at the top, simulated. tt = value at the top, theoretical
+    g_ts = sns.lineplot(data=sigma_df ,x="scale",y='top true',ax=ax1,hue='gj_dir',markers=True,marker='o',alpha=0.5)
+    g_tt = sns.lineplot(data=sigma_df ,x="scale",y='top theor',ax=ax1,hue='gj_dir',alpha=0.5)#,dashes=[(2, 2), (2, 2)],alpha=0.5)
+    g_bs = sns.lineplot(data=sigma_df ,x="scale",y='bottom true',ax=ax2,hue='gj_dir',markers=True,marker='o',alpha=0.5)
+    g_bt = sns.lineplot(data=sigma_df ,x="scale",y='bottom theor',ax=ax2,hue='gj_dir',alpha=0.5)#,dashes=[(2, 2), (2, 2)],alpha=0.5)
+if True:
+    #  g_tr = top ratio
+    g_tr = sns.lineplot(data=sigma_df ,x="scale",y='top ratio',ax=ax1,hue='gj_dir',markers=True,marker='o',alpha=0.5)
+    ax1.axhline(y=1, color='k', linestyle='--',alpha=0.3)
+    g_br = sns.lineplot(data=sigma_df ,x="scale",y='bottom ratio',ax=ax2,hue='gj_dir',markers=True,marker='o',alpha=0.5)
+    ax2.axhline(y=1, color='k', linestyle='--',alpha=0.3)
+ax1.set_title("Top value")
+ax2.set_title("Bottom value")
+plt.show()
 
 # if False:
 #     ax1.plot(sizes,sigmas_top_true,'-o',label='top true')
