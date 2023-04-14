@@ -49,7 +49,7 @@ var_to_plot = "Sigma_1"
 
 # dir_labels = ['400','200']  # res400.elle, res200.elle
 # dir_labels = ['00200', '00400','00600','00800','01000']
-dir_labels = ['00200', '00400','00600','00800','01000','02000','04000','06000','08000','10000']
+dir_labels = ['00200', '00400','00600','00800','01000','02000','04000']#,'06000','08000']#,'10000']
 # dir_labels = ['02000','04000','06000','08000','10000'] 
 #dir_labels = ['01','03','05','07','09','11','13','15','17','19']
 # dir_labels = ['01','02','03','04','05','06','07','08','09'] 
@@ -63,11 +63,13 @@ sigmas_top_true = []
 sigmas_bot_true = []
 sigmas_top_theor = []
 sigmas_bot_theor = []
+sigmas_top_ratio = []
+sigmas_bot_ratio = []
 sizes = []
 
 for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/wd_viscTest/vis_'+str(i))  
-    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj78/size'+str(i)) 
+    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj86/size'+str(i)) 
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/th04/vis1e2_mR_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/th11/vis1e2_mR_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
@@ -193,6 +195,8 @@ for dirnum,dir in enumerate(dir_list):
         sigmas_bot_true.append(-var_array_y.values[0])
         sigmas_top_theor.append(sigma_1_top_theor)
         sigmas_bot_theor.append(sigma_1_bot_theor)
+        sigmas_top_ratio.append(-var_array_y.values[-2]/sigma_1_top_theor)
+        sigmas_bot_ratio.append(-var_array_y.values[0]/sigma_1_bot_theor)
         sizes.append(float(dom_size))
     # end of dir loop
 
@@ -225,6 +229,14 @@ if True:
     ax2.plot(sizes,sigmas_bot_true,'-o',label='bottom true')
     ax1.plot(sizes,sigmas_top_theor,'--',label='top theoretical')
     ax2.plot(sizes,sigmas_bot_theor,'--',label='bottom theoretical')
+    ax1.legend()
+    ax2.legend()
+    os.chdir('..')
+    fig.suptitle(os.getcwd()) # get the part of the path that is after "myExperiments/"
+    plt.show()
+if False:
+    ax1.plot(sizes,sigmas_top_ratio,'-o',label='top ratio')
+    ax2.plot(sizes,sigmas_bot_ratio,'-o',label='bottom ratio')
     ax1.legend()
     ax2.legend()
     os.chdir('..')

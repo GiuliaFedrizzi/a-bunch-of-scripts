@@ -20,18 +20,34 @@ from useful_functions import *
 # dir_labels = ['00200', '00400','00600','00800','01000']
 dir_labels = ['00200', '00400','00600','00800','01000','02000','04000','06000','08000','10000']  # all sizes
 # dir_labels = ['02000','04000','06000','08000','10000'] 
-gj_dirs = ['gj77','gj78']
+# gj_dirs = ['gj71','gj72','gj69','gj73','gj74','gj75','gj70','gj76']
+# gj_lab = ['0.1','0.2','0.5','0.7','0.8','0.9','1','1.2'] # their labels
+
+# gj_dirs = ['gj77','gj78','gj79','gj80','gj69','gj81','gj82']#,'gj76']
+# gj_lab = ['1','1.2','1.5','1.8','2','2.2','2.5'] # their labels
+
+# gj_dirs = ['gj60','gj61','gj62','gj63']
+# gj_lab = ['100','200','400','800'] # their labels
+
+# gj_dirs = ['gj87','gj88','gj89','gj90','gj91','gj86']
+# gj_lab = ['0.1', '0.3', '0.5', '0.7', '0.9', '1'] # their labels
+
+# gj_dirs = ['gj92','gj93','gj94','gj95']#,'gj91','gj86']#,'gj76']
+# gj_lab = ['0.01', '0.03', '0.05', '0.07']#, '0.9', '1'] # their labels
+
+gj_dirs = ['gj97','gj98','gj99','gj100']#,'gj91','gj86']#,'gj76']
+gj_lab = ['0.01', '0.03', '0.05', '0.07']#, '0.9', '1'] # their labels
 
 fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
 resolution = 200
 
-def dir_loop(gjdir,dir_labels,sigma_df):
+def dir_loop(gjdir,dir_labels,sigma_df,line_label):
     """ add data from every gj directory """
     
     first_file = 'my_experiment00100.csv'
     max_dir_size = float(dir_labels[-1])  # maximum size for the scaling of the plots: take the last directory (largest)
     for dir_label in dir_labels:
-        """ loop through directories"""
+        """ loop through SIZE directories"""
         os.chdir('/nobackup/scgf/myExperiments/gaussJan2022/'+gjdir+'/size'+dir_label)
         scale_factor = float(dir_label)/max_dir_size # factor for scaling the axes. Normalised by the maximum size (e.g. 1000)
 
@@ -63,6 +79,7 @@ def dir_loop(gjdir,dir_labels,sigma_df):
         sigma_1_top_theor = 2968.94*9.81*float(depth)  # rho * g * depth
         sigma_1_bot_theor = 2968.94*9.81*(float(depth)+float(dom_size))  # rho * g * (depth+size)
 
+        # build the dataframe
         df_temp = pd.DataFrame({
             'top true': [-var_array_y.values[-2]],
             'top theor': [sigma_1_top_theor],
@@ -71,27 +88,32 @@ def dir_loop(gjdir,dir_labels,sigma_df):
             'bottom theor': [sigma_1_bot_theor],
             'bottom ratio': [-var_array_y.values[0]/sigma_1_bot_theor],
             'scale': [float(dir_label)],
-            'gj_dir': [gjdir]}
+            'gj_dir': [gjdir],
+            'coeff': [line_label]}
             )  # temporary dataframe (to be merged with global df)
 
         sigma_df = pd.concat([sigma_df,df_temp], ignore_index=True) # append to old one
     return sigma_df
 
 sigma_df = pd.DataFrame()
-for gjdir in gj_dirs:
-    sigma_df = dir_loop(gjdir,dir_labels,sigma_df)
+print('\n')
+for i,gjdir in enumerate(gj_dirs):
+    line_label = gj_lab[i]  # the coefficient used to calculate gravity or weight
+    print(line_label)
+    sigma_df = dir_loop(gjdir,dir_labels,sigma_df,line_label)
 
-if False:
-    # ts = value at the top, simulated. tt = value at the top, theoretical
-    g_ts = sns.lineplot(data=sigma_df ,x="scale",y='top true',ax=ax1,hue='gj_dir',markers=True,marker='o',alpha=0.5)
-    g_tt = sns.lineplot(data=sigma_df ,x="scale",y='top theor',ax=ax1,hue='gj_dir',alpha=0.5)#,dashes=[(2, 2), (2, 2)],alpha=0.5)
-    g_bs = sns.lineplot(data=sigma_df ,x="scale",y='bottom true',ax=ax2,hue='gj_dir',markers=True,marker='o',alpha=0.5)
-    g_bt = sns.lineplot(data=sigma_df ,x="scale",y='bottom theor',ax=ax2,hue='gj_dir',alpha=0.5)#,dashes=[(2, 2), (2, 2)],alpha=0.5)
 if True:
+    # plot both true and theoretical=simulated values (2 lines each plot)
+    # ts = value at the top, simulated. tt = value at the top, theoretical
+    g_ts = sns.lineplot(data=sigma_df ,x="scale",y='top true',ax=ax1,hue='coeff',markers=True,marker='o',alpha=0.5)
+    g_tt = sns.lineplot(data=sigma_df ,x="scale",y='top theor',ax=ax1,hue='coeff',alpha=0.5)#,dashes=[(2, 2), (2, 2)],alpha=0.5)
+    g_bs = sns.lineplot(data=sigma_df ,x="scale",y='bottom true',ax=ax2,hue='coeff',markers=True,marker='o',alpha=0.5)
+    g_bt = sns.lineplot(data=sigma_df ,x="scale",y='bottom theor',ax=ax2,hue='coeff',alpha=0.5)#,dashes=[(2, 2), (2, 2)],alpha=0.5)
+if False:
     #  g_tr = top ratio
-    g_tr = sns.lineplot(data=sigma_df ,x="scale",y='top ratio',ax=ax1,hue='gj_dir',markers=True,marker='o',alpha=0.5)
+    g_tr = sns.lineplot(data=sigma_df ,x="scale",y='top ratio',ax=ax1,hue='coeff',markers=True,marker='o',alpha=0.5)
     ax1.axhline(y=1, color='k', linestyle='--',alpha=0.3)
-    g_br = sns.lineplot(data=sigma_df ,x="scale",y='bottom ratio',ax=ax2,hue='gj_dir',markers=True,marker='o',alpha=0.5)
+    g_br = sns.lineplot(data=sigma_df ,x="scale",y='bottom ratio',ax=ax2,hue='coeff',markers=True,marker='o',alpha=0.5)
     ax2.axhline(y=1, color='k', linestyle='--',alpha=0.3)
 ax1.set_title("Top value")
 ax2.set_title("Bottom value")
