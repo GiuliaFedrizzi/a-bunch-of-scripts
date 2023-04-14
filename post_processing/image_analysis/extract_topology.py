@@ -454,7 +454,8 @@ def analyse_png(png_file: str, part_to_analyse: str) -> dict:
         left = 475; top = 1027; right = 1490; bottom = 1228 # BOTTOM - melt-production zone
         out_path = "p_bot_"+png_file.replace('.png', '_nx.grid.png')
     elif part_to_analyse == 't':
-        left = 475; top = 223; right = 1490; bottom = 1027 # TOP - melt-production zone
+        #left = 475; top = 223; right = 1490; bottom = 1027 # TOP - melt-production zone - if prod zone is 0-0.2
+        left = 475; top = 223; right = 1490; bottom = 1178 # TOP - melt-production zone  - if prod zone is 0-0.05
         out_path = "p_top_"+png_file.replace('.png', '_nx.grid.png')
     elif part_to_analyse == 'f': # full, or field = do not crop
         crop_im = 0  # in this case, do not crop 
@@ -523,7 +524,7 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
 d = os.getcwd()
 part_to_analyse = sys.argv[1]
 print(f'sys arg: {sys.argv[1]}')
-assert (part_to_analyse == 'w' or part_to_analyse == 't' or part_to_analyse == 'b' or part_to_analyse == 'f'), "Error: specify w for whole domain, b for bottom (melt zone), t for top (through zone)"
+assert (part_to_analyse == 'w' or part_to_analyse == 't' or part_to_analyse == 'b' or part_to_analyse == 'f'), "Error: specify w for whole domain, b for bottom (melt zone), t for top (through zone), f for full (or field) for field images"
 
 
 # for i,d in enumerate(sorted(glob.glob("visc_*/vis*"))):
