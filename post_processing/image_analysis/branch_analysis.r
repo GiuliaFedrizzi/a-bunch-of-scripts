@@ -31,7 +31,7 @@ time = as.numeric(args[1])   # time for the 1st   (e.g. 6e7 = 60e6 = 60th file i
 # open file, extract values
 build_branch_df <- function(x,m,time) {
         # to keep the amount of melt constant, we look at smaller times if melt rate is higher, later times if it's lower. This num will build the file name
-        norm_time = round(time/1e5/as.double(m))*1e5
+        norm_time = round(time/1e7/as.double(m))*1e7
 
         if (startsWith(m,'0'))
         {
