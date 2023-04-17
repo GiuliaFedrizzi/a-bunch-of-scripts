@@ -16,6 +16,13 @@ or
 python3 /path/to/extract_topology.py t
 python3 /path/to/extract_topology.py b            (top part or bottom part only)
 
+INPUT:
+reads all the images called "py_bb_*.png" in the directory it is run from
+
+OUTPUT:
+"py_branch_info.csv", "py_branch_info_top.csv" or "py_branch_info_bot.csv", depending on which part was analysed (whole figure, top only or bottom only)
+which contains 
+
 Giulia's edits: 
 - use thin instead of skeletonize
 - can open rectangular images, not just square
@@ -61,8 +68,8 @@ import csv
 import glob
 import re   # regex
 
-sys.path.append('/home/home01/scgf/myscripts/post_processing')   # where to look for useful_functions.py
-from useful_functions import getTimeStep
+# sys.path.append('/home/home01/scgf/myscripts/post_processing')   # where to look for useful_functions.py
+# from useful_functions import getTimeStep
 
 
 def find_color(im: Image, rgb: Tuple[int]) -> np.ndarray:
@@ -79,6 +86,12 @@ def find_color(im: Image, rgb: Tuple[int]) -> np.ndarray:
     out[(px[:, :, 0] == r) & (px[:, :, 1] == g) & (px[:, :, 2] == b)] = 1
     return out
 
+def getTimeStep(inputFile):
+    with open(inputFile) as iFile:
+        for num, line in enumerate(iFile,1):
+            if "Tstep" in line:
+                input_tstep = line.split(" ")[1]  # split before and after space, take the second word (value of timestep)
+                return input_tstep 
 
 def zhang_suen_node_detection(skel: np.ndarray) -> List[Tuple[int]]:
     """Find nodes based on a skeletonized bitmap.
