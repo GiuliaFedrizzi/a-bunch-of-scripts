@@ -1,23 +1,27 @@
 #!/usr/bin/env python
 
-"""Extract a graph given a raster image.
+"""Extract a graph given a raster image. 
+Save a csv file with info about nodes and edges of a network obtained from the skeleton of an image.
+
+The part of the image that is analysed is the part with the colour specified in the "analyse_png" function 
+(e.g. color = '(255, 255, 255)' to keep the parts in white)
+
 source of original script: https://github.com/danvk/extract-raster-network
 
 
-USE: 
-python3 /path/to/extract_topology.py w
-(whole domain)
+USAGE:
+python3 /path/to/extract_topology.py              (don't crop the image) 
+python3 /path/to/extract_topology.py w            (whole domain of images generated with python script save_bb_figure.py)
 or 
 python3 /path/to/extract_topology.py t
-python3 /path/to/extract_topology.py b
-(top part or bottom part only)
+python3 /path/to/extract_topology.py b            (top part or bottom part only)
 
 Giulia's edits: 
 - use thin instead of skeletonize
 - can open rectangular images, not just square
 - save plot using networkx graphs
 - get info about branches (e.g. length) and nodes according to their degree (= n of connections)
-    1 = isolated, I
+    1 = isolated, I nodes
     3 = Y node
     4 = X node
 
@@ -36,7 +40,7 @@ bottom = 819  # limit. 0 is at top, so bottom > top
 # (It will not change original image)
 im1 = im.crop((left, top, right, bottom))
 
-ARC: python 3.6
+On ARC: works with python 3.6
 """
 
 import sys
@@ -433,7 +437,7 @@ def topo_analysis(g: nx.Graph,tstep_number: float) -> dict:
     return branch_info
 
 def analyse_png(png_file: str, part_to_analyse: str) -> dict:
-    color = '(255, 255, 255)'  # do the analysis on the white parts
+    color = '(255, 255, 255)'  # select the colour: do the analysis on the white parts
     assert color[0] == '('
     assert color[-1] == ')'
     rgb = tuple(int(v) for v in color[1:-1].split(','))
@@ -502,10 +506,10 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
     for f,filename in enumerate(sorted(glob.glob("py_bb_*.png"))):
         """ Get the file name, run 'analyse_png', get the info on the branches,
         save it into a csv   """
-        # if f == 8 or f == 14:
         branch_info.append(analyse_png(filename,part_to_analyse))  # build the list of dictionaries
     
-    keys = branch_info[0].keys()
+    keys = branch_info[0].keys()  #  read the command line arguments
+
     if part_to_analyse == 'w' or part_to_analyse == 'f': # whole domain
         csv_file_name = "py_branch_info.csv" 
     elif part_to_analyse == 'b':
@@ -520,16 +524,12 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
         dict_writer.writerows(branch_info)
 
 # starting here:           
-# os.chdir("/Users/giuliafedrizzi/Library/CloudStorage/OneDrive-UniversityofLeeds/PhD/arc/myExperiments/wavedec2022/wd05_visc/")
-d = os.getcwd()
-part_to_analyse = sys.argv[1]
-print(f'sys arg: {sys.argv[1]}')
+d = os.getcwd()  # save path to current directory (will be given as input to file_loop() function)
+if (len(sys.argv) == 1):
+    part_to_analyse = 'f'  # if no command line argument is provided, set the option to "f". It means it won't crop the image.
+else:
+    part_to_analyse = sys.argv[1]
 assert (part_to_analyse == 'w' or part_to_analyse == 't' or part_to_analyse == 'b' or part_to_analyse == 'f'), "Error: specify w for whole domain, b for bottom (melt zone), t for top (through zone), f for full (or field) for field images"
 
 
-# for i,d in enumerate(sorted(glob.glob("visc_*/vis*"))):
-#     if i == 0:
-# if (('visc_1_1e1/vis1e1_mR_01' in d) or ('visc_1_1e1/vis1e1_mR_02' in d)) == False:  # skip those two
 file_loop(d,part_to_analyse)
-# os.chdir("/Users/giuliafedrizzi/Library/CloudStorage/OneDrive-UniversityofLeeds/PhD/arc/myExperiments/wavedec2022/wd05_visc/")
-    
