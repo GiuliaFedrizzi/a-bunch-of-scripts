@@ -14,10 +14,9 @@ def_rate = 0
 
 os.chdir('/nobackup/scgf/myExperiments/threeAreas/through/th47')
 
-# times = range(20,200,20)  # (start, end, step)
-times = range(1,3,1)  # (start, end, step)
-# melt_labels = ['0.001','0.002','0.003','0.004','0.005','0.006','0.007','0.008','0.009']  # they have to be in a sequence
-melt_labels = ['0.001','0.003','0.005','0.007','0.009']  # they have to be in a sequence
+times = range(1,151,1)  # (start, end, step)
+# melt_labels = ['0.001','0.002','0.003','0.004','0.005','0.006','0.007','0.008','0.009']  
+melt_labels = ['0.001','0.003','0.005','0.007','0.009'] 
 
 
 
@@ -56,9 +55,11 @@ def make_array(x_variable,melt_labels,t):
                 exp = x_val.split('e')[-1] # the exponent after visc_ and before 5e3 or 1e4 etc
                 # poro_file = 'wd05_visc/visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_0'+str(melt_rate)+'/a_porosity_'+file_number+'.png' 
                 # bb_file = 'wd05_visc/visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_0'+str(melt_rate)+'/a_brokenBonds_'+file_number+'.png'
-                poro_file = 'visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_'+melt_rate+'/a_porosity_'+file_number+'.png' 
+                # poro_file = 'visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_'+melt_rate+'/a_porosity_'+file_number+'.png' 
+                poro_file = 'visc_'+exp+'_'+x_val+'/vis1e2_mR_'+melt_rate+'/a_porosity_'+file_number+'.png' 
                 # poro_file = 'vis'+x_val+'_mR_'+melt_rate+'/a_porosity_'+file_number+'.png' 
-                bb_file = 'visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_'+melt_rate+'/a_brokenBonds_'+file_number+'.png'
+                # bb_file = 'visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_'+melt_rate+'/a_brokenBonds_'+file_number+'.png'
+                bb_file = 'visc_'+exp+'_'+x_val+'/vis1e2_mR_'+melt_rate+'/a_brokenBonds_'+file_number+'.png'
                 # bb_file = 'vis'+x_val+'_mR_'+melt_rate+'/a_brokenBonds_'+file_number+'.png'
             elif def_rate:
                 poro_file = 'thdef'+x_val+'/vis1e2_mR_'+melt_rate+'/a_porosity_'+file_number+'.png' # .zfill(5) fills the string with 0 until it's 5 characters long
@@ -70,6 +71,7 @@ def make_array(x_variable,melt_labels,t):
                 big_array[row*cols+2*x,:,:,:] = poro  # 0 2 4 rows*2 because there are 2 images for each simulation. First index is for each image
                 #print(row*cols+2*x)
                 poro_big_file.close()
+                # print(f'file exists {poro_file}')
             else:
                 print("no file called ",poro_file)
 

@@ -471,9 +471,12 @@ def analyse_png(png_file: str, part_to_analyse: str) -> dict:
         left = 475; top = 1027; right = 1490; bottom = 1228 # BOTTOM - melt-production zone
         out_path = "p_bot_"+png_file.replace('.png', '_nx.grid.png')
     elif part_to_analyse == 't':
-        #left = 475; top = 223; right = 1490; bottom = 1027 # TOP - melt-production zone - if prod zone is 0-0.2
-        left = 475; top = 223; right = 1490; bottom = 1178 # TOP - melt-production zone  - if prod zone is 0-0.05
+        #left = 475; top = 223; right = 1490; bottom = 1027 # TOP = melt-production zone - if prod zone is 0-0.2
+        #left = 475; top = 223; right = 1490; bottom = 1178 # TOP = melt-production zone  - if prod zone is 0-0.05:  1228-(1228-223)*0.05
+        left = 475; top = 223; right = 1490; bottom = 1128 # TOP = melt-production zone  - if prod zone is 0-0.1
+        
         out_path = "p_top_"+png_file.replace('.png', '_nx.grid.png')
+        
     elif part_to_analyse == 'f': # full, or field = do not crop
         crop_im = 0  # in this case, do not crop 
         out_path = "p_"+png_file.replace('.png', '_nx.grid.png')
