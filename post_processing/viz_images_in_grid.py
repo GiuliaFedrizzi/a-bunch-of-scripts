@@ -12,11 +12,12 @@ from PIL import Image
 viscosity = 1
 def_rate = 0
 
-os.chdir('/nobackup/scgf/myExperiments/threeAreas/through/th47')
+os.chdir('/nobackup/scgf/myExperiments/threeAreas/through/th48')
 
-times = range(1,151,1)  # (start, end, step)
-# melt_labels = ['0.001','0.002','0.003','0.004','0.005','0.006','0.007','0.008','0.009']  
-melt_labels = ['0.001','0.003','0.005','0.007','0.009'] 
+# times = range(20,200,20)  # (start, end, step)
+times = range(16,30,1)  # (start, end, step)
+# melt_labels = ['0.001','0.002','0.003','0.004','0.005','0.006','0.007','0.008','0.009']  # they have to be in a sequence
+melt_labels = ['0.001','0.003','0.005','0.007','0.009']  # they have to be in a sequence
 
 
 
@@ -58,7 +59,6 @@ def make_array(x_variable,melt_labels,t):
                 # poro_file = 'visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_'+melt_rate+'/a_porosity_'+file_number+'.png' 
                 poro_file = 'visc_'+exp+'_'+x_val+'/vis1e2_mR_'+melt_rate+'/a_porosity_'+file_number+'.png' 
                 # poro_file = 'vis'+x_val+'_mR_'+melt_rate+'/a_porosity_'+file_number+'.png' 
-                # bb_file = 'visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_'+melt_rate+'/a_brokenBonds_'+file_number+'.png'
                 bb_file = 'visc_'+exp+'_'+x_val+'/vis1e2_mR_'+melt_rate+'/a_brokenBonds_'+file_number+'.png'
                 # bb_file = 'vis'+x_val+'_mR_'+melt_rate+'/a_brokenBonds_'+file_number+'.png'
             elif def_rate:
@@ -71,7 +71,6 @@ def make_array(x_variable,melt_labels,t):
                 big_array[row*cols+2*x,:,:,:] = poro  # 0 2 4 rows*2 because there are 2 images for each simulation. First index is for each image
                 #print(row*cols+2*x)
                 poro_big_file.close()
-                # print(f'file exists {poro_file}')
             else:
                 print("no file called ",poro_file)
 
@@ -108,6 +107,8 @@ for t in times:
         ax.set_xlabel('Viscosity')
     elif def_rate:
         ax.set_xlabel('Deformation rate')
+        xlabels = [l.replace("e8","e-8") for l in x_variable]
+        ax.set_xticklabels(xlabels,fontsize=4)  # overwrite labels with "-8" (true exponent) instead of 8 
 
     # plt.yticks(np.arange(441,883*4,883), ['0.01','0.02','0.03','0.04'])
     y_ticks_positions = np.arange(441,883*len(melt_labels)+441,883)

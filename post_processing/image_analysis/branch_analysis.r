@@ -22,30 +22,39 @@ library(patchwork)
 base_path <- getwd( )
 
 args <- commandArgs(trailingOnly = TRUE)  # store them as vectors
+var_is_visc = 0
+var_is_def = 1
 
 # list of viscosity and melt rate values 
-x_variable <- c('1e1','5e1','1e2','5e2','1e3','5e3','1e4')#,'5e3','1e4')#,'2e4','4e4')  # the values of the x variable to plot (e.g. def rate)
+# x_variable <- c('1e1','5e1','1e2','5e2','1e3','5e3','1e4')#,'5e3','1e4')#,'2e4','4e4')  # the values of the x variable to plot (e.g. def rate)
+x_variable <- c('1e8','2e8','3e8','4e8','5e8','6e8','7e8','8e8','9e8')#,'5e3','1e4')#,'2e4','4e4')  # the values of the x variable to plot (e.g. def rate)
 melt_rate_list <- c('01','02','03','04','06','08','09')#,'1','2')
 time = as.numeric(args[1])   # time for the 1st   (e.g. 6e7 = 60e6 = 60th file in mr_01)
 
 # open file, extract values
 build_branch_df <- function(x,m,time) {
         # to keep the amount of melt constant, we look at smaller times if melt rate is higher, later times if it's lower. This num will build the file name
+        var_is_visc <- 0
+        var_is_def <- 1
+
         norm_time = round(time/1e7/as.double(m))*1e7
 
         if (startsWith(m,'0'))
         {
             true_m_rate = as.double(m)/1000
-        }
-        else {
+        } else {
             true_m_rate = as.double(m)/100
         }
+        if (var_is_visc) {
         ##  build the path. unlist(strsplit(x,"e"))[2] splits '5e3' into 5 and 3 and takes the second (3)
-        file_to_open <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis',x,'_mR_',m,'/py_branch_info.csv',sep="")
+        file_to_open <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis',x,'_mR_',m,'/py_branch_info_top.csv',sep="")
+        } else if (var_is_def) {
+        file_to_open <- paste(base_path,'/thdef',x,'/vis1e2_mR_',m,'/py_branch_info_top.csv',sep="")
+        }
         # print(file_to_open)
         if (file.exists(file_to_open)) {    
             df_bi <- read.csv(file=file_to_open)
-            #print(paste("m rate",m,", file ",file_num))
+            print(paste("m rate",m,", norm time ",norm_time))
             df_bi_t <- df_bi[df_bi$time == norm_time,]  # get the line that corresponds to the time
             if (nrow(df_bi_t)>0){
                 # I,X,Y nodes
@@ -59,25 +68,31 @@ build_branch_df <- function(x,m,time) {
 
                 ## B_20 'Frequency' 
                 B_20 <- sum(df_bi_t$n_I+df_bi_t$n_2+df_bi_t$n_3+df_bi_t$n_4+df_bi_t$n_5)
-                ## B_21  'Intensity'
-                B_21 <- df_bi_t$branches_tot_length
-                ## B_C  'Characteristic length'
-                B_C <- B_21/B_20
-                ## B_22  'Dimensionless intensity'
-                B_22 <- B_20 * (B_C)^2
-                
-                ## build dataframe
-                de <- list(viscosity=as.double(x),melt_rate=m,true_m_rate=true_m_rate,B_20=B_20,B_21=B_21,B_C=B_C,B_22=B_22,
-                n_I=n_I,n_Y=n_Y,n_X=n_X,n_B=n_B,n_L=n_L,time=time,norm_time=norm_time)
-                df_m <- rbind(df_m,de)#,stringsAsFactors=FALSE)
+                if (B_20 > 0){     # if there are fractures                  
+                    ## B_21  'Intensity'
+                    B_21 <- df_bi_t$branches_tot_length
+                    ## B_C  'Characteristic length'
+                    B_C <- B_21/B_20
+                    ## B_22  'Dimensionless intensity'
+                    B_22 <- B_20 * (B_C)^2
+                    
+                    ## build dataframe
+                    if (var_is_visc) {
+                        de <- list(viscosity=as.double(x),melt_rate=m,true_m_rate=true_m_rate,B_20=B_20,B_21=B_21,B_C=B_C,B_22=B_22,
+                        n_I=n_I,n_Y=n_Y,n_X=n_X,n_B=n_B,n_L=n_L,time=time,norm_time=norm_time)
+                    } else if (var_is_def) {
+                        de <- list(def_rate=as.double(x),melt_rate=m,true_m_rate=true_m_rate,B_20=B_20,B_21=B_21,B_C=B_C,B_22=B_22,
+                        n_I=n_I,n_Y=n_Y,n_X=n_X,n_B=n_B,n_L=n_L,time=time,norm_time=norm_time)
+                    }
+                    df_m <- rbind(df_m,de)#,stringsAsFactors=FALSE)
+                }
+
                 # df_m <- rbind(df_m,de,stringsAsFactors=FALSE)
-            }
-            else {
+            } else {
             print(paste("no visc",x,", melt rate ",m," at time ",time,sep=""))            
             }
 
-            } 
-        else {
+            } else {
             print(paste("file does not exist:",file_to_open))
         }
         return(df_m)
@@ -90,10 +105,18 @@ build_branch_df <- function(x,m,time) {
 # time=double(),norm_time=double(),stringsAsFactors=FALSE)
 
 # melt_rate=factor(levels=melt_rate_list) I'm specifying the possible values (levels) for melt rate 
-df_m <- data.frame(viscosity=double(),melt_rate=factor(levels=melt_rate_list),
-B_20=double(),B_21=double(),B_C=double(),B_22=double(),
-n_I=double(),n_Y=double(),n_X=double(),n_B=double(),n_L=double(),
-time=double(),norm_time=double())#,stringsAsFactors=FALSE)
+
+if (var_is_visc) {
+    df_m <- data.frame(viscosity=double(),melt_rate=factor(levels=melt_rate_list),
+    B_20=double(),B_21=double(),B_C=double(),B_22=double(),
+    n_I=double(),n_Y=double(),n_X=double(),n_B=double(),n_L=double(),
+    time=double(),norm_time=double())#,stringsAsFactors=FALSE)
+    } else if (var_is_def) {
+    df_m <- data.frame(def_rate=double(),melt_rate=factor(levels=melt_rate_list),
+    B_20=double(),B_21=double(),B_C=double(),B_22=double(),
+    n_I=double(),n_Y=double(),n_X=double(),n_B=double(),n_L=double(),
+    time=double(),norm_time=double())#,stringsAsFactors=FALSE)
+    }
 
 
 for (x_var in x_variable) {
@@ -194,12 +217,19 @@ if (TRUE) {
     # pt2 <- ggtern(data=df_m,aes(x=P_IC,y=P_II,z=P_CC))+ geom_point(aes(color = factor(viscosity,ordered=T)))
     # print(pt2)
     # dev.off()
-
+    if (var_is_visc) {
     png_name <- paste(base_path,"/branch_plots/br_ter_visc_t",time_string,"e07.png",sep='')  # build name of png
     png(file=png_name,width = 1400,height = 1400,res=200)
     ptv <- ggtern(data=df_m,aes(x=n_Y,y=n_I,z=n_X)) + geom_point(aes(color = viscosity)) + scale_colour_continuous(trans='reverse') #+ geom_path()
     print(ptv)
     dev.off()
+    } else if (var_is_def) {
+    png_name <- paste(base_path,"/branch_plots/br_ter_visc_t",time_string,"e07.png",sep='')  # build name of png
+    png(file=png_name,width = 1400,height = 1400,res=200)
+    ptv <- ggtern(data=df_m,aes(x=n_Y,y=n_I,z=n_X)) + geom_point(aes(color = def_rate)) + scale_colour_continuous(trans='reverse') #+ geom_path()
+    print(ptv)
+    dev.off()
+    }
 }
 
 #png_name <- paste(base_path,"/branch_plots/br_ter_meltPanels_t",time_string,"e07.png",sep='')  # build name of png
@@ -276,7 +306,7 @@ if (FALSE) {
     dev.off()
 }
 
-if (TRUE) {
+if (FALSE) {
     png_name <- paste(base_path,"/branch_plots/br_heat_B_",time_string,"e07.png",sep='')  # build name of png
     png(file=png_name,width = 2800,height = 2800,res=100)
     p_heat1 <- ggplot(df_m,aes(factor(x=viscosity),melt_rate, fill=B_20))  + scale_fill_distiller(direction = +1)+ geom_tile() + theme(legend.key.size = unit(0.5, 'cm'))
@@ -308,7 +338,7 @@ if (TRUE) {
     dev.off()
 }
 
-if (TRUE) {
+if (FALSE) {
     png_name <- paste(base_path,"/branch_plots/br_heat_nb_cl_",time_string,"e07.png",sep='')  # build name of png
     png(file=png_name,width = 2800,height = 2800,res=100)
     p_heat1 <- ggplot(df_m,aes(factor(x=viscosity),melt_rate, fill=n_B_n_L))  + scale_fill_distiller(direction = +1)+ geom_tile() + theme(legend.key.size = unit(0.5, 'cm'))
