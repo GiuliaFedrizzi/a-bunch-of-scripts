@@ -25,9 +25,11 @@ args <- commandArgs(trailingOnly = TRUE)  # store them as vectors
 var_is_visc = 0
 var_is_def = 1
 
-# list of viscosity and melt rate values 
-# x_variable <- c('1e1','5e1','1e2','5e2','1e3','5e3','1e4')#,'5e3','1e4')#,'2e4','4e4')  # the values of the x variable to plot (e.g. def rate)
-x_variable <- c('1e8','2e8','3e8','4e8','5e8','6e8','7e8','8e8','9e8')#,'5e3','1e4')#,'2e4','4e4')  # the values of the x variable to plot (e.g. def rate)
+if (var_is_visc){
+    x_variable <- c('1e1','5e1','1e2','5e2','1e3','5e3','1e4')#,'5e3','1e4')#,'2e4','4e4')  # the values of the x variable to plot (viscosity)
+} else if (var_is_def) {
+    x_variable <- c('1e8','2e8','3e8','4e8','5e8','6e8','7e8','8e8','9e8')#,'5e3','1e4')#,'2e4','4e4')  # the values of the x variable to plot (e.g. def rate)
+}
 melt_rate_list <- c('01','02','03','04','06','08','09')#,'1','2')
 time = as.numeric(args[1])   # time for the 1st   (e.g. 6e7 = 60e6 = 60th file in mr_01)
 
@@ -205,12 +207,12 @@ if (TRUE) {
     print(pt1)
     dev.off()
 
-    # connected-connected - isolated-connected - isolated-isolated
-    df_m["P_I"] <- df_m$N_I/(df_m$N_I+3*df_m$N_Y+4*df_m$N_X)   # probability of an I node
-    df_m["P_C"] <- (3*df_m$N_Y+4*df_m$N_X)/(df_m$N_I+3*df_m$N_Y+4*df_m$N_X)   # probability of a C node
-    df_m["P_II"] <- (df_m$P_I)^2  # probability of a branch with 2 I nodes if random distr
-    df_m["P_IC"] <- (df_m$P_I)*(df_m$P_C)  # probability of a branch with 1 I node and 1 C node if random distr
-    df_m["P_CC"] <- (df_m$P_C)^2  # probability of a branch with 2 C nodes if random distr
+    # # connected-connected - isolated-connected - isolated-isolated
+    # df_m["P_I"] <- df_m$N_I/(df_m$N_I+3*df_m$N_Y+4*df_m$N_X)   # probability of an I node
+    # df_m["P_C"] <- (3*df_m$N_Y+4*df_m$N_X)/(df_m$N_I+3*df_m$N_Y+4*df_m$N_X)   # probability of a C node
+    # df_m["P_II"] <- (df_m$P_I)^2  # probability of a branch with 2 I nodes if random distr
+    # df_m["P_IC"] <- (df_m$P_I)*(df_m$P_C)  # probability of a branch with 1 I node and 1 C node if random distr
+    # df_m["P_CC"] <- (df_m$P_C)^2  # probability of a branch with 2 C nodes if random distr
 
     # png_name <- paste(base_path,"/branch_plots/br_ter_IC_t",time_string,"e07.png",sep='')  # build name of png
     # png(file=png_name,width = 1400,height = 1400,res=200)
@@ -220,13 +222,23 @@ if (TRUE) {
     if (var_is_visc) {
     png_name <- paste(base_path,"/branch_plots/br_ter_visc_t",time_string,"e07.png",sep='')  # build name of png
     png(file=png_name,width = 1400,height = 1400,res=200)
-    ptv <- ggtern(data=df_m,aes(x=n_Y,y=n_I,z=n_X)) + geom_point(aes(color = viscosity)) + scale_colour_continuous(trans='reverse') #+ geom_path()
+    ptv <- ggtern(data=df_m,aes(x=n_Y,y=n_I,z=n_X)) + geom_point(aes(color = viscosity)) + scale_colour_continuous(trans='reverse')+ labs(
+    x = expression('N'[Y]), 
+    y = expression('N'[I]), 
+    z = expression('N'[X]), 
+    colour = "Viscosity") #+ geom_path()
     print(ptv)
     dev.off()
     } else if (var_is_def) {
     png_name <- paste(base_path,"/branch_plots/br_ter_visc_t",time_string,"e07.png",sep='')  # build name of png
     png(file=png_name,width = 1400,height = 1400,res=200)
-    ptv <- ggtern(data=df_m,aes(x=n_Y,y=n_I,z=n_X)) + geom_point(aes(color = def_rate)) + scale_colour_continuous(trans='reverse') #+ geom_path()
+    ptv <- ggtern(data=df_m,aes(x=n_Y,y=n_I,z=n_X)) + geom_point(aes(color = def_rate)) + scale_colour_continuous(trans='reverse') + labs(
+    x = expression('N'[Y]), 
+    y = expression('N'[I]), 
+    z = expression('N'[X]), 
+    colour = "Deformation rate"
+    )+
+    guides(color = guide_legend(reverse=TRUE))
     print(ptv)
     dev.off()
     }
@@ -242,7 +254,7 @@ if (TRUE) {
 
 # --------------------- heatmaps --------------------
 # heatmap for B20,B21,B_C,B22
-if (FALSE) {
+if (TRUE) {
     png_name <- paste(base_path,"/branch_plots/br_heat_B_",time_string,"e07.png",sep='')  # build name of png
     png(file=png_name,width = 1400,height = 1400,res=200)
     p1 <- ggplot(data=df_m,aes(factor(x=viscosity),melt_rate,fill=B_20)) + scale_fill_distiller(direction=+1) + geom_tile() # scale_fill_distiller's default is -1, which means higher values = lighter
@@ -256,7 +268,6 @@ if (FALSE) {
 }
 
 
-# df_grid <- expand.grid(X=df_m$viscosity)
 if (FALSE) {
     ##  four heatmaps per figure
     ## B_20, B_21, B_C, B_22
@@ -361,4 +372,3 @@ if (FALSE) {
     print(pg)
     dev.off()
 }
-# p1 <- ggMarginal(p, type="histogram", size=10)

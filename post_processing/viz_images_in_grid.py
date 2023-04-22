@@ -9,15 +9,16 @@ import matplotlib.pyplot as plt
 import os
 from PIL import Image
 
-viscosity = 1
-def_rate = 0
+viscosity = 0
+def_rate = 1
 
-os.chdir('/nobackup/scgf/myExperiments/threeAreas/through/th48')
+os.chdir('/nobackup/scgf/myExperiments/threeAreas/through/th46')
 
 # times = range(20,200,20)  # (start, end, step)
-times = range(16,30,1)  # (start, end, step)
-# melt_labels = ['0.001','0.002','0.003','0.004','0.005','0.006','0.007','0.008','0.009']  # they have to be in a sequence
-melt_labels = ['0.001','0.003','0.005','0.007','0.009']  # they have to be in a sequence
+times = range(31,91,1)  # (start, end, step)
+# melt_labels = ['0.001','0.002','0.003','0.004','0.005','0.006','0.007','0.008','0.009']  
+melt_labels = ['0.009','0.008','0.007','0.006','0.005','0.004','0.003','0.002','0.001'] 
+# melt_labels = ['0.001','0.003','0.005','0.007','0.009'] 
 
 
 
@@ -49,8 +50,12 @@ def make_array(x_variable,melt_labels,t):
 
     for row in range(0,rows):
         # melt_rate = "0"+str(row+1)
+        exact = 0   # whether file corresponds to the specified time exactly 
         melt_rate = melt_labels[row].replace("0.0","")   # e.g. from 0.001 to 01, or from 0.02 to 2
         file_number = str(int(t/(int(melt_rate)))).zfill(5)  # normalise t by the melt rate.  .zfill(5) fills the string with 0 until it's 5 characters long
+        if t%(int(melt_rate)) == 0:
+            exact = 1
+
         for x,x_val in enumerate(x_variable):
             if viscosity:
                 exp = x_val.split('e')[-1] # the exponent after visc_ and before 5e3 or 1e4 etc
@@ -84,7 +89,11 @@ def make_array(x_variable,melt_labels,t):
                 print("no file called ",bb_file)
         print("mrate ",melt_rate)
         # end of viscosity/deformation loop
-        melt_labels_t[row] = melt_labels[row]+" ("+file_number+")"
+        if exact:
+            melt_labels_t[row] = melt_labels[row]+" ("+file_number+")"
+        else:
+            melt_labels_t[row] = melt_labels[row]+" ("+file_number+"*)"   # add a flag that says it's not exact
+
         print(melt_labels_t[row])
 
 
@@ -125,13 +134,12 @@ for t in times:
     # y2.set_yticks(~y_ticks_positions)  #same as above, but reverse order
     # y2.set_yticklabels(file_numbers) # Set the right y-tick labels
     # y2.set_ylabel("File number")
-    # print(ax.get_yticks())
-    # print(y2.get_yticks())
     plt.tight_layout()
     # plt.savefig('visc_images/wd_visc_mRate_t'+str(t).zfill(3)+'.png',dpi=1200)
     # plt.savefig('images_in_grid/wd_dRate_mRate_t'+str(t).zfill(3)+'.png',dpi=1200)
     if not os.path.exists('images_in_grid'):
         os.makedirs('images_in_grid')
+    
     plt.savefig('images_in_grid/visc_mRate_t'+str(t).zfill(3)+'.png',dpi=600)
     
     # plt.show()
