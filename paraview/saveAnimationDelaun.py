@@ -6,6 +6,19 @@ import os
 import time
 import re
 
+
+#  to sort files correctly:
+#  https://stackoverflow.com/a/62941534
+import math
+# from pathlib import Path 
+
+# file_pattern = re.compile(r'.*?(\d+).*?')
+def get_order(file):
+    file_number = int(re.findall(r'\d+',file)[0])
+    return file_number
+
+
+
 sys.path.append(os.getcwd())  # so that it looks for 'modules' (paravParam.py) in the current directory
 import paravParam
 
@@ -34,13 +47,12 @@ thisDirectory = os.getcwd()
 allInputCsvFiles = []
 latestFile = None 
 
-
-sortedInputFiles = sorted(glob.glob("my_experiment*.csv"))
+sortedInputFiles = sorted(glob.glob('my_experiment*.csv'), key=get_order)   # order files based on their full number, found with get_order()
+print(allInputCsvFiles)
+#sortedInputFiles = sorted(glob.glob("my_experiment*.csv"))   # old: gets order wrong
 for i in sortedInputFiles:
     fileName = os.getcwd() + "/" +i
-    allInputCsvFiles.append(fileName)
-
-
+    allInputCsvFiles.append(fileName)  
 
 allOutputPngFiles = []
 for i in sorted(glob.glob("a_porosity_*.png")):
@@ -50,8 +62,8 @@ numberOfInputCsvFiles = len(allInputCsvFiles)
 print("numberOfInputCsvFiles ",str(numberOfInputCsvFiles))
 print("len(allOutputPngFiles) ",str(len(allOutputPngFiles)))
 
-if numberOfInputCsvFiles > 201:
-    numberOfInputCsvFiles = 201   # if too many files, stop earlier
+if numberOfInputCsvFiles > 301:
+    numberOfInputCsvFiles = 301   # if too many files, stop earlier
 
 rangeForAnimation = [0,numberOfInputCsvFiles-1]# from 0 to n-1, because 0 is included (and the last number too)
 latestOutputPngFileNumber = 0
@@ -78,7 +90,7 @@ time_step_num = float(time_string_no_Tstep.replace("\n",""))      # remove "\n" 
 
 # ========= GET THE FREQUENCY AT WHICH FILES WERE SAVED  ============
    # from the first two file names
-list_of_my_exp = sorted(glob.glob("*.csv"))
+list_of_my_exp = sorted(glob.glob("my_experiment*.csv"))
 for i,my_exp in enumerate(list_of_my_exp):
     num = my_exp.replace("my_experiment","")  # take the file name and get rid of my_experiment 
     num = num.replace(".csv","")              # and .csv

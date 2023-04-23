@@ -48,10 +48,13 @@ def read_calculate_plot(filename,input_tstep):
     print(f'time {time}, tstep: {input_tstep}')
     #plt.figure()
     #sns.scatterplot(data=bb_df,x="xcoord100",y="ycoord100",hue="Broken Bonds",linewidth=0,alpha=0.8,marker="h",size=0.6).set_aspect('equal')
-    sns.scatterplot(data=bb_df,x="x coord",y="y coord",hue="Fractures",marker='.',s=9,palette=palette_option,linewidth=0,legend=False).set_aspect('equal') #,alpha=0.8  hue="Fracrures",
+    if 'Fractures' in bb_df.columns:
+        sns.scatterplot(data=bb_df,x="x coord",y="y coord",hue="Fractures",marker='.',s=9,palette=palette_option,linewidth=0,legend=False).set_aspect('equal') #,alpha=0.8  hue="Fracrures",
+    else:  # account for spelling mistake
+        sns.scatterplot(data=bb_df,x="x coord",y="y coord",hue="Fracrures",marker='.',s=9,palette=palette_option,linewidth=0,legend=False).set_aspect('equal') #,alpha=0.8  hue="Fracrures",
     plt.title(time)
     plt.tight_layout()
-    plt.savefig("py_bb_"+str(timestep_number).zfill(5)+".png",dpi=300)
+    plt.savefig("py_bb_"+str(timestep_number).zfill(6)+".png",dpi=300)
     plt.clf()
     # plt.show()
         ##    .set_aspect('equal') to keep the same scale for x and y

@@ -18,26 +18,48 @@
 # libraries
 library(tidyverse)
 library(patchwork)
-# first part of path
-base_path <- getwd( )
 
 args <- commandArgs(trailingOnly = TRUE)  # store them as vectors
-var_is_visc = 0
-var_is_def = 1
+
+# some options for different sets of simulations
+two_subdirs <- FALSE  # is it visc_1_1e1/vis1e1_mR01 (TRUE)  or just vis1e2_mR_01  (FALSE)?
+
+var_is_visc = 1
+var_is_def = 0
 
 if (var_is_visc){
-    x_variable <- c('1e1','5e1','1e2','5e2','1e3','5e3','1e4')#,'5e3','1e4')#,'2e4','4e4')  # the values of the x variable to plot (viscosity)
+    if (two_subdirs){
+        x_variable <- c('1e1','5e1','1e2','5e2','1e3','5e3','1e4')  # the values of the x variable to plot (viscosity)
+    } else {
+        x_variable <- c('1e2')  # just one value
+    }
 } else if (var_is_def) {
     x_variable <- c('1e8','2e8','3e8','4e8','5e8','6e8','7e8','8e8','9e8')#,'5e3','1e4')#,'2e4','4e4')  # the values of the x variable to plot (e.g. def rate)
 }
 melt_rate_list <- c('01','02','03','04','06','08','09')#,'1','2')
+
+# set some options automatically
 time = as.numeric(args[1])   # time for the 1st   (e.g. 6e7 = 60e6 = 60th file in mr_01)
+
+# first part of path
+base_path <- getwd( )
+
+if (grepl("prod",base_path)){
+    # prod zone, whole domain
+    csv_file_name <- "py_branch_info.csv"
+} else if (grepl("through",base_path)) {
+    # through zone, only top
+    csv_file_name <- "py_branch_info_top.csv"
+} else {
+    csv_file_name <- "py_branch_info.csv"
+}
+
 
 # open file, extract values
 build_branch_df <- function(x,m,time) {
         # to keep the amount of melt constant, we look at smaller times if melt rate is higher, later times if it's lower. This num will build the file name
-        var_is_visc <- 0
-        var_is_def <- 1
+        var_is_visc <- 1
+        var_is_def <- 0
 
         norm_time = round(time/1e7/as.double(m))*1e7
 
@@ -49,9 +71,15 @@ build_branch_df <- function(x,m,time) {
         }
         if (var_is_visc) {
         ##  build the path. unlist(strsplit(x,"e"))[2] splits '5e3' into 5 and 3 and takes the second (3)
-        file_to_open <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis',x,'_mR_',m,'/py_branch_info_top.csv',sep="")
+        if (two_subdirs){
+            ## 2 levels
+            file_to_open <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis',x,'_mR_',m,'/',csv_file_name,sep="")
+        } else {
+            ## only 1 level
+            file_to_open <- paste(base_path,'/vis',x,'_mR_',m,'/',csv_file_name,sep="")
+        }
         } else if (var_is_def) {
-        file_to_open <- paste(base_path,'/thdef',x,'/vis1e2_mR_',m,'/py_branch_info_top.csv',sep="")
+            file_to_open <- paste(base_path,'/thdef',x,'/vis1e2_mR_',m,'/',csv_file_name,sep="")
         }
         # print(file_to_open)
         if (file.exists(file_to_open)) {    
@@ -203,7 +231,11 @@ if (TRUE) {
     # colour by melt rate
     png_name <- paste(base_path,"/branch_plots/br_ter_melt_t",time_string,"e07.png",sep='')  # build name of png
     png(file=png_name,width = 1400,height = 1400,res=200)
-    pt1 <- ggtern(data=df_m,aes(x=n_Y,y=n_I,z=n_X))+ geom_point(aes(color=true_m_rate)) + scale_colour_continuous(trans='reverse') #,size=factor(viscosity,ordered=T,alpha=0.5))) + scale_colour_gradient2(low="#aeadef",high="#04308f")
+    pt1 <- ggtern(data=df_m,aes(x=n_Y,y=n_I,z=n_X))+ geom_point(aes(color=true_m_rate)) + scale_colour_continuous(trans='reverse')+ labs(
+    x = expression('N'[Y]), 
+    y = expression('N'[I]), 
+    z = expression('N'[X]), 
+    colour = "Viscosity")
     print(pt1)
     dev.off()
 
@@ -230,7 +262,7 @@ if (TRUE) {
     print(ptv)
     dev.off()
     } else if (var_is_def) {
-    png_name <- paste(base_path,"/branch_plots/br_ter_visc_t",time_string,"e07.png",sep='')  # build name of png
+    png_name <- paste(base_path,"/branch_plots/br_ter_def_t",time_string,"e07.png",sep='')  # build name of png
     png(file=png_name,width = 1400,height = 1400,res=200)
     ptv <- ggtern(data=df_m,aes(x=n_Y,y=n_I,z=n_X)) + geom_point(aes(color = def_rate)) + scale_colour_continuous(trans='reverse') + labs(
     x = expression('N'[Y]), 
