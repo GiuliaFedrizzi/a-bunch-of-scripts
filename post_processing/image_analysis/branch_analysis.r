@@ -22,7 +22,7 @@ library(patchwork)
 args <- commandArgs(trailingOnly = TRUE)  # store them as vectors
 
 # some options for different sets of simulations
-two_subdirs <- FALSE  # is it visc_1_1e1/vis1e1_mR01 (TRUE)  or just vis1e2_mR_01  (FALSE)?
+two_subdirs <- TRUE  # is it visc_1_1e1/vis1e1_mR01 (TRUE)  or just vis1e2_mR_01  (FALSE)?
 
 var_is_visc = 1
 var_is_def = 0
@@ -73,7 +73,8 @@ build_branch_df <- function(x,m,time) {
         ##  build the path. unlist(strsplit(x,"e"))[2] splits '5e3' into 5 and 3 and takes the second (3)
         if (two_subdirs){
             ## 2 levels
-            file_to_open <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis',x,'_mR_',m,'/',csv_file_name,sep="")
+            # file_to_open <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis',x,'_mR_',m,'/',csv_file_name,sep="")
+            file_to_open <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis1e2_mR_',m,'/',csv_file_name,sep="")
         } else {
             ## only 1 level
             file_to_open <- paste(base_path,'/vis',x,'_mR_',m,'/',csv_file_name,sep="")
@@ -235,7 +236,8 @@ if (TRUE) {
     x = expression('N'[Y]), 
     y = expression('N'[I]), 
     z = expression('N'[X]), 
-    colour = "Viscosity")
+    colour = "Viscosity")+
+    guides(color = guide_legend(reverse=TRUE))
     print(pt1)
     dev.off()
 
@@ -258,7 +260,8 @@ if (TRUE) {
     x = expression('N'[Y]), 
     y = expression('N'[I]), 
     z = expression('N'[X]), 
-    colour = "Viscosity") #+ geom_path()
+    colour = "Viscosity")+
+    guides(color = guide_legend(reverse=TRUE)) #+ geom_path()
     print(ptv)
     dev.off()
     } else if (var_is_def) {
