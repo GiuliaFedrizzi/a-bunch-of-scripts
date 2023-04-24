@@ -464,8 +464,8 @@ def analyse_png(png_file: str, part_to_analyse: str) -> dict:
     if part_to_analyse == 'w': # whole domain
     # Setting the points for cropped image
     # left = 316; top = 147; right = 996; bottom = 819 # worked when images were generated on my laptop
-        # left = 475; top = 223; right = 1490; bottom = 1228 # worked when images were generated on ARC
-        left = 428; top = 162; right = 1492; bottom = 1211  # worked for threeAreas/prod/p01
+        left = 475; top = 223; right = 1490; bottom = 1228 # worked when images were generated on ARC
+        # left = 428; top = 162; right = 1492; bottom = 1211  # worked for threeAreas/prod/p01
         out_path = "p_"+png_file.replace('.png', '_nx.grid.png')
     elif part_to_analyse == 'b':
         left = 475; top = 1027; right = 1490; bottom = 1228 # BOTTOM - melt-production zone
@@ -505,7 +505,7 @@ def analyse_png(png_file: str, part_to_analyse: str) -> dict:
 
     # viz grid with networkx's plot
     ax = draw_nx_graph(im, g)
-    plt.savefig(out_path,dpi=300)
+    plt.savefig(out_path,dpi=200)
     plt.clf()
     # plt.show()
 

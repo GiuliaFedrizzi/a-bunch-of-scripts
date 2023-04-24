@@ -15,7 +15,7 @@ def_rate = 0
 # os.chdir('/nobackup/scgf/myExperiments/threeAreas/through/th48')
 
 # times = range(20,200,20)  # (start, end, step)
-times = range(1,41,1)  # (start, end, step)
+times = range(31,71,1)  # (start, end, step)
 # melt_labels = ['0.001','0.002','0.003','0.004','0.005','0.006','0.007','0.008','0.009']  
 melt_labels = ['0.009','0.008','0.007','0.006','0.005','0.004','0.003','0.002','0.001'] 
 # melt_labels = ['0.001','0.003','0.005','0.007','0.009'] 
