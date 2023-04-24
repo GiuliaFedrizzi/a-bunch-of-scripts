@@ -233,22 +233,19 @@ if (FALSE) {
 library("ggplot2")
 library("ggtern")
 if (TRUE) {
-    # colour by melt rate
-    #png_name <- paste(base_path,"/branch_plots/br_ter_melt_t",time_string,".png",sep='')  # build name of png
-    #png(file=png_name,width = 1400,height = 1400,res=200)
-    pt1 <- ggtern(data=df_m,aes(x=n_Y,y=n_I,z=n_X))+ geom_point(aes(color=true_m_rate)) + scale_colour_continuous(trans='reverse')+ 
-    labs(x = expression('N'[Y]),y = expression('N'[I]),z = expression('N'[X]),colour = "Melt Rate")+
-    guides(color = guide_legend(reverse=TRUE))+    # low at the bottom, high at the top
-    theme(plot.background = element_rect(fill='transparent', color=NA),
-    legend.background = element_rect(fill='transparent'))  
-    ggsave(paste(base_path,"/branch_plots/br_ter_melt_t",time_string,"_top.png",sep=''), pt1, bg='transparent')
-
     # # connected-connected - isolated-connected - isolated-isolated
     # df_m["P_I"] <- df_m$N_I/(df_m$N_I+3*df_m$N_Y+4*df_m$N_X)   # probability of an I node
     # df_m["P_C"] <- (3*df_m$N_Y+4*df_m$N_X)/(df_m$N_I+3*df_m$N_Y+4*df_m$N_X)   # probability of a C node
     # df_m["P_II"] <- (df_m$P_I)^2  # probability of a branch with 2 I nodes if random distr
     # df_m["P_IC"] <- (df_m$P_I)*(df_m$P_C)  # probability of a branch with 1 I node and 1 C node if random distr
     # df_m["P_CC"] <- (df_m$P_C)^2  # probability of a branch with 2 C nodes if random distr
+    # colour by melt rate
+    pt1 <- ggtern(data=df_m,aes(x=n_Y,y=n_I,z=n_X))+ geom_point(aes(color=true_m_rate)) + scale_colour_continuous(trans='reverse')+ 
+    labs(x = expression('N'[Y]),y = expression('N'[I]),z = expression('N'[X]),colour = "Melt Rate")+
+    guides(color = guide_legend(reverse=TRUE))+    # low at the bottom, high at the top
+    theme(plot.background = element_rect(fill='transparent', color=NA),
+    legend.background = element_rect(fill='transparent'))  
+    ggsave(paste(base_path,"/branch_plots/br_ter_melt_t",time_string,"_top.png",sep=''), pt1, bg='transparent')
 
     if (var_is_visc) {
         png_name <- paste(base_path,"/branch_plots/br_ter_visc_t",time_string,".png",sep='')  # build name of png
@@ -262,13 +259,11 @@ if (TRUE) {
         print(ptv)
         dev.off()
     } else if (var_is_def) {
-        # df_m$def_rate_fac <- as.factor(gsub("e-08","",df_m$def_rate)) # def rate as factor
-        # print(df_m$def_rate_fac)
-        # png_name <- paste(base_path,"/branch_plots/br_ter_def_t",time_string,".png",sep='')  # build name of png
-        # png(file=png_name,width = 1400,height = 1400,res=200)
+        df_m$def_rate_factor <- factor(df_m$def_rate, ordered = TRUE)
         ptv <- ggtern(data=df_m,aes(x=n_Y,y=n_I,z=n_X))+
-        geom_point(aes(color=def_rate))+scale_colour_continuous(trans='reverse')+
-        #scale_fill_distiller(direction=+1)+
+        geom_point(aes(color=as.factor(def_rate_factor)))+#scale_colour_continuous(trans='reverse')+
+        scale_colour_brewer(palette='Blues')+
+        scale_fill_distiller(direction=+1)+
         scale_fill_discrete(guide = guide_legend(reverse=TRUE))+
         labs(x = expression('N'[Y]),y = expression('N'[I]),z = expression('N'[X]),colour = "Deformation Rate")+
         guides(color = guide_legend(reverse=TRUE))+    # low at the bottom, high at the top
