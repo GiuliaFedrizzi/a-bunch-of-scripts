@@ -240,11 +240,14 @@ if (TRUE) {
     # df_m["P_IC"] <- (df_m$P_I)*(df_m$P_C)  # probability of a branch with 1 I node and 1 C node if random distr
     # df_m["P_CC"] <- (df_m$P_C)^2  # probability of a branch with 2 C nodes if random distr
     # colour by melt rate
-    pt1 <- ggtern(data=df_m,aes(x=n_Y,y=n_I,z=n_X))+ geom_point(aes(color=true_m_rate)) + scale_colour_continuous(trans='reverse')+ 
+    df_m$melt_rate_factor <- factor(df_m$melt_rate, ordered = TRUE)
+    pt1 <- ggtern(data=df_m,aes(x=n_Y,y=n_I,z=n_X))+ geom_point(aes(color=as.factor(true_m_rate)))+ 
+    scale_colour_brewer(palette='Blues')+
+    scale_fill_distiller(direction=+1)+
+    scale_fill_discrete(guide = guide_legend(reverse=TRUE))+    
     labs(x = expression('N'[Y]),y = expression('N'[I]),z = expression('N'[X]),colour = "Melt Rate")+
     guides(color = guide_legend(reverse=TRUE))+    # low at the bottom, high at the top
-    theme(plot.background = element_rect(fill='transparent', color=NA),
-    legend.background = element_rect(fill='transparent'))  
+    theme(plot.background = element_rect(fill='transparent', color=NA),legend.background = element_rect(fill='transparent'))  
     ggsave(paste(base_path,"/branch_plots/br_ter_melt_t",time_string,"_top.png",sep=''), pt1, bg='transparent')
 
     if (var_is_visc) {
@@ -267,22 +270,9 @@ if (TRUE) {
         scale_fill_discrete(guide = guide_legend(reverse=TRUE))+
         labs(x = expression('N'[Y]),y = expression('N'[I]),z = expression('N'[X]),colour = "Deformation Rate")+
         guides(color = guide_legend(reverse=TRUE))+    # low at the bottom, high at the top
-        # scale_fill_manual(values = rev(x_variable),  # reverse the def rate vector 
-        #      labels = rev(x_variable),  # reverse the vector 
-        #      drop = FALSE)+
-        scale_size(breaks = rev(as.double(x_variable)))+
+        # scale_size(breaks = rev(as.double(x_variable)))+
         theme(plot.background = element_rect(fill='transparent', color=NA),legend.background = element_rect(fill='transparent'))  
-        # ptv <- ggtern(data=df_m,aes(x=n_Y,y=n_I,z=n_X)) + geom_point(aes(color = def_rate)) + 
-        # # scale_colour_continuous(trans='reverse') + 
-        # labs(
-        # x = expression('N'[Y]), 
-        # y = expression('N'[I]), 
-        # z = expression('N'[X]), 
-        # colour = "Deformation rate")+
-        # guides(color = guide_legend(reverse=TRUE))+    # low at the bottom, high at the top
-        # theme(plot.background = element_rect(fill='transparent', color=NA),    #  transparent background
-        # legend.background = element_rect(fill='transparent'))
-        ggsave(paste(base_path,"/branch_plots/br_ter_def_t30_trsp_1.png",sep=""), ptv, bg='transparent')
+        ggsave(paste(base_path,"/branch_plots/br_ter_def_t",time_string,"_trsp_1.png",sep=""), ptv, bg='transparent')
         # ggsave(paste(base_path,"/branch_plots/br_ter_def_t",time_string,"_trsp_1.png",sep=''), ptv, bg='transparent')
     }
 }
