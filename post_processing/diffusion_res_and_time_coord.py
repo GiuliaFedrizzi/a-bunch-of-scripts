@@ -44,16 +44,16 @@ from pathlib import Path
 # import functions from external file
 from useful_functions import * 
 
-var_to_plot = "Pressure"
+var_to_plot = "Sigma_1"
 # options: Pressure, Mean Stress, Actual Movement, Gravity, Porosity, Sigma_1, Sigma_2, Youngs Modulus
 
 # dir_labels = ['400','200']  # res400.elle, res200.elle
 # dir_labels = ['00200', '00400','00600','00800','01000']
-# dir_labels = ['00200', '00400','00600','00800','01000','02000','04000']#,'06000','08000']#,'10000']
 # dir_labels = ['02000','04000','06000','08000','10000'] 
+dir_labels = ['00200', '00400','00600','00800','01000','02000','04000']#,'06000','08000','10000'] 
 #dir_labels = ['01','03','05','07','09','11','13','15','17','19']
 # dir_labels = ['01','02','03','04','05','06','07','08','09'] 
-dir_labels = ['01','03','05','07','09'] 
+# dir_labels = ['01','03','05','07','09'] 
 # dir_labels = ['102','104','106','108','110']
 
 
@@ -68,19 +68,21 @@ sigmas_top_ratio = []
 sigmas_bot_ratio = []
 sizes = []
 
+####   WARNING:  offset is set to 50 instead of the central point (1/4 of domain)
+
+
 for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/wd_viscTest/vis_'+str(i))  
-    # dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj86/size'+str(i)) 
+    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj104/size'+str(i)) 
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/th04/vis1e2_mR_'+str(i))  
-    dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/th38/vis1e2_mR_'+str(i))  
+    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/th38/vis1e2_mR_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
     
 print(dir_list)
 
 
 fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
-# first_file = 'my_experiment00100.csv'
-first_file = 'my_experiment03000.csv'
+
 df_x = pd.DataFrame()
 df_y = pd.DataFrame()
 
@@ -108,9 +110,13 @@ for dirnum,dir in enumerate(dir_list):
         scale_factor = 1 # default factor for scaling the axes. 
 
     # open the first file after melt addition to find the max P
-    if not os.path.exists(os.getcwd()+'/'+first_file):  # if it can't find the file after my_experiment00000.csv
+    if len(sorted(glob.glob("my_experiment*"))) < 4:  # if there aren't enough files, skip
+        #if not os.path.exists(os.getcwd()+'/'+first_file):  # if it can't find the file after my_experiment00000.csv
         print('skipping '+os.getcwd())
         continue
+    else:
+        first_file = sorted(glob.glob("my_experiment*"))[3]
+
     myExp = pd.read_csv(first_file, header=0)
     if dir_label == '10000':
         xmax = myExp.loc[45707, 'x coord']
@@ -121,7 +127,10 @@ for dirnum,dir in enumerate(dir_list):
         xmax = myExp.loc[myExp['Pressure'].idxmax(), 'x coord']
         ymax = myExp.loc[myExp['Pressure'].idxmax(), 'y coord']
         max_id = myExp['Pressure'].idxmax()   #  index of the point with the maximum pressure value
-        offset = max_id%resolution   # so that they are all centered around 0 on the x axis. It's the shift in the x direction.
+        # offset = max_id%resolution   # so that they are all centered around 0 on the x axis. It's the shift in the x direction.
+        # print(f'offset: {offset}')
+        offset = 50   # set manually
+
     
     # find the x coordinates that correspond to the max pressure, based on their index
     x_array = myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('x coord')] 
@@ -207,7 +216,7 @@ for dirnum,dir in enumerate(dir_list):
 # g_y_1 = sns.lineplot(data=df_y ,x="y",y='F_P_y',ax=ax3,hue='time',markers=True,alpha=0.5)
 # g_y_1 = sns.scatterplot(data=df_y ,x="y",y='Porosity',ax=ax3,hue='time',alpha=0.5)
 
-if True:
+if False:
     g_x = sns.lineplot(data=df_x ,x="x",y=var_to_plot,ax=ax1,hue='time',style='scale',alpha=0.5)
     g_y = sns.lineplot(data=df_y ,x="y",y=var_to_plot,ax=ax2,hue='time',style='scale',alpha=0.5)
     ax1.set_title("Horizontal Profile")
@@ -235,9 +244,11 @@ if False:
     os.chdir('..')
     fig.suptitle(os.getcwd()) # get the part of the path that is after "myExperiments/"
     plt.show()
-if False:
+if True:  # plot ratios
     ax1.plot(sizes,sigmas_top_ratio,'-o',label='top ratio')
     ax2.plot(sizes,sigmas_bot_ratio,'-o',label='bottom ratio')
+    ax1.axhline(y=1.0, linestyle='--')
+    ax1.axhline(y=1.0, linestyle='--')
     ax1.legend()
     ax2.legend()
     os.chdir('..')
