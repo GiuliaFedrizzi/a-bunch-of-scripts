@@ -3,6 +3,9 @@ plot stress (sigma 1) values at top and bottom from different simulations.
 From diffusion_res_and_time_coord.py
 Made for directories like /nobackup/scgf/myExperiments/gaussJan2022/gj78/
     which contain subdirs like size00200, ..., size10000
+
+
+To be run from gaussJan2022
 """
 
 import pandas as pd
@@ -18,7 +21,7 @@ from pathlib import Path
 from useful_functions import * 
 
 # dir_labels = ['00200', '00400','00600','00800','01000']
-dir_labels = ['00200', '00400','00600','00800','01000','02000','04000','06000','08000','10000']  # all sizes
+dir_labels = ['00200', '00400','00600','00800','01000','02000']#,'04000']#,'06000','08000']#,'10000']  # all sizes
 # dir_labels = ['02000','04000','06000','08000','10000'] 
 # gj_dirs = ['gj71','gj72','gj69','gj73','gj74','gj75','gj70','gj76']
 # gj_lab = ['0.1','0.2','0.5','0.7','0.8','0.9','1','1.2'] # their labels
@@ -35,8 +38,13 @@ dir_labels = ['00200', '00400','00600','00800','01000','02000','04000','06000','
 # gj_dirs = ['gj92','gj93','gj94','gj95']#,'gj91','gj86']#,'gj76']
 # gj_lab = ['0.01', '0.03', '0.05', '0.07']#, '0.9', '1'] # their labels
 
-gj_dirs = ['gj97','gj98','gj99','gj100']#,'gj91','gj86']#,'gj76']
-gj_lab = ['0.01', '0.03', '0.05', '0.07']#, '0.9', '1'] # their labels
+# gj_dirs = ['gj97','gj98','gj99','gj100']#,'gj91','gj86']#,'gj76']
+# gj_lab = ['0.01', '0.03', '0.05', '0.07'] # their labels
+
+gj_dirs = ['gj102','gj103','gj104','gj105']
+gj_lab = ['1000', '2000', '8000','9000']# their labels
+
+
 
 fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
 resolution = 200
@@ -102,19 +110,21 @@ for i,gjdir in enumerate(gj_dirs):
     print(line_label)
     sigma_df = dir_loop(gjdir,dir_labels,sigma_df,line_label)
 
-if True:
+if False:
     # plot both true and theoretical=simulated values (2 lines each plot)
     # ts = value at the top, simulated. tt = value at the top, theoretical
     g_ts = sns.lineplot(data=sigma_df ,x="scale",y='top true',ax=ax1,hue='coeff',markers=True,marker='o',alpha=0.5)
     g_tt = sns.lineplot(data=sigma_df ,x="scale",y='top theor',ax=ax1,hue='coeff',alpha=0.5)#,dashes=[(2, 2), (2, 2)],alpha=0.5)
     g_bs = sns.lineplot(data=sigma_df ,x="scale",y='bottom true',ax=ax2,hue='coeff',markers=True,marker='o',alpha=0.5)
     g_bt = sns.lineplot(data=sigma_df ,x="scale",y='bottom theor',ax=ax2,hue='coeff',alpha=0.5)#,dashes=[(2, 2), (2, 2)],alpha=0.5)
-if False:
+if True:
     #  g_tr = top ratio
     g_tr = sns.lineplot(data=sigma_df ,x="scale",y='top ratio',ax=ax1,hue='coeff',markers=True,marker='o',alpha=0.5)
     ax1.axhline(y=1, color='k', linestyle='--',alpha=0.3)
     g_br = sns.lineplot(data=sigma_df ,x="scale",y='bottom ratio',ax=ax2,hue='coeff',markers=True,marker='o',alpha=0.5)
     ax2.axhline(y=1, color='k', linestyle='--',alpha=0.3)
+ax1.set_xticks(ticks=[float(x) for x in dir_labels])  # define list of ticks
+ax2.set_xticks(ticks=[float(x) for x in dir_labels])  # define list of ticks
 ax1.set_title("Top value")
 ax2.set_title("Bottom value")
 plt.show()

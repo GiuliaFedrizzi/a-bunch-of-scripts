@@ -48,9 +48,9 @@ var_to_plot = "Sigma_1"
 # options: Pressure, Mean Stress, Actual Movement, Gravity, Porosity, Sigma_1, Sigma_2, Youngs Modulus
 
 # dir_labels = ['400','200']  # res400.elle, res200.elle
-# dir_labels = ['00200', '00400','00600','00800','01000']
+dir_labels = ['00200', '00400','00600','00800','01000']
 # dir_labels = ['02000','04000','06000','08000','10000'] 
-dir_labels = ['00200', '00400','00600','00800','01000','02000','04000']#,'06000','08000','10000'] 
+dir_labels = ['00200', '00400','00600','00800','01000','02000','04000','06000','08000','10000'] 
 #dir_labels = ['01','03','05','07','09','11','13','15','17','19']
 # dir_labels = ['01','02','03','04','05','06','07','08','09'] 
 # dir_labels = ['01','03','05','07','09'] 
@@ -68,12 +68,12 @@ sigmas_top_ratio = []
 sigmas_bot_ratio = []
 sizes = []
 
-####   WARNING:  offset is set to 50 instead of the central point (1/4 of domain)
+####   WARNING: (horizontal) offset is set to 50 instead of the central point (1/4 of domain)
 
 
 for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/wd_viscTest/vis_'+str(i))  
-    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj104/size'+str(i)) 
+    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj108/size'+str(i)) 
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/th04/vis1e2_mR_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/th38/vis1e2_mR_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
@@ -94,10 +94,51 @@ else:
 for dirnum,dir in enumerate(dir_list):
     """ loop through directories"""
     os.chdir(dir)
+    print(os.getcwd())
+    if len(sorted(glob.glob("my_experiment*"))) < 5:  # if there aren't enough files, skip
+        #if not os.path.exists(os.getcwd()+'/'+first_file):  # if it can't find the file after my_experiment00000.csv
+        print('skipping '+os.getcwd())
+        continue
+    else:
+        first_file = sorted(glob.glob("my_experiment*"))[4]
+
+    myExp = pd.read_csv(first_file, header=0)
 
     if "size" in dir.split("/")[-1]:      # try to get the size automatically. If the last subdirectory contains the scale
         dir_label = dir_labels[dirnum]   # get the label that corresponds to the directory
         scale_factor = float(dir_label)/max_dir_size # factor for scaling the axes. Normalised by the maximum size (e.g. 1000)
+
+        ## manually get the coordinates of the central point:
+        meltYmin = float(getParameterFromLatte("input.txt","meltYmin"))
+        ymax = meltYmin/(resolution/2)   # in the form of 0.875
+        xmax = 0.3    # 0.5 if point is in the middle
+        matches_x = np.where(np.isclose(myExp["x coord"],xmax,atol=3e-3)==True)[0] # vertical
+        # print(matches_x) 
+        # print(len(matches_x))
+        matches_y = np.where(np.isclose(myExp["y coord"],ymax,atol=2e-3)==True)[0]
+        # print(matches_y)
+        # print(len(matches_y))
+        if dir_label == '08000':
+            max_id = 45858   #  index of a point w coord 0.2975,0.980603
+            xmax = myExp.loc[45707, 'x coord']
+            ymax = myExp.loc[max_id, 'y coord']
+        elif dir_label == '10000':
+            max_id = 45858   #  index of a point w coord 0.2975,0.980603
+            # max_id = 45707   #  index of the point with the maximum pressure value
+            xmax = myExp.loc[max_id, 'x coord']
+            ymax = myExp.loc[max_id, 'y coord']
+            # offset = 100   # so that they are all centered around 0 on the x axis. It's the shift in the x direction.
+        # max_id = np.where(np.isclose(myExp["x coord"],xmax,atol=1e-2) & np.isclose(myExp["y coord"],ymax,atol=1e-3)).index   #  index of the point with the maximum pressure value
+        max_ids = myExp[(np.isclose(myExp["x coord"],xmax,atol=3e-3) & np.isclose(myExp["y coord"],ymax,atol=2e-3))].index   #  index of the point with the maximum pressure value
+        print(f'all matches for max_ids: {max_ids} ')
+        if len(max_ids)>0:
+            max_id = max_ids[0]
+        # else:
+        #     max_id = max_ids
+
+        # print(f'first max_id: {max_id}')
+        # max_id = myExp_upper['Pressure'].idxmax()   #  index of the point with the maximum pressure value
+        offset = max_id%resolution   # so that they are all centered around 0 on the x axis. It's the shift in the x direction.
 
     elif "press0" in dir.split("/")[-2]:   # If the second to last subdirectory contains the scale
         scale_factor = float(dir_label)/1000.0 # factor for scaling the axes. Normalised by the standard size
@@ -110,26 +151,16 @@ for dirnum,dir in enumerate(dir_list):
         scale_factor = 1 # default factor for scaling the axes. 
 
     # open the first file after melt addition to find the max P
-    if len(sorted(glob.glob("my_experiment*"))) < 4:  # if there aren't enough files, skip
-        #if not os.path.exists(os.getcwd()+'/'+first_file):  # if it can't find the file after my_experiment00000.csv
-        print('skipping '+os.getcwd())
-        continue
-    else:
-        first_file = sorted(glob.glob("my_experiment*"))[3]
 
-    myExp = pd.read_csv(first_file, header=0)
-    if dir_label == '10000':
-        xmax = myExp.loc[45707, 'x coord']
-        ymax = myExp.loc[45707, 'y coord']
-        max_id = 45707   #  index of the point with the maximum pressure value
-        offset = 100   # so that they are all centered around 0 on the x axis. It's the shift in the x direction.
-    else:        
-        xmax = myExp.loc[myExp['Pressure'].idxmax(), 'x coord']
-        ymax = myExp.loc[myExp['Pressure'].idxmax(), 'y coord']
-        max_id = myExp['Pressure'].idxmax()   #  index of the point with the maximum pressure value
+
+    # else:
+        # xmax = myExp_upper.loc[myExp_upper['Pressure'].idxmax(), 'x coord']
+        # ymax = myExp_upper.loc[myExp_upper['Pressure'].idxmax(), 'y coord']
+        #max_id = myExp_upper['Pressure'].idxmax()   #  index of the point with the maximum pressure value
         # offset = max_id%resolution   # so that they are all centered around 0 on the x axis. It's the shift in the x direction.
         # print(f'offset: {offset}')
-        offset = 50   # set manually
+    print(f'xmax: {xmax}, ymax: {ymax}')
+        # offset = 50   # set manually
 
     
     # find the x coordinates that correspond to the max pressure, based on their index
@@ -227,30 +258,35 @@ if False:
 
     g_y.legend_.remove()
     os.chdir('..')
-    fig.suptitle(os.getcwd()) # get the part of the path that is after "myExperiments/"
 
     ax1.legend(fancybox=True, ncol=1)   # legend for the horizontal line plot
     # save:
     #plt.savefig("gaussScale50-100-200_diff_hrz-vrt.png", dpi=600,transparent=True)
     plt.tight_layout()
-    plt.show()
-if False:
+
+if True:
     ax1.plot(sizes,sigmas_top_true,'-o',label='top true')
     ax2.plot(sizes,sigmas_bot_true,'-o',label='bottom true')
     ax1.plot(sizes,sigmas_top_theor,'--',label='top theoretical')
     ax2.plot(sizes,sigmas_bot_theor,'--',label='bottom theoretical')
+    ax1.set_xticks(ticks=[float(x) for x in dir_labels])  # define list of ticks
+    ax2.set_xticks(ticks=[float(x) for x in dir_labels])  # define list of ticks
+    ax1.xaxis.set_tick_params(labelsize=10, rotation=90)
+    ax2.xaxis.set_tick_params(labelsize=10, rotation=90)
     ax1.legend()
     ax2.legend()
     os.chdir('..')
-    fig.suptitle(os.getcwd()) # get the part of the path that is after "myExperiments/"
-    plt.show()
-if True:  # plot ratios
+
+if False:  # plot ratios
     ax1.plot(sizes,sigmas_top_ratio,'-o',label='top ratio')
     ax2.plot(sizes,sigmas_bot_ratio,'-o',label='bottom ratio')
-    ax1.axhline(y=1.0, linestyle='--')
-    ax1.axhline(y=1.0, linestyle='--')
+    ax1.axhline(y=1.0, linestyle='--',color='orange')
+    ax2.axhline(y=1.0, linestyle='--',color='orange')
+    ax1.set_xticks(ticks=[float(x) for x in dir_labels])  # define list of ticks
+    ax2.set_xticks(ticks=[float(x) for x in dir_labels])  # define list of ticks
     ax1.legend()
     ax2.legend()
     os.chdir('..')
-    fig.suptitle(os.getcwd()) # get the part of the path that is after "myExperiments/"
-    plt.show()
+
+fig.suptitle(os.getcwd()) # get the part of the path that is after "myExperiments/"
+plt.show()
