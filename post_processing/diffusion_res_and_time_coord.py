@@ -46,18 +46,16 @@ from useful_functions import *
 
 var_to_plot = "Sigma_1"
 # options: Pressure, Mean Stress, Actual Movement, Gravity, Porosity, Sigma_1, Sigma_2, Youngs Modulus
+#         F_P_x, F_P_y, pf_grad_x, pf_grad_y
 
 # dir_labels = ['400','200']  # res400.elle, res200.elle
-dir_labels = ['00200', '00400','00600','00800','01000']
-# dir_labels = ['02000','04000','06000','08000','10000'] 
+#dir_labels = ['00200', '00400','00600','00800','01000']
+#dir_labels = ['02000','04000','06000','08000','10000'] 
 dir_labels = ['00200', '00400','00600','00800','01000','02000','04000','06000','08000','10000'] 
 #dir_labels = ['01','03','05','07','09','11','13','15','17','19']
 # dir_labels = ['01','02','03','04','05','06','07','08','09'] 
-# dir_labels = ['01','03','05','07','09'] 
-# dir_labels = ['102','104','106','108','110']
 
-
-resolution = 200
+resolution = 400
 
 dir_list = []
 sigmas_top_true = []
@@ -73,15 +71,12 @@ sizes = []
 
 for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/wd_viscTest/vis_'+str(i))  
-    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj108/size'+str(i)) 
+    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj215/size'+str(i)) 
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/th04/vis1e2_mR_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/th38/vis1e2_mR_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
     
 print(dir_list)
-
-
-fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
 
 df_x = pd.DataFrame()
 df_y = pd.DataFrame()
@@ -94,7 +89,6 @@ else:
 for dirnum,dir in enumerate(dir_list):
     """ loop through directories"""
     os.chdir(dir)
-    print(os.getcwd())
     if len(sorted(glob.glob("my_experiment*"))) < 5:  # if there aren't enough files, skip
         #if not os.path.exists(os.getcwd()+'/'+first_file):  # if it can't find the file after my_experiment00000.csv
         print('skipping '+os.getcwd())
@@ -110,7 +104,8 @@ for dirnum,dir in enumerate(dir_list):
 
         ## manually get the coordinates of the central point:
         meltYmin = float(getParameterFromLatte("input.txt","meltYmin"))
-        ymax = meltYmin/(resolution/2)   # in the form of 0.875
+        # ymax = meltYmin/(resolution/2)   # in the form of 0.875   WHAT IT SHOULD BE
+        ymax = meltYmin/(200/2)   # in the form of 0.875  WHAT WORKS WITH THE FIRST ONES (I haven't adapeted it yet)
         xmax = 0.3    # 0.5 if point is in the middle
         matches_x = np.where(np.isclose(myExp["x coord"],xmax,atol=3e-3)==True)[0] # vertical
         # print(matches_x) 
@@ -130,15 +125,18 @@ for dirnum,dir in enumerate(dir_list):
             # offset = 100   # so that they are all centered around 0 on the x axis. It's the shift in the x direction.
         # max_id = np.where(np.isclose(myExp["x coord"],xmax,atol=1e-2) & np.isclose(myExp["y coord"],ymax,atol=1e-3)).index   #  index of the point with the maximum pressure value
         max_ids = myExp[(np.isclose(myExp["x coord"],xmax,atol=3e-3) & np.isclose(myExp["y coord"],ymax,atol=2e-3))].index   #  index of the point with the maximum pressure value
-        print(f'all matches for max_ids: {max_ids} ')
+        # print(f'all matches for max_ids: {max_ids} ')
         if len(max_ids)>0:
             max_id = max_ids[0]
         # else:
         #     max_id = max_ids
 
-        # print(f'first max_id: {max_id}')
         # max_id = myExp_upper['Pressure'].idxmax()   #  index of the point with the maximum pressure value
-        offset = max_id%resolution   # so that they are all centered around 0 on the x axis. It's the shift in the x direction.
+        
+        # what it should be:
+        # offset = max_id%resolution   # so that they are all centered around 0 on the x axis. It's the shift in the x direction.
+        # what works bc I haven't changed the location of the point yet:
+        offset = max_id%200   # so that they are all centered around 0 on the x axis. It's the shift in the x direction.
 
     elif "press0" in dir.split("/")[-2]:   # If the second to last subdirectory contains the scale
         scale_factor = float(dir_label)/1000.0 # factor for scaling the axes. Normalised by the standard size
@@ -159,9 +157,8 @@ for dirnum,dir in enumerate(dir_list):
         #max_id = myExp_upper['Pressure'].idxmax()   #  index of the point with the maximum pressure value
         # offset = max_id%resolution   # so that they are all centered around 0 on the x axis. It's the shift in the x direction.
         # print(f'offset: {offset}')
-    print(f'xmax: {xmax}, ymax: {ymax}')
+    # print(f'xmax: {xmax}, ymax: {ymax}')
         # offset = 50   # set manually
-
     
     # find the x coordinates that correspond to the max pressure, based on their index
     x_array = myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('x coord')] 
@@ -171,34 +168,9 @@ for dirnum,dir in enumerate(dir_list):
         myfile = Path(os.getcwd()+'/'+filename)  # build file name including path
         if myfile.is_file():
             myExp = pd.read_csv(filename, header=0)
-            if var_to_plot == "Pressure":
-                var_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Pressure')] 
-                var_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Pressure')]
-            elif var_to_plot == "Mean Stress":
-                var_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Mean Stress')] 
-                var_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Mean Stress')]                
-            elif var_to_plot == "Actual Movement":
-                var_array_x = myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Actual Movement')] 
-                var_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Actual Movement')]                
-            elif var_to_plot == "Porosity":
-                var_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Porosity')] 
-                var_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Porosity')]
-            elif var_to_plot == "Gravity":
-                var_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Gravity')] 
-                var_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Gravity')]
-            elif var_to_plot == "Sigma_1":
-                var_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Sigma_1')] 
-                var_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Sigma_1')]
-            elif var_to_plot == "Sigma_2":
-                var_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Sigma_2')] 
-                var_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Sigma_2')]
-            elif var_to_plot == "real_radius":
-                var_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('real_radius')] 
-                var_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('real_radius')]
-            elif var_to_plot == "Youngs Modulus":
-                var_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('Youngs Modulus')] 
-                var_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('Youngs Modulus')]
-            
+            # get the values of the selected variable along a horizontal and a vertical line
+            var_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc(var_to_plot)] 
+            var_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc(var_to_plot)]
             # FPx_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('F_P_x')] 
             # FPy_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc('F_P_y')]
             # pf_grad_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('pf_grad_x')] 
@@ -221,6 +193,7 @@ for dirnum,dir in enumerate(dir_list):
             df1_x = pd.DataFrame(data1_x)
             df_x = pd.concat([df_x,df1_x], ignore_index=True) # append to old one
         # end of file loop
+        # values now are referring to the last timestep that was loaded
     if var_to_plot == "Sigma_1":  # print out some values about sigma_1
         dom_size = float(getParameterFromLatte('input.txt','Scale'))
         depth = getDepth("input.txt")
@@ -233,11 +206,11 @@ for dirnum,dir in enumerate(dir_list):
         #print(f'top:    {-var_array_y.values[-1]/1e6}. true/theor = {-var_array_y.values[-1]/sigma_1_top_theor}')
         print(f'bot-top:    {-(var_array_y.values[1]-var_array_y.values[-2])/1e6}. theor = {(sigma_1_bot_theor-sigma_1_top_theor)/1e6:.4f}\n')
         sigmas_top_true.append(-var_array_y.values[-2])
-        sigmas_bot_true.append(-var_array_y.values[0])
+        sigmas_bot_true.append(-var_array_y.values[1])
         sigmas_top_theor.append(sigma_1_top_theor)
         sigmas_bot_theor.append(sigma_1_bot_theor)
         sigmas_top_ratio.append(-var_array_y.values[-2]/sigma_1_top_theor)
-        sigmas_bot_ratio.append(-var_array_y.values[0]/sigma_1_bot_theor)
+        sigmas_bot_ratio.append(-var_array_y.values[1]/sigma_1_bot_theor)
         sizes.append(float(dom_size))
     # end of dir loop
 
@@ -247,7 +220,10 @@ for dirnum,dir in enumerate(dir_list):
 # g_y_1 = sns.lineplot(data=df_y ,x="y",y='F_P_y',ax=ax3,hue='time',markers=True,alpha=0.5)
 # g_y_1 = sns.scatterplot(data=df_y ,x="y",y='Porosity',ax=ax3,hue='time',alpha=0.5)
 
-if False:
+os.chdir('..')
+
+if True:
+    fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
     g_x = sns.lineplot(data=df_x ,x="x",y=var_to_plot,ax=ax1,hue='time',style='scale',alpha=0.5)
     g_y = sns.lineplot(data=df_y ,x="y",y=var_to_plot,ax=ax2,hue='time',style='scale',alpha=0.5)
     ax1.set_title("Horizontal Profile")
@@ -257,14 +233,17 @@ if False:
     ax2.set_title("Vertical Profile")
 
     g_y.legend_.remove()
-    os.chdir('..')
+    
 
     ax1.legend(fancybox=True, ncol=1)   # legend for the horizontal line plot
     # save:
     #plt.savefig("gaussScale50-100-200_diff_hrz-vrt.png", dpi=600,transparent=True)
     plt.tight_layout()
+    fig.suptitle(os.getcwd()) # get the part of the path that is after "myExperiments/"
+    plt.show()
 
 if True:
+    fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
     ax1.plot(sizes,sigmas_top_true,'-o',label='top true')
     ax2.plot(sizes,sigmas_bot_true,'-o',label='bottom true')
     ax1.plot(sizes,sigmas_top_theor,'--',label='top theoretical')
@@ -275,18 +254,22 @@ if True:
     ax2.xaxis.set_tick_params(labelsize=10, rotation=90)
     ax1.legend()
     ax2.legend()
-    os.chdir('..')
+    fig.suptitle(os.getcwd()) # get the part of the path that is after "myExperiments/"
+    plt.show()
 
-if False:  # plot ratios
+if True:  # plot ratios
+    fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
     ax1.plot(sizes,sigmas_top_ratio,'-o',label='top ratio')
     ax2.plot(sizes,sigmas_bot_ratio,'-o',label='bottom ratio')
     ax1.axhline(y=1.0, linestyle='--',color='orange')
     ax2.axhline(y=1.0, linestyle='--',color='orange')
     ax1.set_xticks(ticks=[float(x) for x in dir_labels])  # define list of ticks
     ax2.set_xticks(ticks=[float(x) for x in dir_labels])  # define list of ticks
+    ax1.xaxis.set_tick_params(labelsize=10, rotation=90)
+    ax2.xaxis.set_tick_params(labelsize=10, rotation=90)
     ax1.legend()
     ax2.legend()
-    os.chdir('..')
+    fig.suptitle(os.getcwd()) # get the part of the path that is after "myExperiments/"
+    plt.show()
 
-fig.suptitle(os.getcwd()) # get the part of the path that is after "myExperiments/"
-plt.show()
+
