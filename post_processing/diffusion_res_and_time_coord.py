@@ -94,7 +94,11 @@ for dirnum,dir in enumerate(dir_list):
     
 
     myExp = pd.read_csv(first_file, header=0)
-
+    with open("latte.log") as iFile:
+        for num, line in enumerate(iFile,1):
+            if "Changing relaxthresh" in line:
+                relax_thresh = line.split(" ")[-1]  # split around spaces, take the last (=relax thresh value)
+                continue
     if "size" in dir.split("/")[-1]:      # try to get the size automatically. If the last subdirectory contains the scale
         dir_label = dir_labels[dirnum]   # get the label that corresponds to the directory
         scale_factor = float(dir_label)/max_dir_size # factor for scaling the axes. Normalised by the maximum size (e.g. 1000)
@@ -235,6 +239,10 @@ if True:
     fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
     g_x = sns.lineplot(data=df_x ,x="x",y=var_to_plot,ax=ax1,hue='time',style='scale',alpha=0.5)
     g_y = sns.lineplot(data=df_y ,x="y",y=var_to_plot,ax=ax2,hue='time',style='scale',alpha=0.5)
+    if var_to_plot == "Actual Movement" or var_to_plot == "Original Movement":
+            ax1.axhline(y=relax_thresh, linestyle='--',color='red',label="relaxation threshold")
+            ax2.axhline(y=relax_thresh, linestyle='--',color='red')
+        
     ax1.set_title("Horizontal Profile")
     #ax1.set_xlim([-0.51,+0.51])  # zoom in. Limits are location of max pressure +- 0.05
     #ax2.set_xlim([-1.01,+0.12])  # zoom in. Limits are location of max pressure +- 0.05
