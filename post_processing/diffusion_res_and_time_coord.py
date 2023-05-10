@@ -44,26 +44,21 @@ from pathlib import Path
 # import functions from external file
 from useful_functions import * 
 
-var_to_plot = "Sigma_1"
+var_to_plot = "Actual Movement"
 # options: Pressure, Mean Stress, Actual Movement, Gravity, Porosity, Sigma_1, Sigma_2, Youngs Modulus
-#         F_P_x, F_P_y, pf_grad_x, pf_grad_y
+#         F_P_x, F_P_y, pf_grad_x, pf_grad_y, Original Movement, Movement in Gravity
 
 # dir_labels = ['400','200']  # res400.elle, res200.elle
 #dir_labels = ['00200', '00400','00600','00800','01000']
 #dir_labels = ['02000','04000','06000','08000','10000'] 
-dir_labels = ['00200', '00400','00600','00800','01000','02000','04000','06000','08000','10000'] 
+dir_labels = ['00200', '00400','00600','00800','01000','02000','04000']#,'06000','08000','10000'] 
 #dir_labels = ['01','03','05','07','09','11','13','15','17','19']
 # dir_labels = ['01','02','03','04','05','06','07','08','09'] 
 
-resolution = 400
+resolution = 200
 
-dir_list = []
-sigmas_top_true = []
-sigmas_bot_true = []
-sigmas_top_theor = []
-sigmas_bot_theor = []
-sigmas_top_ratio = []
-sigmas_bot_ratio = []
+dir_list = []; sigmas_top_true = []; sigmas_bot_true = []; sigmas_top_theor = []; sigmas_bot_theor = []
+sigmas_top_ratio = []; sigmas_bot_ratio = []; sigmas_diff_theor = []; sigmas_diff_true = []; sigmas_diff_ratio = []
 sizes = []
 
 ####   WARNING: (horizontal) offset is set to 50 instead of the central point (1/4 of domain)
@@ -71,7 +66,7 @@ sizes = []
 
 for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/wd_viscTest/vis_'+str(i))  
-    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj215/size'+str(i)) 
+    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj136/size'+str(i)) 
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/th04/vis1e2_mR_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/th38/vis1e2_mR_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
@@ -81,6 +76,7 @@ print(dir_list)
 df_x = pd.DataFrame()
 df_y = pd.DataFrame()
 
+
 # check if labels only contain numbers (it means they are the dimensions of the domain = scales)
 if dir_labels[-1].startswith('size'):
     max_dir_size = float(dir_labels[-1])  # maximum size for the scaling of the plots: take the last directory (largest)
@@ -89,12 +85,13 @@ else:
 for dirnum,dir in enumerate(dir_list):
     """ loop through directories"""
     os.chdir(dir)
-    if len(sorted(glob.glob("my_experiment*"))) < 5:  # if there aren't enough files, skip
+    if len(sorted(glob.glob("my_experiment*"))) < 4:  # if there aren't enough files, skip
         #if not os.path.exists(os.getcwd()+'/'+first_file):  # if it can't find the file after my_experiment00000.csv
         print('skipping '+os.getcwd())
         continue
     else:
-        first_file = sorted(glob.glob("my_experiment*"))[4]
+        first_file = sorted(glob.glob("my_experiment*"))[3]
+    
 
     myExp = pd.read_csv(first_file, header=0)
 
@@ -113,23 +110,23 @@ for dirnum,dir in enumerate(dir_list):
         matches_y = np.where(np.isclose(myExp["y coord"],ymax,atol=2e-3)==True)[0]
         # print(matches_y)
         # print(len(matches_y))
-        if dir_label == '08000':
-            max_id = 45858   #  index of a point w coord 0.2975,0.980603
-            xmax = myExp.loc[45707, 'x coord']
-            ymax = myExp.loc[max_id, 'y coord']
-        elif dir_label == '10000':
-            max_id = 45858   #  index of a point w coord 0.2975,0.980603
-            # max_id = 45707   #  index of the point with the maximum pressure value
-            xmax = myExp.loc[max_id, 'x coord']
-            ymax = myExp.loc[max_id, 'y coord']
+        # if dir_label == '08000':
+        #     max_id = 45858   #  index of a point w coord 0.2975,0.980603
+        #     xmax = myExp.loc[45707, 'x coord']
+        #     ymax = myExp.loc[max_id, 'y coord']
+        # if dir_label == '10000':
+        #     max_id = 45858   #  index of a point w coord 0.2975,0.980603
+        #     # max_id = 45707   #  index of the point with the maximum pressure value
+        #     xmax = myExp.loc[max_id, 'x coord']
+        #     ymax = myExp.loc[max_id, 'y coord']
             # offset = 100   # so that they are all centered around 0 on the x axis. It's the shift in the x direction.
         # max_id = np.where(np.isclose(myExp["x coord"],xmax,atol=1e-2) & np.isclose(myExp["y coord"],ymax,atol=1e-3)).index   #  index of the point with the maximum pressure value
-        max_ids = myExp[(np.isclose(myExp["x coord"],xmax,atol=3e-3) & np.isclose(myExp["y coord"],ymax,atol=2e-3))].index   #  index of the point with the maximum pressure value
+        max_ids = myExp[(np.isclose(myExp["x coord"],xmax,atol=4e-3) & np.isclose(myExp["y coord"],ymax,atol=3e-3))].index   #  index of the point with the maximum pressure value
         # print(f'all matches for max_ids: {max_ids} ')
         if len(max_ids)>0:
             max_id = max_ids[0]
-        # else:
-        #     max_id = max_ids
+        else:
+            max_id = max_ids
 
         # max_id = myExp_upper['Pressure'].idxmax()   #  index of the point with the maximum pressure value
         
@@ -211,6 +208,9 @@ for dirnum,dir in enumerate(dir_list):
         sigmas_bot_theor.append(sigma_1_bot_theor)
         sigmas_top_ratio.append(-var_array_y.values[-2]/sigma_1_top_theor)
         sigmas_bot_ratio.append(-var_array_y.values[1]/sigma_1_bot_theor)
+        sigmas_diff_true.append(var_array_y.values[-2]-var_array_y.values[1])   # top - bottom (they're <0, so difference is >0)
+        sigmas_diff_theor.append(sigma_1_bot_theor-sigma_1_top_theor)   # bottom - top (they're >0)
+        sigmas_diff_ratio.append((var_array_y.values[-2]-var_array_y.values[1])/(sigma_1_bot_theor-sigma_1_top_theor))   # bottom - top (they're >0)
         sizes.append(float(dom_size))
     # end of dir loop
 
@@ -221,6 +221,15 @@ for dirnum,dir in enumerate(dir_list):
 # g_y_1 = sns.scatterplot(data=df_y ,x="y",y='Porosity',ax=ax3,hue='time',alpha=0.5)
 
 os.chdir('..')
+
+def set_axes_options(fig):
+    """ set some styling that is in common between all plots of type true-theor:
+    ticks, legend and title """
+    for ax in fig.axes:
+        ax.set_xticks(ticks=[float(x) for x in sizes])  # define list of ticks
+        ax.xaxis.set_tick_params(labelsize=10, rotation=90)
+        ax.legend()
+    fig.suptitle(os.getcwd())
 
 if True:
     fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
@@ -239,37 +248,34 @@ if True:
     # save:
     #plt.savefig("gaussScale50-100-200_diff_hrz-vrt.png", dpi=600,transparent=True)
     plt.tight_layout()
-    fig.suptitle(os.getcwd()) # get the part of the path that is after "myExperiments/"
+    fig.suptitle(os.getcwd()) 
     plt.show()
+if var_to_plot == "Sigma_1":
+    if True:
+        fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
+        ax1.plot(sizes,sigmas_top_true,'-o',color='blue',label='top true')
+        ax1.plot(sizes,sigmas_bot_true,'-o',color='green',label='bottom true')
+        ax2.plot(sizes,sigmas_diff_true,'-o',label='difference true')
+        ax1.plot(sizes,sigmas_top_theor,'--',color='blue',label='top theoretical')
+        ax1.plot(sizes,sigmas_bot_theor,'--',color='green',label='bottom theoretical')
+        ax2.plot(sizes,sigmas_diff_theor,'--',label='difference theoretical')
+        set_axes_options(fig)
+        plt.show()
 
-if True:
-    fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
-    ax1.plot(sizes,sigmas_top_true,'-o',label='top true')
-    ax2.plot(sizes,sigmas_bot_true,'-o',label='bottom true')
-    ax1.plot(sizes,sigmas_top_theor,'--',label='top theoretical')
-    ax2.plot(sizes,sigmas_bot_theor,'--',label='bottom theoretical')
-    ax1.set_xticks(ticks=[float(x) for x in dir_labels])  # define list of ticks
-    ax2.set_xticks(ticks=[float(x) for x in dir_labels])  # define list of ticks
-    ax1.xaxis.set_tick_params(labelsize=10, rotation=90)
-    ax2.xaxis.set_tick_params(labelsize=10, rotation=90)
-    ax1.legend()
-    ax2.legend()
-    fig.suptitle(os.getcwd()) # get the part of the path that is after "myExperiments/"
-    plt.show()
-
-if True:  # plot ratios
-    fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
-    ax1.plot(sizes,sigmas_top_ratio,'-o',label='top ratio')
-    ax2.plot(sizes,sigmas_bot_ratio,'-o',label='bottom ratio')
-    ax1.axhline(y=1.0, linestyle='--',color='orange')
-    ax2.axhline(y=1.0, linestyle='--',color='orange')
-    ax1.set_xticks(ticks=[float(x) for x in dir_labels])  # define list of ticks
-    ax2.set_xticks(ticks=[float(x) for x in dir_labels])  # define list of ticks
-    ax1.xaxis.set_tick_params(labelsize=10, rotation=90)
-    ax2.xaxis.set_tick_params(labelsize=10, rotation=90)
-    ax1.legend()
-    ax2.legend()
-    fig.suptitle(os.getcwd()) # get the part of the path that is after "myExperiments/"
-    plt.show()
+    if True:  # plot ratios
+        fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
+        ax1.plot(sizes,sigmas_top_ratio,'-o',color='blue',label='top ratio')
+        ax1.plot(sizes,sigmas_bot_ratio,'-o',color='green',label='bottom ratio')
+        ax2.plot(sizes,sigmas_diff_ratio,'-o',label='diff ratio')
+        for ax in fig.axes:
+            ax.axhline(y=1.0, linestyle='--',color='orange')
+        set_axes_options(fig)
+        # ax1.set_xticks(ticks=[float(x) for x in dir_labels])  # define list of ticks
+        # ax2.set_xticks(ticks=[float(x) for x in dir_labels])  # define list of ticks
+        # ax1.xaxis.set_tick_params(labelsize=10, rotation=90)
+        # ax2.xaxis.set_tick_params(labelsize=10, rotation=90)
+        # ax1.legend()
+        # ax2.legend()
+        plt.show()
 
 
