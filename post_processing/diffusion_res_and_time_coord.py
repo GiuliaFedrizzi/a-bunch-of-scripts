@@ -44,14 +44,14 @@ from pathlib import Path
 # import functions from external file
 from useful_functions import * 
 
-var_to_plot = "Actual Movement"
+var_to_plot = "Original Movement"
 # options: Pressure, Mean Stress, Actual Movement, Gravity, Porosity, Sigma_1, Sigma_2, Youngs Modulus
 #         F_P_x, F_P_y, pf_grad_x, pf_grad_y, Original Movement, Movement in Gravity
 
 # dir_labels = ['400','200']  # res400.elle, res200.elle
 #dir_labels = ['00200', '00400','00600','00800','01000']
-#dir_labels = ['02000','04000','06000','08000','10000'] 
-dir_labels = ['00200', '00400','00600','00800','01000','02000','04000']#,'06000','08000','10000'] 
+# dir_labels = ['02000','04000','06000','08000','10000'] 
+dir_labels = ['00200', '00400','00600','00800','01000','02000']#,'04000']#,'06000','08000','10000'] 
 #dir_labels = ['01','03','05','07','09','11','13','15','17','19']
 # dir_labels = ['01','02','03','04','05','06','07','08','09'] 
 
@@ -66,7 +66,7 @@ sizes = []
 
 for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/wd_viscTest/vis_'+str(i))  
-    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj136/size'+str(i)) 
+    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj137/size'+str(i)) 
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/th04/vis1e2_mR_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/th38/vis1e2_mR_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
@@ -85,20 +85,27 @@ else:
 for dirnum,dir in enumerate(dir_list):
     """ loop through directories"""
     os.chdir(dir)
-    if len(sorted(glob.glob("my_experiment*"))) < 4:  # if there aren't enough files, skip
+    if len(sorted(glob.glob("my_experiment*"))) < 1:  # if there aren't enough files, skip
         #if not os.path.exists(os.getcwd()+'/'+first_file):  # if it can't find the file after my_experiment00000.csv
         print('skipping '+os.getcwd())
         continue
     else:
-        first_file = sorted(glob.glob("my_experiment*"))[3]
+        first_file = sorted(glob.glob("my_experiment*"))[0]
     
 
     myExp = pd.read_csv(first_file, header=0)
     with open("latte.log") as iFile:
+        count = 1   # counter
+        relax_thresh=[]  # initialise vector of relaxation thresholds (there should be 2)
         for num, line in enumerate(iFile,1):
             if "Changing relaxthresh" in line:
-                relax_thresh = line.split(" ")[-1]  # split around spaces, take the last (=relax thresh value)
-                continue
+                rel = line.split(" ")[-1]
+                rel = rel.replace("\n","")
+                relax_thresh.append(rel)  # split around spaces, take the last (=relax thresh value)
+                count+=1
+                if count==2:  # stop after finding the second occurrence
+                    continue  
+    print(f'relax thresholds: {relax_thresh[0]}, {relax_thresh[1]}')
     if "size" in dir.split("/")[-1]:      # try to get the size automatically. If the last subdirectory contains the scale
         dir_label = dir_labels[dirnum]   # get the label that corresponds to the directory
         scale_factor = float(dir_label)/max_dir_size # factor for scaling the axes. Normalised by the maximum size (e.g. 1000)
@@ -112,8 +119,6 @@ for dirnum,dir in enumerate(dir_list):
         # print(matches_x) 
         # print(len(matches_x))
         matches_y = np.where(np.isclose(myExp["y coord"],ymax,atol=2e-3)==True)[0]
-        # print(matches_y)
-        # print(len(matches_y))
         # if dir_label == '08000':
         #     max_id = 45858   #  index of a point w coord 0.2975,0.980603
         #     xmax = myExp.loc[45707, 'x coord']
@@ -149,9 +154,6 @@ for dirnum,dir in enumerate(dir_list):
         dir_label = dir_labels[dirnum]   # get the label that corresponds to the directory
         scale_factor = 1 # default factor for scaling the axes. 
 
-    # open the first file after melt addition to find the max P
-
-
     # else:
         # xmax = myExp_upper.loc[myExp_upper['Pressure'].idxmax(), 'x coord']
         # ymax = myExp_upper.loc[myExp_upper['Pressure'].idxmax(), 'y coord']
@@ -165,9 +167,10 @@ for dirnum,dir in enumerate(dir_list):
     x_array = myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('x coord')] 
     y_array = myExp.iloc[offset::resolution,myExp.columns.get_loc('y coord')] # first: the point with coorinate = offset. Then every point above it (with a period of 'resolution') 
 
-    for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[0:6:5]): #[beg:end:step]  set which timesteps (based on FILE NUMBER) to plot
+    for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[0:7:6]): #[beg:end:step]  set which timesteps (based on FILE NUMBER) to plot
         myfile = Path(os.getcwd()+'/'+filename)  # build file name including path
         if myfile.is_file():
+            print(filename)
             myExp = pd.read_csv(filename, header=0)
             # get the values of the selected variable along a horizontal and a vertical line
             var_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc(var_to_plot)] 
@@ -217,12 +220,8 @@ for dirnum,dir in enumerate(dir_list):
         sigmas_diff_ratio.append((var_array_y.values[-2]-var_array_y.values[1])/(sigma_1_bot_theor-sigma_1_top_theor))   # bottom - top (they're >0)
         sizes.append(float(dom_size))
     # end of dir loop
-
-# g_x = sns.lineplot(data=df_x ,x="x",y='Mean Stress (MPa)',ax=ax1,hue='time',style='scale',alpha=0.5)  # or sns.scatterplot
-# g_y = sns.lineplot(data=df_y ,x="y",y='Mean Stress (MPa)',ax=ax2,hue='time',style='scale',alpha=0.5)
+print(df_y)
 # ax3 = g_y.twinx()
-# g_y_1 = sns.lineplot(data=df_y ,x="y",y='F_P_y',ax=ax3,hue='time',markers=True,alpha=0.5)
-# g_y_1 = sns.scatterplot(data=df_y ,x="y",y='Porosity',ax=ax3,hue='time',alpha=0.5)
 
 os.chdir('..')
 
@@ -239,14 +238,15 @@ if True:
     fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
     g_x = sns.lineplot(data=df_x ,x="x",y=var_to_plot,ax=ax1,hue='time',style='scale',alpha=0.5)
     g_y = sns.lineplot(data=df_y ,x="y",y=var_to_plot,ax=ax2,hue='time',style='scale',alpha=0.5)
-    if var_to_plot == "Actual Movement" or var_to_plot == "Original Movement":
-            ax1.axhline(y=relax_thresh, linestyle='--',color='red',label="relaxation threshold")
-            ax2.axhline(y=relax_thresh, linestyle='--',color='red')
+    # if var_to_plot == "Actual Movement" or var_to_plot == "Original Movement":
+    #         ax1.axhline(y=relax_thresh[0], linestyle='--',color='red',label="first relaxation threshold")
+    #         ax1.axhline(y=relax_thresh[1], linestyle='--',color='blue',label="second relaxation threshold")
+    #         ax2.axhline(y=relax_thresh[0], linestyle='--',color='red')
+    #         ax2.axhline(y=relax_thresh[1], linestyle='--',color='blue')
         
     ax1.set_title("Horizontal Profile")
     #ax1.set_xlim([-0.51,+0.51])  # zoom in. Limits are location of max pressure +- 0.05
     #ax2.set_xlim([-1.01,+0.12])  # zoom in. Limits are location of max pressure +- 0.05
-    # ax2.set_ylim([2.942975e7,2.943020e7])  # for pressure
     ax2.set_title("Vertical Profile")
 
     g_y.legend_.remove()
