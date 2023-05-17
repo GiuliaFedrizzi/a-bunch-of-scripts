@@ -27,6 +27,12 @@ def getParameterFromLatte(inputFile,word_to_find):
     with open(inputFile) as iFile:
         for num, line in enumerate(iFile,1):
             if word_to_find in line:
-                word_found = line.split(" ")[1]  # split before and after space, take the second word (value of timestep)
+                word_found = line.split(" ")[1]  # split before and after space, take the second word (value of variable)
                 return word_found   # stop searching, return the value (will be a string)
-
+def getDensity():
+        with open("experiment.cc") as iFile:
+            for num, line in enumerate(iFile,1):
+                if "setSolidDensity" in line:
+                    # take the second part - after ( - then take the first part - before )
+                    word_found = (line.split("(")[1]).split(")")[0]  
+                    return float(word_found)   # stop searching, return the value (will be a string)

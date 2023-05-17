@@ -15,7 +15,7 @@ def_rate = 0
 # os.chdir('/nobackup/scgf/myExperiments/threeAreas/through/th48')
 
 # times = range(20,200,20)  # (start, end, step)
-times = range(1,21,1)  # (start, end, step)
+times = range(121,151,1)  # (start, end, step)
 # melt_labels = ['0.001','0.002','0.003','0.004','0.005','0.006','0.007','0.008','0.009']  
 melt_labels = ['0.009','0.008','0.007','0.006','0.005','0.004','0.003','0.002','0.001'] 
 # melt_labels = ['0.001','0.003','0.005','0.007','0.009'] 
@@ -23,8 +23,9 @@ melt_labels = ['0.009','0.008','0.007','0.006','0.005','0.004','0.003','0.002','
 
 
 if viscosity:
-    x_variable = ['1e1','5e1','1e2','5e2','1e3','5e3','1e4']#,'2e4','4e4']  # the values of the x variable to plot (e.g. viscosity)
     # x_variable = ['1e2']#,'2e4','4e4']  # the values of the x variable to plot (e.g. viscosity)
+    x_variable = ['1e1','1e2','5e2','1e3','5e3','1e4']#,'2e4','4e4']  # the values of the x variable to plot (e.g. viscosity)
+    # x_variable = ['1e1','5e1','1e2','5e2','1e3','5e3','1e4']#,'2e4','4e4']  # the values of the x variable to plot (e.g. viscosity)
 elif def_rate:
     x_variable = ['1e8','2e8','3e8','4e8','5e8','6e8','7e8','8e8','9e8']#,'3e11','4e11']  # the values of the x variable to plot (e.g. def rate)
 

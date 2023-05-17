@@ -21,7 +21,7 @@ from pathlib import Path
 from useful_functions import * 
 
 # dir_labels = ['00200', '00400','00600','00800','01000']
-dir_labels = ['00200', '00400','00600','00800','01000','02000']#,'04000']#,'06000','08000']#,'10000']  # all sizes
+dir_labels = ['00200', '00400','00600','00800','01000']#,'02000']#,'04000']#,'06000','08000']#,'10000']  # all sizes
 # dir_labels = ['02000','04000','06000','08000','10000'] 
 # gj_dirs = ['gj71','gj72','gj69','gj73','gj74','gj75','gj70','gj76']
 # gj_lab = ['0.1','0.2','0.5','0.7','0.8','0.9','1','1.2'] # their labels
@@ -41,18 +41,28 @@ dir_labels = ['00200', '00400','00600','00800','01000','02000']#,'04000']#,'0600
 # gj_dirs = ['gj97','gj98','gj99','gj100']#,'gj91','gj86']#,'gj76']
 # gj_lab = ['0.01', '0.03', '0.05', '0.07'] # their labels
 
-gj_dirs = ['gj102','gj103','gj104','gj105']
-gj_lab = ['1000', '2000', '8000','9000']# their labels
+# gj_dirs = ['gj102','gj103','gj104','gj105']
+# gj_lab = ['1000', '2000', '8000','9000']# their labels
 
+gj_dirs = ['gj138','gj140','gj139']
+gj_lab = ['3000','2700','1500']# densities
 
+# gj_dirs = ['gj140','gj141']
+# gj_lab = ['0','1']# only extension false / true
 
-fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
+# gj_dirs = ['gj147','gj148']
+# gj_lab = ['w (gj147)','w+fg (gj148)']# add weight to fg or not
+
+# gj_dirs = ['gj149','gj150','gj151']
+# gj_lab = ['1500','2700','3000']# densities
+
+fig, (ax1,ax2,ax3) = plt.subplots(nrows=1,ncols=3)
 resolution = 200
 
 def dir_loop(gjdir,dir_labels,sigma_df,line_label):
     """ add data from every gj directory """
     
-    first_file = 'my_experiment00100.csv'
+    first_file = 'my_experiment00500.csv'
     max_dir_size = float(dir_labels[-1])  # maximum size for the scaling of the plots: take the last directory (largest)
     for dir_label in dir_labels:
         """ loop through SIZE directories"""
@@ -84,8 +94,11 @@ def dir_loop(gjdir,dir_labels,sigma_df,line_label):
         
         dom_size = float(getParameterFromLatte('input.txt','Scale'))
         depth = getDepth("input.txt")
-        sigma_1_top_theor = 2968.94*9.81*float(depth)  # rho * g * depth
-        sigma_1_bot_theor = 2968.94*9.81*(float(depth)+float(dom_size))  # rho * g * (depth+size)
+        # get density: it's the input parameter for setSolidDensity
+
+        solid_density = getDensity()
+        sigma_1_top_theor = solid_density*9.81*float(depth)  # rho * g * depth
+        sigma_1_bot_theor = solid_density*9.81*(float(depth)+float(dom_size))  # rho * g * (depth+size)
 
         # build the dataframe
         df_temp = pd.DataFrame({
@@ -95,6 +108,9 @@ def dir_loop(gjdir,dir_labels,sigma_df,line_label):
             'bottom true': [-var_array_y.values[0]],
             'bottom theor': [sigma_1_bot_theor],
             'bottom ratio': [-var_array_y.values[0]/sigma_1_bot_theor],
+            'difference true': [var_array_y.values[-2]-var_array_y.values[0]],
+            'difference theor': [sigma_1_bot_theor-sigma_1_top_theor],
+            'difference ratio': [(var_array_y.values[-2]-var_array_y.values[0])/(sigma_1_bot_theor-sigma_1_top_theor)],
             'scale': [float(dir_label)],
             'gj_dir': [gjdir],
             'coeff': [line_label]}
@@ -110,23 +126,30 @@ for i,gjdir in enumerate(gj_dirs):
     print(line_label)
     sigma_df = dir_loop(gjdir,dir_labels,sigma_df,line_label)
 
-if False:
+if True:
     # plot both true and theoretical=simulated values (2 lines each plot)
     # ts = value at the top, simulated. tt = value at the top, theoretical
     g_ts = sns.lineplot(data=sigma_df ,x="scale",y='top true',ax=ax1,hue='coeff',markers=True,marker='o',alpha=0.5)
-    g_tt = sns.lineplot(data=sigma_df ,x="scale",y='top theor',ax=ax1,hue='coeff',alpha=0.5)#,dashes=[(2, 2), (2, 2)],alpha=0.5)
+    g_tt = sns.lineplot(data=sigma_df ,x="scale",y='top theor',linestyle='--',ax=ax1,hue='coeff',alpha=0.5)#,dashes=[(2, 2), (2, 2)],alpha=0.5)
     g_bs = sns.lineplot(data=sigma_df ,x="scale",y='bottom true',ax=ax2,hue='coeff',markers=True,marker='o',alpha=0.5)
-    g_bt = sns.lineplot(data=sigma_df ,x="scale",y='bottom theor',ax=ax2,hue='coeff',alpha=0.5)#,dashes=[(2, 2), (2, 2)],alpha=0.5)
-if True:
+    g_bt = sns.lineplot(data=sigma_df ,x="scale",y='bottom theor',linestyle='--',ax=ax2,hue='coeff',alpha=0.5)#,dashes=[(2, 2), (2, 2)],alpha=0.5)
+    g_ds = sns.lineplot(data=sigma_df ,x="scale",y='difference true',ax=ax3,hue='coeff',marker='o',alpha=0.5)#,dashes=[(2, 2), (2, 2)],alpha=0.5)
+    g_dt = sns.lineplot(data=sigma_df ,x="scale",y='difference theor',linestyle='--',ax=ax3,hue='coeff',alpha=0.5)#,dashes=[(2, 2), (2, 2)],alpha=0.5)
+if False:
     #  g_tr = top ratio
     g_tr = sns.lineplot(data=sigma_df ,x="scale",y='top ratio',ax=ax1,hue='coeff',markers=True,marker='o',alpha=0.5)
     ax1.axhline(y=1, color='k', linestyle='--',alpha=0.3)
     g_br = sns.lineplot(data=sigma_df ,x="scale",y='bottom ratio',ax=ax2,hue='coeff',markers=True,marker='o',alpha=0.5)
     ax2.axhline(y=1, color='k', linestyle='--',alpha=0.3)
-ax1.set_xticks(ticks=[float(x) for x in dir_labels])  # define list of ticks
-ax2.set_xticks(ticks=[float(x) for x in dir_labels])  # define list of ticks
+    g_br = sns.lineplot(data=sigma_df ,x="scale",y='difference ratio',ax=ax3,hue='coeff',markers=True,marker='o',alpha=0.5)
+    ax3.axhline(y=1, color='k', linestyle='--',alpha=0.3)
+    
+for ax in fig.axes:
+    ax.set_xticks(ticks=[float(x) for x in dir_labels])  # define list of ticks
+
 ax1.set_title("Top value")
 ax2.set_title("Bottom value")
+ax3.set_title("Difference")
 plt.show()
 
 # if False:
