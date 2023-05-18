@@ -10,8 +10,7 @@ import matplotlib.pyplot as plt
 import os
 from PIL import Image
 
-from viz_images_in_grid import *
-
+from viz_functions import gallery,build_array,set_ax_options
 
 variab = "def_rate"  # options: def_rate, viscosity
 
@@ -27,10 +26,10 @@ def setup_array_const_strain(x_variable,melt_labels,t):
     cols = len(x_variable)*2
 
     # initialise the big array
-    # big_array = np.zeros(shape=(rows*cols, 875, 883, 3))  # 1st number is the number of images to display, then size, then colour channels (RGB)
     big_array = np.full(shape=(rows*cols, 875, 883, 3),fill_value=255)  # 1st number is the number of images to display, then size, then colour channels (RGB). Set initial values to 255 (white)
 
     for row in range(0,rows):
+        print(f'rows: row = {row}')
         # melt_rate = "0"+str(row+1)
         exact = 0   # whether file corresponds to the specified time exactly 
         melt_rate = melt_labels[row].replace("0.0","")   # e.g. from 0.001 to 01, or from 0.02 to 2
@@ -64,9 +63,8 @@ for t in times:
     if not os.path.exists('images_in_grid'):
         os.makedirs('images_in_grid')
     
-    plt.savefig('images_in_grid/test_visc_mRate_t'+str(t).zfill(3)+'.png',dpi=600)
+    plt.savefig('images_in_grid/cs_visc_mRate_t'+str(t).zfill(3)+'.png',dpi=600)
     
     # plt.show()
 
     plt.clf()   # close figure
-
