@@ -123,20 +123,16 @@ def set_ax_options(ax,variab,x_variable,melt_labels,melt_and_time,t):
     ax.set_yticklabels(melt_and_time,fontsize=4)   #  position and values of ticks on the y axis. Start: 441 (half of image height) End: height of image times num of images in one column, Step: 883 (height of image)
     ax.set_ylabel('Melt increment per spot')
     ax.set_title("$t_{ref}$ = "+str(t),fontsize=8)
+    plt.tight_layout()
 
 ncols = len(x_variable)*2
 for t in times:
-    # array,file_numbers = setup_array(x_variable,melt_labels,t)   # load all files
     array,melt_and_time = setup_array(x_variable,melt_labels,t)   # load all files
     result = gallery(array,ncols)           # organise in gallery view
-    # plt.figure()  # need this otherwise the figures after the first one are tiny
     fig, ax = plt.subplots()
     ax.imshow(result.astype('uint8')) # uint8 explanation: https://stackoverflow.com/questions/49643907/clipping-input-data-to-the-valid-range-for-imshow-with-rgb-data-0-1-for-floa
 
     set_ax_options(ax,variab,x_variable,melt_labels,melt_and_time,t)
-    plt.tight_layout()
-    # plt.savefig('visc_images/wd_visc_mRate_t'+str(t).zfill(3)+'.png',dpi=1200)
-    # plt.savefig('images_in_grid/wd_dRate_mRate_t'+str(t).zfill(3)+'.png',dpi=1200)
     if not os.path.exists('images_in_grid'):
         os.makedirs('images_in_grid')
     
