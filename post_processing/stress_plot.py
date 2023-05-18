@@ -44,8 +44,8 @@ dir_labels = ['00200', '00400','00600','00800','01000']#,'02000']#,'04000']#,'06
 # gj_dirs = ['gj102','gj103','gj104','gj105']
 # gj_lab = ['1000', '2000', '8000','9000']# their labels
 
-gj_dirs = ['gj138','gj140','gj139']
-gj_lab = ['3000','2700','1500']# densities
+# gj_dirs = ['gj138','gj140','gj139']
+# gj_lab = ['3000','2700','1500']# densities
 
 # gj_dirs = ['gj140','gj141']
 # gj_lab = ['0','1']# only extension false / true
@@ -55,6 +55,9 @@ gj_lab = ['3000','2700','1500']# densities
 
 # gj_dirs = ['gj149','gj150','gj151']
 # gj_lab = ['1500','2700','3000']# densities
+
+gj_dirs = ['gj157','gj158','gj159']
+gj_lab = ['3000','2700','2500']# densities
 
 fig, (ax1,ax2,ax3) = plt.subplots(nrows=1,ncols=3)
 resolution = 200

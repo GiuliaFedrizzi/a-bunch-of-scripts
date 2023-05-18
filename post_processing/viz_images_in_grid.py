@@ -9,24 +9,17 @@ import matplotlib.pyplot as plt
 import os
 from PIL import Image
 
-viscosity = 1
-def_rate = 0
+variab = "def_rate"  # options: def_rate, viscosity
 
-# os.chdir('/nobackup/scgf/myExperiments/threeAreas/through/th48')
-
-# times = range(20,200,20)  # (start, end, step)
-times = range(121,151,1)  # (start, end, step)
+times = range(30,31,1)  # (start, end, step)
 # melt_labels = ['0.001','0.002','0.003','0.004','0.005','0.006','0.007','0.008','0.009']  
 melt_labels = ['0.009','0.008','0.007','0.006','0.005','0.004','0.003','0.002','0.001'] 
-# melt_labels = ['0.001','0.003','0.005','0.007','0.009'] 
 
-
-
-if viscosity:
+if variab == "viscosity":
     # x_variable = ['1e2']#,'2e4','4e4']  # the values of the x variable to plot (e.g. viscosity)
     x_variable = ['1e1','1e2','5e2','1e3','5e3','1e4']#,'2e4','4e4']  # the values of the x variable to plot (e.g. viscosity)
     # x_variable = ['1e1','5e1','1e2','5e2','1e3','5e3','1e4']#,'2e4','4e4']  # the values of the x variable to plot (e.g. viscosity)
-elif def_rate:
+elif variab == "def_rate":
     x_variable = ['1e8','2e8','3e8','4e8','5e8','6e8','7e8','8e8','9e8']#,'3e11','4e11']  # the values of the x variable to plot (e.g. def rate)
 
 def gallery(array, ncols):
@@ -39,7 +32,48 @@ def gallery(array, ncols):
               .reshape(height*nrows, width*ncols, intensity))
     return result
 
-def make_array(x_variable,melt_labels,t):
+def build_array(big_array,variab,x,x_val,melt_rate,file_number,row,cols):
+    print(f'variab {variab},x {x},x_val {x_val},melt_rate {melt_rate},file_number {file_number},row {row},cols {cols}')
+    if variab == "viscosity":
+        exp = x_val.split('e')[-1] # the exponent after visc_ and before 5e3 or 1e4 etc
+        # poro_file = 'wd05_visc/visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_0'+str(melt_rate)+'/a_porosity_'+file_number+'.png' 
+        # bb_file = 'wd05_visc/visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_0'+str(melt_rate)+'/a_brokenBonds_'+file_number+'.png'
+        
+        ## 2 levels of subdirs
+        poro_file = 'visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_'+melt_rate+'/a_porosity_'+file_number+'.png' 
+        bb_file = 'visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_'+melt_rate+'/a_brokenBonds_'+file_number+'.png'
+
+        ## 2 levels, but "visc" value is fixed
+        # poro_file = 'visc_'+exp+'_'+x_val+'/vis1e2_mR_'+melt_rate+'/a_porosity_'+file_number+'.png' 
+        # bb_file = 'visc_'+exp+'_'+x_val+'/vis1e2_mR_'+melt_rate+'/a_brokenBonds_'+file_number+'.png'
+        
+        ##  only 1 level of subdirs
+        # poro_file = 'vis'+x_val+'_mR_'+melt_rate+'/a_porosity_'+file_number+'.png' 
+        # bb_file = 'vis'+x_val+'_mR_'+melt_rate+'/a_brokenBonds_'+file_number+'.png'
+    elif variab == "def_rate":
+        poro_file = 'thdef'+x_val+'/vis1e2_mR_'+melt_rate+'/a_porosity_'+file_number+'.png' # .zfill(5) fills the string with 0 until it's 5 characters long
+        bb_file  = 'thdef'+x_val+'/vis1e2_mR_'+melt_rate+'/a_brokenBonds_'+file_number+'.png'
+
+    if os.path.isfile(poro_file):
+        poro_big_file = Image.open(poro_file)  # I open it here so then I can call poro_big_file.close() and close it
+        poro = np.asarray(poro_big_file.crop((585,188,1468,1063)).convert('RGB'))
+        big_array[row*cols+2*x,:,:,:] = poro  # 0 2 4 rows*2 because there are 2 images for each simulation. First index is for each image
+        #print(row*cols+2*x)
+        poro_big_file.close()
+    else:
+        print("no file called ",poro_file)
+
+    if os.path.isfile(bb_file):
+        bb_big_file = Image.open(bb_file)
+        bb  =  np.asarray(bb_big_file.crop((585,188,1468,1063)).convert('RGB'))
+        big_array[row*cols+2*x+1,:,:,:] = bb  # 1 3 5 same as above, but +1 (the next one)
+        # print(row*cols+2*x+1)
+        bb_big_file.close()
+    else:
+        print("no file called ",bb_file)
+    return big_array
+
+def setup_array(x_variable,melt_labels,t):
     print(melt_labels)
     melt_labels_t = [None] * len(melt_labels) # labels with extra term for time. Empty string list, same size as melt_labels
     rows = len(melt_labels)  # how many values of melt rate
@@ -58,43 +92,8 @@ def make_array(x_variable,melt_labels,t):
             exact = 1
 
         for x,x_val in enumerate(x_variable):
-            if viscosity:
-                exp = x_val.split('e')[-1] # the exponent after visc_ and before 5e3 or 1e4 etc
-                # poro_file = 'wd05_visc/visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_0'+str(melt_rate)+'/a_porosity_'+file_number+'.png' 
-                # bb_file = 'wd05_visc/visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_0'+str(melt_rate)+'/a_brokenBonds_'+file_number+'.png'
-                
-                ## 2 levels of subdirs
-                poro_file = 'visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_'+melt_rate+'/a_porosity_'+file_number+'.png' 
-                bb_file = 'visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_'+melt_rate+'/a_brokenBonds_'+file_number+'.png'
-
-                ## 2 levels, but "visc" value is fixed
-                # poro_file = 'visc_'+exp+'_'+x_val+'/vis1e2_mR_'+melt_rate+'/a_porosity_'+file_number+'.png' 
-                # bb_file = 'visc_'+exp+'_'+x_val+'/vis1e2_mR_'+melt_rate+'/a_brokenBonds_'+file_number+'.png'
-                
-                ##  only 1 level of subdirs
-                # poro_file = 'vis'+x_val+'_mR_'+melt_rate+'/a_porosity_'+file_number+'.png' 
-                # bb_file = 'vis'+x_val+'_mR_'+melt_rate+'/a_brokenBonds_'+file_number+'.png'
-            elif def_rate:
-                poro_file = 'thdef'+x_val+'/vis1e2_mR_'+melt_rate+'/a_porosity_'+file_number+'.png' # .zfill(5) fills the string with 0 until it's 5 characters long
-                bb_file  = 'thdef'+x_val+'/vis1e2_mR_'+melt_rate+'/a_brokenBonds_'+file_number+'.png'
-
-            if os.path.isfile(poro_file):
-                poro_big_file = Image.open(poro_file)  # I open it here so then I can call poro_big_file.close() and close it
-                poro = np.asarray(poro_big_file.crop((585,188,1468,1063)).convert('RGB'))
-                big_array[row*cols+2*x,:,:,:] = poro  # 0 2 4 rows*2 because there are 2 images for each simulation. First index is for each image
-                #print(row*cols+2*x)
-                poro_big_file.close()
-            else:
-                print("no file called ",poro_file)
-
-            if os.path.isfile(bb_file):
-                bb_big_file = Image.open(bb_file)
-                bb  =  np.asarray(bb_big_file.crop((585,188,1468,1063)).convert('RGB'))
-                big_array[row*cols+2*x+1,:,:,:] = bb  # 1 3 5 same as above, but +1 (the next one)
-                # print(row*cols+2*x+1)
-                bb_big_file.close()
-            else:
-                print("no file called ",bb_file)
+            big_array = build_array(big_array,variab,x,x_val,melt_rate,file_number,row,cols)   # fill the array with data from images!
+            # ----------------------------------
         print("mrate ",melt_rate)
         # end of viscosity/deformation loop
         if exact:
@@ -104,15 +103,13 @@ def make_array(x_variable,melt_labels,t):
 
         print(melt_labels_t[row])
 
-
-    
     return big_array,melt_labels_t  # the number of columns is the num of x variable times two (two images for each sim)
     # return np.array([bb,poro,bb,poro])
 
 ncols = len(x_variable)*2
 for t in times:
-    # array,file_numbers = make_array(x_variable,melt_labels,t)   # load all files
-    array,melt_and_time = make_array(x_variable,melt_labels,t)   # load all files
+    # array,file_numbers = setup_array(x_variable,melt_labels,t)   # load all files
+    array,melt_and_time = setup_array(x_variable,melt_labels,t)   # load all files
     result = gallery(array,ncols)           # organise in gallery view
     # plt.figure()  # need this otherwise the figures after the first one are tiny
     fig, ax = plt.subplots()
@@ -120,9 +117,9 @@ for t in times:
     ax.set_xticks(np.arange(437,875*len(x_variable)*2,875*2)) #  position and values of ticks on the x axis. Start: 437 (half width of an image) End: length of image times num of images in one row, Step: 883 (legth of image)
     ax.set_xticklabels(x_variable,fontsize=4)
 
-    if viscosity:
+    if variab == "viscosity":
         ax.set_xlabel('Viscosity')
-    elif def_rate:
+    elif variab == "def_rate":
         ax.set_xlabel('Deformation rate')
         xlabels = [l.replace("e8","e-8") for l in x_variable]
         ax.set_xticklabels(xlabels,fontsize=4)  # overwrite labels with "-8" (true exponent) instead of 8 
@@ -148,7 +145,7 @@ for t in times:
     if not os.path.exists('images_in_grid'):
         os.makedirs('images_in_grid')
     
-    plt.savefig('images_in_grid/visc_mRate_t'+str(t).zfill(3)+'.png',dpi=600)
+    plt.savefig('images_in_grid/test_visc_mRate_t'+str(t).zfill(3)+'.png',dpi=600)
     
     # plt.show()
 
