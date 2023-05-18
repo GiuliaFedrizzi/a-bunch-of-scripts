@@ -106,14 +106,7 @@ def setup_array(x_variable,melt_labels,t):
     return big_array,melt_labels_t  # the number of columns is the num of x variable times two (two images for each sim)
     # return np.array([bb,poro,bb,poro])
 
-ncols = len(x_variable)*2
-for t in times:
-    # array,file_numbers = setup_array(x_variable,melt_labels,t)   # load all files
-    array,melt_and_time = setup_array(x_variable,melt_labels,t)   # load all files
-    result = gallery(array,ncols)           # organise in gallery view
-    # plt.figure()  # need this otherwise the figures after the first one are tiny
-    fig, ax = plt.subplots()
-    ax.imshow(result.astype('uint8')) # uint8 explanation: https://stackoverflow.com/questions/49643907/clipping-input-data-to-the-valid-range-for-imshow-with-rgb-data-0-1-for-floa
+def set_ax_options(ax,variab,x_variable,melt_labels,melt_and_time,t):
     ax.set_xticks(np.arange(437,875*len(x_variable)*2,875*2)) #  position and values of ticks on the x axis. Start: 437 (half width of an image) End: length of image times num of images in one row, Step: 883 (legth of image)
     ax.set_xticklabels(x_variable,fontsize=4)
 
@@ -130,15 +123,17 @@ for t in times:
     ax.set_yticklabels(melt_and_time,fontsize=4)   #  position and values of ticks on the y axis. Start: 441 (half of image height) End: height of image times num of images in one column, Step: 883 (height of image)
     ax.set_ylabel('Melt increment per spot')
     ax.set_title("$t_{ref}$ = "+str(t),fontsize=8)
-    # ax.set_ylim([0,883*len(melt_labels)*1.05])  # height * n of images plus a bit more, no clue why but it kinda works
 
-    # # create a second axis for y to add a second set of labels on the right hand side (time - file number)
-    # y2 = ax.twinx()
-    # # y2.set_ylim(ax.get_ylim()) # Copy the y limits from the left axis. Need it because y axis increases from top to bottom. Otherwise it's flipped
+ncols = len(x_variable)*2
+for t in times:
+    # array,file_numbers = setup_array(x_variable,melt_labels,t)   # load all files
+    array,melt_and_time = setup_array(x_variable,melt_labels,t)   # load all files
+    result = gallery(array,ncols)           # organise in gallery view
+    # plt.figure()  # need this otherwise the figures after the first one are tiny
+    fig, ax = plt.subplots()
+    ax.imshow(result.astype('uint8')) # uint8 explanation: https://stackoverflow.com/questions/49643907/clipping-input-data-to-the-valid-range-for-imshow-with-rgb-data-0-1-for-floa
 
-    # y2.set_yticks(~y_ticks_positions)  #same as above, but reverse order
-    # y2.set_yticklabels(file_numbers) # Set the right y-tick labels
-    # y2.set_ylabel("File number")
+    set_ax_options(ax,variab,x_variable,melt_labels,melt_and_time,t)
     plt.tight_layout()
     # plt.savefig('visc_images/wd_visc_mRate_t'+str(t).zfill(3)+'.png',dpi=1200)
     # plt.savefig('images_in_grid/wd_dRate_mRate_t'+str(t).zfill(3)+'.png',dpi=1200)
