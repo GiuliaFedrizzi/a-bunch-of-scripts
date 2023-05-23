@@ -67,6 +67,17 @@ def build_array(big_array,variab,x,x_val,melt_rate,file_number,row,cols):
         print("no file called ",bb_file)
     return big_array
 
+def build_melt_labels_t(melt_labels,t,file_number,row):
+    melt_rate = melt_labels[row].replace("0.0","")   # e.g. from 0.001 to 01, or from 0.02 to 2
+    exact = 0   # whether file corresponds to the specified time exactly 
+    if t%(int(melt_rate)) == 0:
+        exact = 1
+    if exact:
+        return melt_labels[row]+" ("+file_number+")"
+    else:
+        return melt_labels[row]+" ("+file_number+"*)"   # add a flag that says it's not exact
+
+
 def set_ax_options(ax,variab,x_variable,melt_labels,melt_and_time,t):
     """
     set ticks, labels, title etc for the final plot

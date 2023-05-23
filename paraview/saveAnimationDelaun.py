@@ -247,6 +247,16 @@ if paravParam.actual_movement:
         # PNG options
         SuffixFormat='_%05d',FontScaling='Do not scale fonts')
 
+if paravParam.healing:
+    set_colormap_actualMovement(transform1Display)
+    # HideScalarBarIfNotNeeded(brokenBondsLUT, renderView1)
+    # save animation
+    pathAndName = thisDirectory+'/a_actualMovement.png'
+    SaveAnimation(pathAndName, renderView1, ImageResolution=[2054, 1248],
+        FrameWindow=rangeForAnimation, 
+        # PNG options
+        SuffixFormat='_%05d',FontScaling='Do not scale fonts')
+
 # toggle 3D widget visibility (only when running from the GUI)
 Hide3DWidgets(proxy=transform1.Transform)
 

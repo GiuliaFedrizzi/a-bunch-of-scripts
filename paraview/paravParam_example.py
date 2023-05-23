@@ -11,3 +11,4 @@ mean_stress = 0
 pressure = 0
 broken_bonds = 1
 actual_movement = 0
+healing = 1

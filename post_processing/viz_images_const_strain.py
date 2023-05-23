@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import os
 from PIL import Image
 
-from viz_functions import gallery,build_array,set_ax_options
+from viz_functions import gallery,build_array,build_melt_labels_t,set_ax_options
 
 variab = "def_rate"  # options: def_rate, viscosity
 
@@ -28,25 +28,23 @@ def setup_array_const_strain(x_variable,melt_labels,t):
     # initialise the big array
     big_array = np.full(shape=(rows*cols, 875, 883, 3),fill_value=255)  # 1st number is the number of images to display, then size, then colour channels (RGB). Set initial values to 255 (white)
 
-    for row in range(0,rows):
+    # for row in range(0,rows):
+    for row,melt_rate in enumerate(melt_labels):
         print(f'rows: row = {row}')
+        melt_rate = melt_rate.replace("0.0","")   # e.g. from 0.001 to 01, or from 0.02 to 2
         # melt_rate = "0"+str(row+1)
-        exact = 0   # whether file corresponds to the specified time exactly 
-        melt_rate = melt_labels[row].replace("0.0","")   # e.g. from 0.001 to 01, or from 0.02 to 2
-        file_number = str(int(t/(int(melt_rate)))).zfill(5)  # normalise t by the melt rate.  .zfill(5) fills the string with 0 until it's 5 characters long
-        if t%(int(melt_rate)) == 0:
-            exact = 1
+        # melt_rate = melt_labels[row].replace("0.0","")   # e.g. from 0.001 to 01, or from 0.02 to 2
+        norm_time = t/(float(melt_rate))
+        print(norm_time)
+        file_number = str(round(norm_time)).zfill(5)  # normalise t by the melt rate.  .zfill(5) fills the string with 0 until it's 5 characters long
+        # if float(melt_rate)/
 
         for x,x_val in enumerate(x_variable):
             big_array = build_array(big_array,variab,x,x_val,melt_rate,file_number,row,cols)   # fill the array with data from images!
             # ----------------------------------
         print("mrate ",melt_rate)
         # end of viscosity/deformation loop
-        if exact:
-            melt_labels_t[row] = melt_labels[row]+" ("+file_number+")"
-        else:
-            melt_labels_t[row] = melt_labels[row]+" ("+file_number+"*)"   # add a flag that says it's not exact
-
+        melt_labels_t[row] = build_melt_labels_t(melt_labels,t,file_number,row)
         print(melt_labels_t[row])
 
     return big_array,melt_labels_t  # the number of columns is the num of x variable times two (two images for each sim)
