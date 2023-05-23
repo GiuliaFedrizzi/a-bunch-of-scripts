@@ -312,7 +312,7 @@ def set_colormap_actualMovement(transform1Display):
 
 def set_colormap_healing(transform1Display):
     '''
-    set the actual movement colormap
+    set the healing colormap
     '''
     # set scalar coloring
     ColorBy(transform1Display, ('POINTS', 'Healing'))
@@ -323,11 +323,15 @@ def set_colormap_healing(transform1Display):
     # show color bar/color legend
     transform1Display.SetScalarBarVisibility(renderView1, True)
 # -----------------
-    # get color transfer function/color map for 'ActualMovement'
-    actualMovementLUT = GetColorTransferFunction('ActualMovement')
 
-    # get opacity transfer function/opacity map for 'ActualMovement'
-    actualMovementPWF = GetOpacityTransferFunction('ActualMovement')
+    # get color transfer function/color map for 'Healing'
+    healingLUT = GetColorTransferFunction('Healing')
+
+    # get opacity transfer function/opacity map for 'Healing'
+    healingPWF = GetOpacityTransferFunction('Healing')
+
+    # Apply a preset using its name.
+    healingLUT.ApplyPreset('CIELab Blue to Red', True)
 
     # hide pressure LUT
     pressureLUT = GetColorTransferFunction('Pressure')
@@ -348,6 +352,9 @@ def set_colormap_healing(transform1Display):
     meanStressLUT = GetColorTransferFunction('MeanStress')
     # Hide the scalar bar for this color map if no visible data is colored by it.
     HideScalarBarIfNotNeeded(meanStressLUT, renderView1)
+
+    actualMovementLUT = GetColorTransferFunction('Actual Movement')
+    HideScalarBarIfNotNeeded(actualMovementLUT, renderView1)
 
 def get_scale():
     try:
