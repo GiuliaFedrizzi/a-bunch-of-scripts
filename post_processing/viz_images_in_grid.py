@@ -12,11 +12,11 @@ from PIL import Image
 from viz_functions import gallery,build_array,build_melt_labels_t,set_ax_options
 
 
-variab = "viscosity"  # options: def_rate, viscosity
+variab = "def_rate"  # options: def_rate, viscosity
 
-times = range(10,70,5)  # (start, end, step)
-# melt_labels = ['0.001','0.002','0.003','0.004','0.005','0.006','0.007','0.008','0.009']  
-melt_labels = ['0.009','0.008','0.007','0.006','0.005','0.004','0.003','0.002','0.001'] 
+times = range(8,25,1)  # (start, end, step)
+# melt_labels = ['0.009','0.008','0.007','0.006','0.005','0.004','0.003','0.002','0.001'] 
+melt_labels = ['0.008','0.006','0.004','0.002'] 
 
 if variab == "viscosity":
     x_variable = ['1e1']  # the values of the x variable to plot (e.g. viscosity)
@@ -62,8 +62,12 @@ for t in times:
     ax.set_yticks(y_ticks_positions)
     if not os.path.exists('images_in_grid'):
         os.makedirs('images_in_grid')
-    
-    plt.savefig('images_in_grid/visc_mRate_t'+str(t).zfill(3)+'.png',dpi=600)
+    if variab == "viscosity":
+        filename = 'images_in_grid/visc_mRate_t'
+    elif variab =="def_rate":
+        filename = 'images_in_grid/defRate_mRate_t'
+
+    plt.savefig(filename+str(t).zfill(3)+'.png',dpi=600)
     
     # plt.show()
 
