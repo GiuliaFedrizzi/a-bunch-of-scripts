@@ -44,14 +44,14 @@ from pathlib import Path
 # import functions from external file
 from useful_functions import * 
 
-var_to_plot = "Sigma_1"
+var_to_plot = "Sigma_2"
 # options: Pressure, Mean Stress, Actual Movement, Gravity, Porosity, Sigma_1, Sigma_2, Youngs Modulus
 #         F_P_x, F_P_y, pf_grad_x, pf_grad_y, Original Movement, Movement in Gravity
 
 # dir_labels = ['400','200']  # res400.elle, res200.elle
 #dir_labels = ['00200', '00400','00600','00800','01000']
 # dir_labels = ['02000','04000','06000','08000','10000'] 
-dir_labels = ['00200', '00400','00600','00800','01000','02000','04000','06000']#,'08000','10000'] 
+dir_labels = ['00200', '00400','00600','00800','01000']#,'02000','04000','06000']#,'08000','10000'] 
 #dir_labels = ['01','03','05','07','09','11','13','15','17','19']
 # dir_labels = ['01','02','03','04','05','06','07','08','09'] 
 
@@ -64,16 +64,18 @@ sizes = []
 ####   WARNING: (horizontal) offset is set to 50 instead of the central point (1/4 of domain)
 
 
+######  first complete relaxation  ---> Saving file: #####     
+
 for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/wd_viscTest/vis_'+str(i))  
-    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj159/size'+str(i)) 
+    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj162/size'+str(i)) 
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/th04/vis1e2_mR_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
     
 print(dir_list)
 
-f1=3  # first file to plot. They account for "my_experiment-0003.csv" as the first file in dir
-f2=4  # second file
+f1=4  # first file to plot. They account for "my_experiment-0003.csv" as the first file in dir
+f2=5  # second file
 
 df_x = pd.DataFrame()
 df_y = pd.DataFrame()
@@ -202,25 +204,35 @@ for dirnum,dir in enumerate(dir_list):
                 df_x = pd.concat([df_x,df1_x], ignore_index=True) # append to old one
             # end of file loop
             # values now are referring to the last timestep that was loaded
-        if var_to_plot == "Sigma_1":  # print out some values about sigma_1
+        # calculate and print out theoretical and true values of stresses
+        if var_to_plot ==  "Sigma_1" or var_to_plot ==  "Sigma_2":
             depth = getDepth("input.txt")
             solid_density = getDensity()
-            sigma_1_top_theor = 0.66666 * solid_density*9.8*(float(depth)+2*float(real_radius))  # rho * g * depth+first row  (height of first row = 2*real_radius)
-            sigma_1_bot_theor = 0.66666 * solid_density*9.8*(float(depth)+float(dom_size))  # rho * g * (depth+size)
+            sigma_top_theor = 0.66666 * solid_density*9.8*(float(depth)+2*float(real_radius))  # rho * g * depth+first row  (height of first row = 2*real_radius)
+            sigma_bot_theor = 0.66666 * solid_density*9.8*(float(depth)+float(dom_size))  # rho * g * (depth+size)
             print(f'scale: {dom_size}')
-            print(f'bottom theor: {sigma_1_bot_theor/1e6:.2f} MPa, bottom true: {-var_array_y.values[1]/1e6}. true/theor = {-var_array_y.values[1]/sigma_1_bot_theor:.4f}')
-            print(f'top theor:   {sigma_1_top_theor/1e6:.2f} MPa, top true:    {-var_array_y.values[-2]/1e6}. true/theor = {-var_array_y.values[-2]/sigma_1_top_theor:.4f}')
-            #print(f'bottom: {-var_array_y.values[0]/1e6}. true/theor = {-var_array_y.values[0]/sigma_1_bot_theor}')
-            #print(f'top:    {-var_array_y.values[-1]/1e6}. true/theor = {-var_array_y.values[-1]/sigma_1_top_theor}')
-            print(f'bot-top:    {-(var_array_y.values[1]-var_array_y.values[-2])/1e6}. theor = {(sigma_1_bot_theor-sigma_1_top_theor)/1e6:.4f}\n')
-            sigmas_top_true.append(-var_array_y.values[-2]); sigmas_bot_true.append(-var_array_y.values[1])
-            sigmas_top_theor.append(sigma_1_top_theor); sigmas_bot_theor.append(sigma_1_bot_theor)
-            sigmas_top_ratio.append(-var_array_y.values[-2]/sigma_1_top_theor)
-            sigmas_bot_ratio.append(-var_array_y.values[1]/sigma_1_bot_theor)
-            sigmas_diff_true.append(var_array_y.values[-2]-var_array_y.values[1])   # top - bottom (they're <0, so difference is >0)
-            sigmas_diff_theor.append(sigma_1_bot_theor-sigma_1_top_theor)   # bottom - top (they're >0)
-            sigmas_diff_ratio.append((var_array_y.values[-2]-var_array_y.values[1])/(sigma_1_bot_theor-sigma_1_top_theor))   # bottom - top (they're >0)
+
             sizes.append(float(dom_size))
+            if var_to_plot == "Sigma_1":  # print out some values about sigma_1
+                print("Sigma 1")
+
+            elif var_to_plot == "Sigma_2":
+                print("Sigma 2")
+                sigma_top_theor /=2   # lateral stress is half the vertical stress in axia strain
+                sigma_bot_theor /=2
+
+            print(f'bottom theor: {sigma_bot_theor/1e6:.2f} MPa, bottom true: {-var_array_y.values[1]/1e6}. true/theor = {-var_array_y.values[1]/sigma_bot_theor:.4f}')
+            print(f'top theor:   {sigma_top_theor/1e6:.2f} MPa, top true:    {-var_array_y.values[-2]/1e6}. true/theor = {-var_array_y.values[-2]/sigma_top_theor:.4f}')
+            #print(f'bottom: {-var_array_y.values[0]/1e6}. true/theor = {-var_array_y.values[0]/sigma_bot_theor}')
+            #print(f'top:    {-var_array_y.values[-1]/1e6}. true/theor = {-var_array_y.values[-1]/sigma_top_theor}')
+            print(f'bot-top: theor = {(sigma_bot_theor-sigma_top_theor)/1e6:.4f}, true {-(var_array_y.values[1]-var_array_y.values[-2])/1e6}\n')
+            sigmas_top_true.append(-var_array_y.values[-2]); sigmas_bot_true.append(-var_array_y.values[1])
+            sigmas_top_theor.append(sigma_top_theor); sigmas_bot_theor.append(sigma_bot_theor)
+            sigmas_top_ratio.append(-var_array_y.values[-2]/sigma_top_theor)
+            sigmas_bot_ratio.append(-var_array_y.values[1]/sigma_bot_theor)
+            sigmas_diff_true.append(var_array_y.values[-2]-var_array_y.values[1])   # top - bottom (they're <0, so difference is >0)
+            sigmas_diff_theor.append(sigma_bot_theor-sigma_top_theor)   # bottom - top (they're >0)
+            sigmas_diff_ratio.append((var_array_y.values[-2]-var_array_y.values[1])/(sigma_bot_theor-sigma_top_theor))   # bottom - top (they're >0)
     # end of dir loop
 # ax3 = g_y.twinx()
 
@@ -259,7 +271,7 @@ if True:
     plt.tight_layout()
     fig.suptitle(os.getcwd()) 
     plt.show()
-if var_to_plot == "Sigma_1":
+if var_to_plot == "Sigma_1" or var_to_plot == "Sigma_2":
     if True:
         fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
         ax1.plot(sizes,sigmas_top_true,'-o',color='blue',label='top true')
@@ -269,6 +281,7 @@ if var_to_plot == "Sigma_1":
         ax1.plot(sizes,sigmas_bot_theor,'--',color='green',label='bottom theoretical')
         ax2.plot(sizes,sigmas_diff_theor,'--',label='difference theoretical')
         set_axes_options(fig)
+        ax1.set_ylabel(var_to_plot)
         plt.show()
 
     if True:  # plot ratios

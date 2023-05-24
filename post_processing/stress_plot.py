@@ -59,6 +59,9 @@ dir_labels = ['00200', '00400','00600','00800','01000']#,'02000']#,'04000']#,'06
 gj_dirs = ['gj157','gj158','gj159']
 gj_lab = ['3000','2700','2500']# densities
 
+# gj_dirs = ['gj159','gj160']
+# gj_lab = ['gj159 (smaller relax)','gj160 (larger relax)']# densities
+
 fig, (ax1,ax2,ax3) = plt.subplots(nrows=1,ncols=3)
 resolution = 200
 
@@ -100,8 +103,9 @@ def dir_loop(gjdir,dir_labels,sigma_df,line_label):
         # get density: it's the input parameter for setSolidDensity
 
         solid_density = getDensity()
-        sigma_1_top_theor = solid_density*9.81*float(depth)  # rho * g * depth
-        sigma_1_bot_theor = solid_density*9.81*(float(depth)+float(dom_size))  # rho * g * (depth+size)
+        real_radius = myExp["real_radius"][0]
+        sigma_1_top_theor = 0.66666 * solid_density*9.81*(float(depth)+2*real_radius)  # rho * g * (depth + first row)
+        sigma_1_bot_theor = 0.66666 * solid_density*9.81*(float(depth)+float(dom_size))  # rho * g * (depth+size)
 
         # build the dataframe
         df_temp = pd.DataFrame({
