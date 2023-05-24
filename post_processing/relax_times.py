@@ -10,12 +10,13 @@ import os as os
 import numpy as np
 
 
-dir_labels = ['02000','04000','08000','10000']
+# dir_labels = ['02000','04000','08000','10000']
+dir_labels = ['00020','00040','00080','00100']
 cmap = plt.get_cmap("tab10")  # default colormap (blue,orange,green etc)
 plot_num = 0    # a counter for the number of lines. It's used to assign the same colour to lines of the same directory (one real, one from the linear fit)
 
 parent_directories = []
-first_part_of_path = '/nobackup/scgf/myExperiments/gaussJan2022/gj23/size'
+first_part_of_path = '/nobackup/scgf/myExperiments/gaussJan2022/gj165/size'
 
 for i in dir_labels:
     parent_directories.append(first_part_of_path+str(i))

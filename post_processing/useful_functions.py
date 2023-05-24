@@ -36,3 +36,17 @@ def getDensity():
                     # take the second part - after ( - then take the first part - before )
                     word_found = (line.split("(")[1]).split(")")[0]  
                     return float(word_found)   # stop searching, return the value (will be a string)
+
+def getWhenItRelaxed(lattefile):
+    """ when you find "first complete relaxation", return the first next file that was saved """
+    found_compl_relax = False;
+    relaxed_file = " "
+    with open(lattefile) as expFile:
+        for num, line in enumerate(expFile,1):
+            if 'first complete relaxation' in line:  # search for the string
+                found_compl_relax = True    # ok, it has relaxed
+            if found_compl_relax:           # so it can go on and search for "relax times"
+                if "Saving file:" in line:
+                    relaxed_file = line.split(": ")[1]   # this line look like: Saving file: my_experiment00000.csv
+                       # take the last part splitting around ": ", so something like "my_experiment00000.csv"
+    return relaxed_file 

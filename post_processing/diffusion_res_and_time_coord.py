@@ -44,14 +44,16 @@ from pathlib import Path
 # import functions from external file
 from useful_functions import * 
 
-var_to_plot = "Sigma_2"
+var_to_plot = "Sigma_1"
 # options: Pressure, Mean Stress, Actual Movement, Gravity, Porosity, Sigma_1, Sigma_2, Youngs Modulus
 #         F_P_x, F_P_y, pf_grad_x, pf_grad_y, Original Movement, Movement in Gravity
 
 # dir_labels = ['400','200']  # res400.elle, res200.elle
+# dir_labels = ['00020', '00040','00060','00080','00100']
+dir_labels = ['00040','00060','00080','00100']
 #dir_labels = ['00200', '00400','00600','00800','01000']
 # dir_labels = ['02000','04000','06000','08000','10000'] 
-dir_labels = ['00200', '00400','00600','00800','01000']#,'02000','04000','06000']#,'08000','10000'] 
+# dir_labels = ['00200', '00400','00600','00800','01000','02000','04000','06000']#,'08000','10000'] 
 #dir_labels = ['01','03','05','07','09','11','13','15','17','19']
 # dir_labels = ['01','02','03','04','05','06','07','08','09'] 
 
@@ -68,14 +70,14 @@ sizes = []
 
 for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/wd_viscTest/vis_'+str(i))  
-    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj162/size'+str(i)) 
+    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj165/size'+str(i)) 
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/th04/vis1e2_mR_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
     
 print(dir_list)
 
-f1=4  # first file to plot. They account for "my_experiment-0003.csv" as the first file in dir
-f2=5  # second file
+f1=2  # first file to plot. They account for "my_experiment-0003.csv" as the first file in dir
+f2=3  # second file
 
 df_x = pd.DataFrame()
 df_y = pd.DataFrame()
@@ -89,13 +91,16 @@ else:
 for dirnum,dir in enumerate(dir_list):
     """ loop through directories"""
     os.chdir(dir)
-    if len(sorted(glob.glob("my_experiment*"))) < f1+1:  # if there aren't enough files, skip
+    if len(sorted(glob.glob("my_experiment*"))) < f1:  # if there aren't enough files, skip
         #if not os.path.exists(os.getcwd()+'/'+first_file):  # if it can't find the file after my_experiment00000.csv
         print('skipping '+os.getcwd())
         continue
     else:
+        relaxed_file = getWhenItRelaxed("latte.log")
+        print(f'First file after complete relaxation: {relaxed_file}')
         first_file = sorted(glob.glob("my_experiment*"))[1]
         dom_size = float(getParameterFromLatte('input.txt','Scale'))
+        print(f'scale: {dom_size}')
 
         myExp = pd.read_csv(first_file, header=0)
         with open("latte.log") as iFile:
@@ -116,13 +121,15 @@ for dirnum,dir in enumerate(dir_list):
 
             ## manually get the coordinates of the central point:
             meltYmin = float(getParameterFromLatte("input.txt","meltYmin"))
-            # ymax = meltYmin/(resolution/2)   # in the form of 0.875   WHAT IT SHOULD BE
-            ymax = meltYmin/(200/2)   # in the form of 0.875  WHAT WORKS WITH THE FIRST ONES (I haven't adapeted it yet)
+            # ymax = meltYmin/(resolution/2)   #  WHAT IT SHOULD BE
+            #ymax = meltYmin/(200/2)   # in real units (meters)
+            ymax = 1
+            print(meltYmin)
             xmax = 0.3    # 0.5 if point is in the middle
             matches_x = np.where(np.isclose(myExp["x coord"],xmax,atol=3e-3)==True)[0] # vertical
             # print(matches_x) 
             print(len(matches_x))
-            tolerance_y = dom_size/300*1e-3
+            tolerance_y = dom_size*100/300*1e-3 #dom_size/300*1e-3  for 200,400,...,10000
             matches_y = np.where(np.isclose(myExp["y coord"],ymax,atol=tolerance_y)==True)[0]
             # print(matches_y) 
             print(len(matches_y))
@@ -210,7 +217,6 @@ for dirnum,dir in enumerate(dir_list):
             solid_density = getDensity()
             sigma_top_theor = 0.66666 * solid_density*9.8*(float(depth)+2*float(real_radius))  # rho * g * depth+first row  (height of first row = 2*real_radius)
             sigma_bot_theor = 0.66666 * solid_density*9.8*(float(depth)+float(dom_size))  # rho * g * (depth+size)
-            print(f'scale: {dom_size}')
 
             sizes.append(float(dom_size))
             if var_to_plot == "Sigma_1":  # print out some values about sigma_1
@@ -280,6 +286,8 @@ if var_to_plot == "Sigma_1" or var_to_plot == "Sigma_2":
         ax1.plot(sizes,sigmas_top_theor,'--',color='blue',label='top theoretical')
         ax1.plot(sizes,sigmas_bot_theor,'--',color='green',label='bottom theoretical')
         ax2.plot(sizes,sigmas_diff_theor,'--',label='difference theoretical')
+        
+
         set_axes_options(fig)
         ax1.set_ylabel(var_to_plot)
         plt.show()
