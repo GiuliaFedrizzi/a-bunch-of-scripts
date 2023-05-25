@@ -275,6 +275,8 @@ def set_colormap_actualMovement(transform1Display):
     '''
     set the actual movement colormap
     '''
+    renderView1 = GetActiveViewOrCreate('RenderView')
+
     # set scalar coloring
     ColorBy(transform1Display, ('POINTS', 'Actual Movement'))
 
@@ -314,6 +316,7 @@ def set_colormap_healing(transform1Display):
     '''
     set the healing colormap
     '''
+    renderView1 = GetActiveViewOrCreate('RenderView')
     # set scalar coloring
     ColorBy(transform1Display, ('POINTS', 'Healing'))
 

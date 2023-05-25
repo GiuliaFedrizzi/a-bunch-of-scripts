@@ -70,14 +70,14 @@ sizes = []
 
 for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/wd_viscTest/vis_'+str(i))  
-    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj165/size'+str(i)) 
+    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj167/size'+str(i)) 
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/th04/vis1e2_mR_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
     
 print(dir_list)
 
-f1=2  # first file to plot. They account for "my_experiment-0003.csv" as the first file in dir
-f2=3  # second file
+f1=8  # first file to plot. They account for "my_experiment-0003.csv" as the first file in dir
+f2=9  # second file. if f2 = 5 -> my_experiment00500.csv
 
 df_x = pd.DataFrame()
 df_y = pd.DataFrame()
@@ -123,7 +123,7 @@ for dirnum,dir in enumerate(dir_list):
             meltYmin = float(getParameterFromLatte("input.txt","meltYmin"))
             # ymax = meltYmin/(resolution/2)   #  WHAT IT SHOULD BE
             #ymax = meltYmin/(200/2)   # in real units (meters)
-            ymax = 1
+            ymax = 0.98
             print(meltYmin)
             xmax = 0.3    # 0.5 if point is in the middle
             matches_x = np.where(np.isclose(myExp["x coord"],xmax,atol=3e-3)==True)[0] # vertical
