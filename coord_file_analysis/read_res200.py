@@ -34,8 +34,9 @@ df_v["diff"] = diff_1  # add a column to the dataframe
 
 #  calculate the new values - the more accurate ones
 h = (1/200)*np.sqrt(3)/2  # one height of a triangle with edge = (1/200)
-long_ny = []  # array with all values of new y, repeated 200 times (because x will vary)
+# long_ny = []  # array with all values of new y, repeated 200 times (because x will vary)
 n_id = 0    # initialise index
+coord_matrix = np.zeros((46000,4))
 
 for i in range(0,230):
     ny = h/2 + i*h   # build the new values of y  
@@ -46,19 +47,17 @@ for i in range(0,230):
     # print(ycoord_vals[i],ny)  # check that they are the same (well, that they are close)
     for j in range(0,200):
         if i%2 == 0:    # even rows
-            x = j/200
+            nx = j/200
         else:
-            x = (j+0.5)/200   # odd rows are shifted by half a triangle edge
-        if i == 1:
-            print(x) 
+            nx = (j+0.5)/200   # odd rows are shifted by half a triangle edge
+        # if i == 1:
+        #     print(nx) 
+        coord_matrix[n_id] = [n_id, nx, ny, 1]
         n_id+=1
+        
 
-# print(len(long_ny))
-# print(long_ny)
-    
+#print(coord_matrix)
 
-#print(diff_1)
-# print(df["y"].values)
 
 if False:
     fig, ax1 = plt.subplots(nrows=1,ncols=1)
@@ -68,3 +67,15 @@ if False:
     ax1.get_yaxis().get_major_formatter().set_useOffset(False)
     # sns.lineplot(data=df ,x=df.index,y='y')
     plt.show()
+
+with open('res200.elle') as input_file:
+    head = [next(input_file) for _ in range(12457)]
+
+with open("res200new.elle", 'w') as f:
+    f.write("".join(head))
+#    f.write("".join(coord_matrix))
+#    f.write("\n")
+    f.close()
+
+with open("res200new.elle", 'a')as f:
+    np.savetxt(f,coord_matrix,delimiter=" ",fmt="%.9f")
