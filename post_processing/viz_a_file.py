@@ -5,7 +5,6 @@ builds matrix:
 
 """
 
-# I use this ^ to run python in VS code in interactive mode
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
