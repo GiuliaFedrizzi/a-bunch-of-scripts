@@ -14,9 +14,10 @@ from viz_functions import gallery,build_array,build_melt_labels_t,set_ax_options
 
 variab = "def_rate"  # options: def_rate, viscosity
 
-times = range(11,21,1)  # (start, end, step)
+times = range(36,56,1)  # (start, end, step)
 # melt_labels = ['0.009','0.008','0.007','0.006','0.005','0.004','0.003','0.002','0.001'] 
-melt_labels = ['0.008','0.006','0.004','0.002'] 
+# melt_labels = ['0.008','0.006','0.004','0.002'] 
+melt_labels = ['0.001'] 
 
 if variab == "viscosity":
     x_variable = ['1e1']  # the values of the x variable to plot (e.g. viscosity)
@@ -41,7 +42,6 @@ def setup_array(x_variable,melt_labels,t):
         for x,x_val in enumerate(x_variable):
             big_array = build_array(big_array,variab,x,x_val,melt_rate,file_number,row,cols)   # fill the array with data from images!
             # ----------------------------------
-        print("mrate ",melt_rate)
         melt_labels_t[row] = build_melt_labels_t(melt_labels,t,file_number,row)
         print(melt_labels_t[row])
 
