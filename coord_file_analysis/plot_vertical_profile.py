@@ -26,14 +26,12 @@ def read_calculate_plot(filename):
     myExp = pd.read_csv(filename, header=0)
     df_v = myExp[50:len(myExp):200]    # dataframe only containing a vertical line. start from the 50th element and skip 2 rows of 200 elements
     
-    df_v["dy"] = 0
 
     ycoord_vals = df_v["y coord"].values
-    print(ycoord_vals)
-    diff = ycoord_vals[1:] - ycoord_vals[:-1]
+    porosity_vals = df_v["Porosity"].values
 
     x = range(0,len(df_v),1)
-    plt.plot(diff,x)
+    plt.plot(porosity_vals,x)
     plt.gca().get_xaxis().get_major_formatter().set_useOffset(False)  # to avoid offset in plot 
     plt.show()
 
