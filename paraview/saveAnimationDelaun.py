@@ -228,34 +228,43 @@ if paravParam.porosity:
 
 
 if paravParam.mean_stress:
-    set_colormap_mean_stress(transform1Display)
-    # HideScalarBarIfNotNeeded(brokenBondsLUT, renderView1)
-    # save animation
-    pathAndName = thisDirectory+'/a_meanStress.png'
-    SaveAnimation(pathAndName, renderView1, ImageResolution=[2054, 1248],
-        FrameWindow=rangeForAnimation, 
-        # PNG options
-        SuffixFormat='_%05d',FontScaling='Do not scale fonts')
+    try:
+        set_colormap_mean_stress(transform1Display)
+        # HideScalarBarIfNotNeeded(brokenBondsLUT, renderView1)
+        # save animation
+        pathAndName = thisDirectory+'/a_meanStress.png'
+        SaveAnimation(pathAndName, renderView1, ImageResolution=[2054, 1248],
+            FrameWindow=rangeForAnimation, 
+            # PNG options
+            SuffixFormat='_%05d',FontScaling='Do not scale fonts')
+    except:
+        pass  
 
 if paravParam.actual_movement:
-    set_colormap_actualMovement(transform1Display)
-    # HideScalarBarIfNotNeeded(brokenBondsLUT, renderView1)
-    # save animation
-    pathAndName = thisDirectory+'/a_actualMovement.png'
-    SaveAnimation(pathAndName, renderView1, ImageResolution=[2054, 1248],
-        FrameWindow=rangeForAnimation, 
-        # PNG options
-        SuffixFormat='_%05d',FontScaling='Do not scale fonts')
+    try:
+        set_colormap_actualMovement(transform1Display)
+        # HideScalarBarIfNotNeeded(brokenBondsLUT, renderView1)
+        # save animation
+        pathAndName = thisDirectory+'/a_actualMovement.png'
+        SaveAnimation(pathAndName, renderView1, ImageResolution=[2054, 1248],
+            FrameWindow=rangeForAnimation, 
+            # PNG options
+            SuffixFormat='_%05d',FontScaling='Do not scale fonts')
+    except:
+        pass
 
 if paravParam.healing:
-    set_colormap_actualMovement(transform1Display)
-    # HideScalarBarIfNotNeeded(brokenBondsLUT, renderView1)
-    # save animation
-    pathAndName = thisDirectory+'/a_actualMovement.png'
-    SaveAnimation(pathAndName, renderView1, ImageResolution=[2054, 1248],
-        FrameWindow=rangeForAnimation, 
-        # PNG options
-        SuffixFormat='_%05d',FontScaling='Do not scale fonts')
+    try:
+        set_colormap_healing(transform1Display)
+        # HideScalarBarIfNotNeeded(brokenBondsLUT, renderView1)
+        # save animation
+        pathAndName = thisDirectory+'/a_healing.png'
+        SaveAnimation(pathAndName, renderView1, ImageResolution=[2054, 1248],
+            FrameWindow=rangeForAnimation, 
+            # PNG options
+            SuffixFormat='_%05d',FontScaling='Do not scale fonts')
+    except:
+        pass
 
 # toggle 3D widget visibility (only when running from the GUI)
 Hide3DWidgets(proxy=transform1.Transform)

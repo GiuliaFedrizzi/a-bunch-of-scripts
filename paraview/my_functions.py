@@ -325,7 +325,7 @@ def set_colormap_healing(transform1Display):
 
     # show color bar/color legend
     transform1Display.SetScalarBarVisibility(renderView1, True)
-# -----------------
+    # -----------------
 
     # get color transfer function/color map for 'Healing'
     healingLUT = GetColorTransferFunction('Healing')
