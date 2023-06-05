@@ -110,8 +110,49 @@ def set_colormap_pressure(transform1Display):
     pressureLUTColorBar.WindowLocation = 'AnyLocation'
     pressureLUTColorBar.Position = [0.7100785340314135, 0.34293193717277487]
 
-    
+def hide_colormaps():
+    """Hide the scalar bar for this color map if no visible data is colored by it."""
+    try:
+        # hide pressure LUT
+        pressureLUT = GetColorTransferFunction('Pressure')
+        HideScalarBarIfNotNeeded(pressureLUT, renderView1)
+    except:
+        pass
 
+    try:
+        # hide bb LUT
+        brokenBondsLUT = GetColorTransferFunction('BrokenBonds')
+        HideScalarBarIfNotNeeded(brokenBondsLUT, renderView1)
+    except:
+        pass
+
+    try:
+        # hide poro LUT
+        porosityLUT = GetColorTransferFunction('Porosity')
+        HideScalarBarIfNotNeeded(porosityLUT, renderView1)
+    except:
+        pass
+
+    try:
+        # hide mean stress LUT
+        meanStressLUT = GetColorTransferFunction('MeanStress')
+        HideScalarBarIfNotNeeded(meanStressLUT, renderView1)
+    except:
+        pass
+
+    try:
+        # hide actual Movement LUT
+        actualMovementLUT = GetColorTransferFunction('Actual Movement')
+        HideScalarBarIfNotNeeded(actualMovementLUT, renderView1)
+    except:
+        pass
+
+    try:
+        # hide healing LUT
+        healingLUT = GetColorTransferFunction('Healing')
+        HideScalarBarIfNotNeeded(healingLUT, renderView1)
+    except:
+        pass
 
 def set_colormap_broken_bonds(transform1Display):
     renderView1 = GetActiveViewOrCreate('RenderView')
@@ -160,10 +201,11 @@ def set_colormap_broken_bonds(transform1Display):
     brokenBondsLUTColorBar.Position = [0.7700414230019493, 0.35016025641025644]
     brokenBondsLUTColorBar.ScalarBarLength = 0.33
 
-    # hide pressure LUT
-    pressureLUT = GetColorTransferFunction('Pressure')
-    # Hide the scalar bar for this color map if no visible data is colored by it.
-    HideScalarBarIfNotNeeded(pressureLUT, renderView1)
+    hide_colormaps()
+    # # hide pressure LUT
+    # pressureLUT = GetColorTransferFunction('Pressure')
+    # # Hide the scalar bar for this color map if no visible data is colored by it.
+    # HideScalarBarIfNotNeeded(pressureLUT, renderView1)
 
 
 def set_colormap_porosity(transform1Display):
@@ -209,15 +251,7 @@ def set_colormap_porosity(transform1Display):
     porosityLUTColorBar.Position = [0.7700414230019493, 0.35016025641025644]
     porosityLUTColorBar.ScalarBarLength = 0.33
 
-    # hide pressure LUT
-    pressureLUT = GetColorTransferFunction('Pressure')
-    # Hide the scalar bar for this color map if no visible data is colored by it.
-    HideScalarBarIfNotNeeded(pressureLUT, renderView1)
-
-    # hide bb LUT
-    brokenBondsLUT = GetColorTransferFunction('BrokenBonds')
-    # Hide the scalar bar for this color map if no visible data is colored by it.
-    HideScalarBarIfNotNeeded(brokenBondsLUT, renderView1)
+    hide_colormaps()
 
 def set_colormap_mean_stress(transform1Display):
     """
@@ -256,20 +290,7 @@ def set_colormap_mean_stress(transform1Display):
     meanStressLUTColorBar.WindowLocation = 'AnyLocation'
     meanStressLUTColorBar.Position = [0.7100785340314135, 0.34293193717277487]
 
-    # hide pressure LUT
-    pressureLUT = GetColorTransferFunction('Pressure')
-    # Hide the scalar bar for this color map if no visible data is colored by it.
-    HideScalarBarIfNotNeeded(pressureLUT, renderView1)
-
-    # hide bb LUT
-    brokenBondsLUT = GetColorTransferFunction('BrokenBonds')
-    # Hide the scalar bar for this color map if no visible data is colored by it.
-    HideScalarBarIfNotNeeded(brokenBondsLUT, renderView1)
-
-    # hide poro LUT
-    porosityLUT = GetColorTransferFunction('Porosity')
-    # Hide the scalar bar for this color map if no visible data is colored by it.
-    HideScalarBarIfNotNeeded(porosityLUT, renderView1)
+    hide_colormaps()
 
 def set_colormap_actualMovement(transform1Display):
     '''
@@ -292,27 +313,9 @@ def set_colormap_actualMovement(transform1Display):
     # get opacity transfer function/opacity map for 'ActualMovement'
     actualMovementPWF = GetOpacityTransferFunction('ActualMovement')
 
-    # hide pressure LUT
-    pressureLUT = GetColorTransferFunction('Pressure')
-    # Hide the scalar bar for this color map if no visible data is colored by it.
-    HideScalarBarIfNotNeeded(pressureLUT, renderView1)
+    hide_colormaps()
 
-    # hide bb LUT
-    brokenBondsLUT = GetColorTransferFunction('BrokenBonds')
-    # Hide the scalar bar for this color map if no visible data is colored by it.
-    HideScalarBarIfNotNeeded(brokenBondsLUT, renderView1)
-
-    # hide poro LUT
-    porosityLUT = GetColorTransferFunction('Porosity')
-    # Hide the scalar bar for this color map if no visible data is colored by it.
-    HideScalarBarIfNotNeeded(porosityLUT, renderView1)
-
-    # hide mstress LUT
-    meanStressLUT = GetColorTransferFunction('MeanStress')
-    # Hide the scalar bar for this color map if no visible data is colored by it.
-    HideScalarBarIfNotNeeded(meanStressLUT, renderView1)
-
-def set_colormap_healing(transform1Display):
+def set_colormap_healing(transform1Display,max_time):
     '''
     set the healing colormap
     '''
@@ -336,28 +339,13 @@ def set_colormap_healing(transform1Display):
     # Apply a preset using its name.
     healingLUT.ApplyPreset('CIELab Blue to Red', True)
 
-    # hide pressure LUT
-    pressureLUT = GetColorTransferFunction('Pressure')
-    # Hide the scalar bar for this color map if no visible data is colored by it.
-    HideScalarBarIfNotNeeded(pressureLUT, renderView1)
+    #  change range for colormap
+    healingLUT.RescaleTransferFunction(0.0, max_time) # min = 0, max = max time
+    print("max_time is "+str(max_time))
 
-    # hide bb LUT
-    brokenBondsLUT = GetColorTransferFunction('BrokenBonds')
-    # Hide the scalar bar for this color map if no visible data is colored by it.
-    HideScalarBarIfNotNeeded(brokenBondsLUT, renderView1)
-
-    # hide poro LUT
-    porosityLUT = GetColorTransferFunction('Porosity')
-    # Hide the scalar bar for this color map if no visible data is colored by it.
-    HideScalarBarIfNotNeeded(porosityLUT, renderView1)
-
-    # hide mstress LUT
-    meanStressLUT = GetColorTransferFunction('MeanStress')
-    # Hide the scalar bar for this color map if no visible data is colored by it.
-    HideScalarBarIfNotNeeded(meanStressLUT, renderView1)
-
-    actualMovementLUT = GetColorTransferFunction('Actual Movement')
-    HideScalarBarIfNotNeeded(actualMovementLUT, renderView1)
+    # hide other colmaps
+    hide_colormaps()
+    
 
 def get_scale():
     try:
@@ -368,3 +356,4 @@ def get_scale():
         return 1.0, 0   #  domain size = 1, found_scale = 0 (it didn't find a scale)
     else:
         print("Scale: ",domain_size)
+

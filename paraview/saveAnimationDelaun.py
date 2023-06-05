@@ -255,7 +255,8 @@ if paravParam.actual_movement:
 
 if paravParam.healing:
     try:
-        set_colormap_healing(transform1Display)
+        max_time = numberOfInputCsvFiles*time_step_num*frequency  # n of files * timestep * how often they're saved
+        set_colormap_healing(transform1Display,max_time)  # max_time is to set the maximum value for the colormap
         # HideScalarBarIfNotNeeded(brokenBondsLUT, renderView1)
         # save animation
         pathAndName = thisDirectory+'/a_healing.png'
