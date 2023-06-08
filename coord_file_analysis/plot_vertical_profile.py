@@ -14,7 +14,7 @@ plot_figure = 1
 dir_label = '00020'
 res = 200
 filename = "my_experiment00000.csv"
-first_part_of_path = '/nobackup/scgf/myExperiments/gaussJan2022/gj170/'
+first_part_of_path = '/nobackup/scgf/myExperiments/gaussJan2022/gj175/'
 
 dir = first_part_of_path+'size'+str(dir_label)        # res200
 

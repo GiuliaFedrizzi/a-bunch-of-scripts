@@ -25,8 +25,8 @@ args <- commandArgs(trailingOnly = TRUE)  # store them as vectors
 # some options for different sets of simulations
 two_subdirs <- TRUE  # is it visc_1_1e1/vis1e1_mR01 (TRUE)  or just vis1e2_mR_01  (FALSE)?
 
-var_is_visc = 1
-var_is_def = 0
+var_is_visc = 0
+var_is_def = 1
 
 if (var_is_visc){
     if (two_subdirs){
@@ -38,7 +38,7 @@ if (var_is_visc){
     x_variable <- c('1e8','2e8','3e8','4e8','5e8','6e8','7e8','8e8','9e8')#,'5e3','1e4')#,'2e4','4e4')  # the values of the x variable to plot (e.g. def rate)
 }
 # melt_rate_list <- c('01','02','03','05','04','06','08')#,'09')#,'1','2')
-melt_rate_list <- c('03','04','06','08')#,'09')#,'1','2')
+melt_rate_list <- c('02','04','06','08')#,'09')#,'1','2')
 
 # set some options automatically
 time = as.numeric(args[1])   # time for the 1st   (e.g. 60e6 = 60th file in mr_01). Don't use 6e7

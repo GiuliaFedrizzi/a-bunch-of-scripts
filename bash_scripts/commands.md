@@ -15,7 +15,8 @@ rm -rf $HOME/.vscode-server
 
 ## activate environment in batch job submission script:
 > eval "$(conda shell.bash hook)"
-conda activate extr_py39
+
+> conda activate extr_py39
 
 ## sub all the sub_pvbatch.sh scripts in the subdirs
 > for v in vis*; do cp paravParam.py $v; cd $v; qsub sub_pvbatch.sh; cd ..; done
