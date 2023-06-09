@@ -12,9 +12,9 @@ from PIL import Image
 from viz_functions import gallery,build_array,build_melt_labels_t,set_ax_options
 
 
-variab = "def_rate"  # options: def_rate, viscosity
+variab = "viscosity"  # options: def_rate, viscosity
 
-times = range(31,61,1)  # (start, end, step)
+times = range(30,31,1)  # (start, end, step)
 # melt_labels = ['0.009','0.008','0.007','0.006','0.005','0.004','0.003','0.002','0.001'] 
 melt_labels = ['0.008','0.006','0.004','0.002'] 
 # melt_labels = ['0.001'] 
@@ -72,6 +72,6 @@ for t in times:
 
     plt.savefig(filename+str(t).zfill(3)+'.png',dpi=600)
     
-    # plt.show()
+    #plt.show()
 
     plt.clf()   # close figure
