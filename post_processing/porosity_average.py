@@ -13,14 +13,14 @@ average_porosity_meltArea = []
 time_array = []
 
 input_tstep = float(getTimeStep("input.txt"))
-for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[0:60:1]): #[beg:end:step]  set which timesteps (based on FILE NUMBER) 
+for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[0:30:1]): #[beg:end:step]  set which timesteps (based on FILE NUMBER) 
     myfile = Path(os.getcwd()+'/'+filename)
     if myfile.is_file():
         myExp = pd.read_csv(filename, header=0)
         # average everywhere
         average_porosity.append(myExp['Porosity'].mean())
         # average in the melting area only
-        average_porosity_meltArea.append(myExp[myExp["y coord"]<0.2]["Porosity"].mean())  # mean with conditions on x and y coordinates
+        average_porosity_meltArea.append(myExp[myExp["y coord"]<0.1]["Porosity"].mean())  # mean with conditions on x and y coordinates
         file_num = float(filename.split("experiment")[1].split(".")[0])  # first take the part after "experiment", then the one before the "."
         time_array.append(file_num*input_tstep)
 

@@ -23,3 +23,7 @@ rm -rf $HOME/.vscode-server
 
 ## find csv files that are too small (contain NaNs)   CHECK SIZE - there are new variables being saved
 > find . -type f -name "my*.csv" -size -9900k -delete 
+
+print out time and date:
+
+> find . -type f -name "my*.csv" -size -12000k  -printf "%p %TY-%Tm-%Td %TH:%TM \n" | sort

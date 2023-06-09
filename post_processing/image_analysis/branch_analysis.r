@@ -39,6 +39,7 @@ if (var_is_visc){
 }
 # melt_rate_list <- c('01','02','03','05','04','06','08')#,'09')#,'1','2')
 melt_rate_list <- c('02','04','06','08')#,'09')#,'1','2')
+# melt_rate_list <- c('01')#,'09')
 
 # set some options automatically
 time = as.numeric(args[1])   # time for the 1st   (e.g. 60e6 = 60th file in mr_01). Don't use 6e7
@@ -60,8 +61,8 @@ if (grepl("prod",base_path)){
 # open file, extract values
 build_branch_df <- function(x,m,time) {
         # to keep the amount of melt constant, we look at smaller times if melt rate is higher, later times if it's lower. This num will build the file name
-        var_is_visc <- 1
-        var_is_def <- 0
+        var_is_visc <- 0
+        var_is_def <- 1
 
         norm_time = round(time/1e6/as.double(m))*1e6  # from accurate number, round so that it opens a file that exists
 
@@ -72,15 +73,15 @@ build_branch_df <- function(x,m,time) {
             true_m_rate = as.double(m)/100
         }
         if (var_is_visc) {
-        ##  build the path. unlist(strsplit(x,"e"))[2] splits '5e3' into 5 and 3 and takes the second (3)
-        if (two_subdirs){
-            ## 2 levels
-            file_to_open <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis',x,'_mR_',m,'/',csv_file_name,sep="")
-            # file_to_open <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis1e2_mR_',m,'/',csv_file_name,sep="")
-        } else {
-            ## only 1 level
-            file_to_open <- paste(base_path,'/vis',x,'_mR_',m,'/',csv_file_name,sep="")
-        }
+            ##  build the path. unlist(strsplit(x,"e"))[2] splits '5e3' into 5 and 3 and takes the second (3)
+            if (two_subdirs){
+                ## 2 levels
+                file_to_open <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis',x,'_mR_',m,'/',csv_file_name,sep="")
+                # file_to_open <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis1e2_mR_',m,'/',csv_file_name,sep="")
+            } else {
+                ## only 1 level
+                file_to_open <- paste(base_path,'/vis',x,'_mR_',m,'/',csv_file_name,sep="")
+            }
         } else if (var_is_def) {
             file_to_open <- paste(base_path,'/thdef',x,'/vis1e2_mR_',m,'/',csv_file_name,sep="")
         }

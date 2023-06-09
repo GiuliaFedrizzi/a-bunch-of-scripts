@@ -77,7 +77,7 @@ def build_melt_labels_t(melt_labels,t,file_number,row):
         return melt_labels[row]+" ("+file_number+"*)"   # add a flag that says it's not exact
 
 
-def set_ax_options(ax,variab,x_variable,melt_labels,melt_and_time,t):
+def set_ax_options(ax,variab,x_variable,melt_labels,t):
     """
     set ticks, labels, title etc for the final plot
     """
@@ -92,7 +92,5 @@ def set_ax_options(ax,variab,x_variable,melt_labels,melt_and_time,t):
         ax.set_xticklabels(xlabels,fontsize=4)  # overwrite labels with "-8" (true exponent) instead of 8 
 
     # plt.yticks(np.arange(441,883*4,883), ['0.01','0.02','0.03','0.04'])
-    ax.set_yticklabels(melt_and_time,fontsize=4)   #  position and values of ticks on the y axis. Start: 441 (half of image height) End: height of image times num of images in one column, Step: 883 (height of image)
-    ax.set_ylabel('Melt increment per spot')
     ax.set_title("$t_{ref}$ = "+str(t),fontsize=8)
     plt.tight_layout()

@@ -57,15 +57,18 @@ for t in times:
     fig, ax = plt.subplots()
     ax.imshow(result.astype('uint8')) # uint8 explanation: https://stackoverflow.com/questions/49643907/clipping-input-data-to-the-valid-range-for-imshow-with-rgb-data-0-1-for-floa
 
-    set_ax_options(ax,variab,x_variable,melt_labels,melt_and_time,t)
+    set_ax_options(ax,variab,x_variable,melt_labels,t)
+    ax.set_yticklabels(melt_and_time,fontsize=4)   #  position and values of ticks on the y axis. Start: 441 (half of image height) End: height of image times num of images in one column, Step: 883 (height of image)
     y_ticks_positions = np.arange(441,883*len(melt_labels)+441,883)
     ax.set_yticks(y_ticks_positions)
     if not os.path.exists('images_in_grid'):
         os.makedirs('images_in_grid')
     if variab == "viscosity":
+        ax.set_ylabel('Melt increment per spot')
         filename = 'images_in_grid/visc_mRate_t'
     elif variab =="def_rate":
         filename = 'images_in_grid/defRate_mRate_t'
+        ax.set_ylabel('Pressure increment')
 
     plt.savefig(filename+str(t).zfill(3)+'.png',dpi=600)
     
