@@ -3,6 +3,7 @@ import glob
 import os
 import matplotlib.pyplot as plt
 from pathlib import Path
+import re
 
 
 # import functions from external file
@@ -12,8 +13,14 @@ average_porosity = []
 average_porosity_meltArea = []
 time_array = []
 
+def get_order(file):
+    file_number = int(re.findall(r'\d+',file)[0])
+    return file_number
+
+sortedInputFiles = sorted(glob.glob('my_experiment*.csv'), key=get_order)   # order files based on their full number, found with get_order()
+
 input_tstep = float(getTimeStep("input.txt"))
-for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[0:30:1]): #[beg:end:step]  set which timesteps (based on FILE NUMBER) 
+for i,filename in enumerate(sortedInputFiles[0:60:5]): #[beg:end:step]  set which timesteps (based on FILE NUMBER) 
     myfile = Path(os.getcwd()+'/'+filename)
     if myfile.is_file():
         myExp = pd.read_csv(filename, header=0)
@@ -25,7 +32,8 @@ for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[0:30:1]): #[beg:
         time_array.append(file_num*input_tstep)
 
 # calculate rate of porosity increase (final poro - initial poro over total time)
-rate = (time_array[-1]-time_array[0])/(average_porosity[-1]-average_porosity[0])
+# rate = (time_array[-1]-time_array[0])/(average_porosity[-1]-average_porosity[0])
+rate = (average_porosity[-1]-average_porosity[0])/(time_array[-1]-time_array[0])
 # print(average_porosity[-1]-average_porosity[0])
 print("rate = ",str(rate))
 

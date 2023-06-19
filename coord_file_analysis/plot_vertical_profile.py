@@ -11,10 +11,10 @@ from pathlib import Path
 
 # options to set:
 plot_figure = 1
-dir_label = '00020'
+dir_label = '00400'
 res = 200
 filename = "my_experiment00000.csv"
-first_part_of_path = '/nobackup/scgf/myExperiments/gaussJan2022/gj175/'
+first_part_of_path = '/nobackup/scgf/myExperiments/gaussJan2022/gj180/'
 
 dir = first_part_of_path+'size'+str(dir_label)        # res200
 
@@ -24,7 +24,7 @@ def read_calculate_plot(filename):
     read the csv file, plot the difference between rows (diff in y coordinates)
     """
     myExp = pd.read_csv(filename, header=0)
-    df_v = myExp[50:len(myExp):200]    # dataframe only containing a vertical line. start from the 50th element and skip 2 rows of 200 elements
+    df_v = myExp[50:len(myExp):res]    # dataframe only containing a vertical line. start from the 50th element and skip 2 rows of 200 elements
     
 
     ycoord_vals = df_v["y coord"].values
@@ -32,6 +32,7 @@ def read_calculate_plot(filename):
 
     x = range(0,len(df_v),1)
     plt.plot(porosity_vals,x)
+    plt.ylabel("Porosity")
     plt.gca().get_xaxis().get_major_formatter().set_useOffset(False)  # to avoid offset in plot 
     plt.show()
 
@@ -42,4 +43,6 @@ os.chdir(dir)
 myfile = Path(os.getcwd()+'/'+filename)  # build file name including path
 if myfile.is_file():
     read_calculate_plot(filename)
+else:
+    print("No file")
     
