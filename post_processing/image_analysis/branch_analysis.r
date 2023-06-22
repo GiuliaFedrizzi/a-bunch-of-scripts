@@ -1,9 +1,12 @@
 # ------------------------------------------
-# analyse py_branch_info.csv files
+# analyses py_branch_info.csv files
 # specify name of subdirectories (viscosity/def rate + melt rate)
-# plot parameters such as 'Frequency', 'Intensity', 'Dimensionless intensity'
-# import and plot number and ratios of types of nodes: I, Y and X
-
+# plots parameters such as 'Frequency', 'Intensity', 'Dimensionless intensity'
+# imports and plots number and ratios of types of nodes: I, Y and X
+#
+# need to specify if the variable is viscosity or deformation rate (in 2 places!)
+#  and if there are 2 orders of subdirectories or just 1 
+#
 # run in the conda environment "r_env"
 #   it contains tidyverse, patchwork
 # specify time as command line argument e.g.
@@ -25,8 +28,8 @@ args <- commandArgs(trailingOnly = TRUE)  # store them as vectors
 # some options for different sets of simulations
 two_subdirs <- TRUE  # is it visc_1_1e1/vis1e1_mR01 (TRUE)  or just vis1e2_mR_01  (FALSE)?
 
-var_is_visc = 0
-var_is_def = 1
+var_is_visc = 1
+var_is_def = 0
 
 if (var_is_visc){
     if (two_subdirs){
@@ -37,8 +40,8 @@ if (var_is_visc){
 } else if (var_is_def) {
     x_variable <- c('1e8','2e8','3e8','4e8','5e8','6e8','7e8','8e8','9e8')#,'5e3','1e4')#,'2e4','4e4')  # the values of the x variable to plot (e.g. def rate)
 }
-# melt_rate_list <- c('01','02','03','05','04','06','08')#,'09')#,'1','2')
-melt_rate_list <- c('02','04','06','08')#,'09')#,'1','2')
+melt_rate_list <- c('01','02','03','05','04','06','08')#,'09')#,'1','2')
+# melt_rate_list <- c('02','04','06','08')#,'09')#,'1','2')
 # melt_rate_list <- c('01')#,'09')
 
 # set some options automatically
@@ -61,8 +64,8 @@ if (grepl("prod",base_path)){
 # open file, extract values
 build_branch_df <- function(x,m,time) {
         # to keep the amount of melt constant, we look at smaller times if melt rate is higher, later times if it's lower. This num will build the file name
-        var_is_visc <- 0
-        var_is_def <- 1
+        var_is_visc <- 1
+        var_is_def <- 0
 
         norm_time = round(time/1e6/as.double(m))*1e6  # from accurate number, round so that it opens a file that exists
 
@@ -256,7 +259,7 @@ if (TRUE) {
         panel.background = element_rect(fill = "#e6dbd5"),
         legend.key = element_rect(fill = "#e6dbd5"),
         legend.position = c(.85, .65))#,alpha=0.8))
-    ggsave(paste(base_path,"/branch_plots/br_ter_melt_t",time_string,"_top.png",sep=''), pt1, bg='transparent')
+    ggsave(paste(base_path,"/branch_plots/br_ter_melt_t",time_string,".png",sep=''), pt1, bg='transparent')
 
     if (var_is_visc) {
         df_m$visc_factor <- factor(df_m$viscosity, ordered = TRUE)
