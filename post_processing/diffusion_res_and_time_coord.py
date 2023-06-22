@@ -44,14 +44,14 @@ from pathlib import Path
 # import functions from external file
 from useful_functions import * 
 
-var_to_plot = "Sigma_1"
+var_to_plot = "Sigma_2"
 # options: Pressure, Mean Stress, Actual Movement, Gravity, Porosity, Sigma_1, Sigma_2, Youngs Modulus
 #         F_P_x, F_P_y, pf_grad_x, pf_grad_y, Original Movement, Movement in Gravity
 
 # dir_labels = ['400','200']  # res400.elle, res200.elle
-dir_labels = ['00020', '00040','00060','00080','00100']
-# dir_labels = ['00040','00060','00080','00100']
-#dir_labels = ['00200', '00400','00600','00800','01000']
+# dir_labels = ['00020', '00040','00060','00080','00100']
+dir_labels = ['00400','00800']
+# dir_labels = ['00200', '00400','00600','00800','01000']
 # dir_labels = ['02000','04000','06000','08000','10000'] 
 # dir_labels = ['00200', '00400','00600','00800','01000','02000','04000','06000']#,'08000','10000'] 
 #dir_labels = ['01','03','05','07','09','11','13','15','17','19']
@@ -70,14 +70,14 @@ sizes = []
 
 for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/wd_viscTest/vis_'+str(i))  
-    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj168/size'+str(i)) 
+    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj190/size'+str(i)) 
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/th04/vis1e2_mR_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
     
 print(dir_list)
 
-f1=8  # first file to plot. They account for "my_experiment-0003.csv" as the first file in dir
-f2=9  # second file. if f2 = 5 -> my_experiment00500.csv
+f1=5  # first file to plot. They account for "my_experiment-0003.csv" as the first file in dir
+f2=6  # second file. if f2 = 5 -> my_experiment00500.csv
 
 df_x = pd.DataFrame()
 df_y = pd.DataFrame()
@@ -122,18 +122,19 @@ for dirnum,dir in enumerate(dir_list):
             ## manually get the coordinates of the central point:
             meltYmin = float(getParameterFromLatte("input.txt","meltYmin"))
             # ymax = meltYmin/(resolution/2)   #  WHAT IT SHOULD BE
-            #ymax = meltYmin/(200/2)   # in real units (meters)
-            print(max(myExp["y coord"]))
-            ymax = 0.77
-            print(meltYmin)
+            ymax = meltYmin/(200/2)   # in real units (meters)
+            # print(f'max y coord: {max(myExp["y coord"])}')
+            print(f'ymax: {ymax}')
+            # ymax = 0.77
+            print(f'meltYmin: {meltYmin}')
             xmax = 0.3    # 0.5 if point is in the middle
             matches_x = np.where(np.isclose(myExp["x coord"],xmax,atol=3e-3)==True)[0] # vertical
             # print(matches_x) 
-            print(len(matches_x))
+            print(f'x matches: {len(matches_x)}')
             tolerance_y = dom_size*100/300*1e-3 #dom_size/300*1e-3  for 200,400,...,10000
             matches_y = np.where(np.isclose(myExp["y coord"],ymax,atol=tolerance_y)==True)[0]
             # print(matches_y) 
-            print(len(matches_y))
+            print(f'y matches: {len(matches_y)}')
             # if dir_label == '08000':
             #     max_id = 45858   #  index of a point w coord 0.2975,0.980603
             #     xmax = myExp.loc[45707, 'x coord']
