@@ -44,17 +44,16 @@ from pathlib import Path
 # import functions from external file
 from useful_functions import * 
 
-var_to_plot = "Sigma_2"
+var_to_plot = "Pressure"
 # options: Pressure, Mean Stress, Actual Movement, Gravity, Porosity, Sigma_1, Sigma_2, Youngs Modulus
 #         F_P_x, F_P_y, pf_grad_x, pf_grad_y, Original Movement, Movement in Gravity
 
 # dir_labels = ['400','200']  # res400.elle, res200.elle
-# dir_labels = ['00020', '00040','00060','00080','00100']
-dir_labels = ['00400','00800']
+dir_labels = ['02']
+# dir_labels = ['00400','00800']
 # dir_labels = ['00200', '00400','00600','00800','01000']
 # dir_labels = ['02000','04000','06000','08000','10000'] 
 # dir_labels = ['00200', '00400','00600','00800','01000','02000','04000','06000']#,'08000','10000'] 
-#dir_labels = ['01','03','05','07','09','11','13','15','17','19']
 # dir_labels = ['01','02','03','04','05','06','07','08','09'] 
 
 resolution = 200
@@ -70,14 +69,14 @@ sizes = []
 
 for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/wd_viscTest/vis_'+str(i))  
-    dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj190/size'+str(i)) 
-    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/th04/vis1e2_mR_'+str(i))  
+    # dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj190/size'+str(i)) 
+    dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/th60/vis1e2_mR_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
     
 print(dir_list)
 
-f1=5  # first file to plot. They account for "my_experiment-0003.csv" as the first file in dir
-f2=6  # second file. if f2 = 5 -> my_experiment00500.csv
+f1=0  # first file to plot. They account for "my_experiment-0003.csv" as the first file in dir
+f2=1  # second file. if f2 = 5 -> my_experiment00500.csv
 
 df_x = pd.DataFrame()
 df_y = pd.DataFrame()
@@ -118,48 +117,7 @@ for dirnum,dir in enumerate(dir_list):
         if "size" in dir.split("/")[-1]:      # try to get the size automatically. If the last subdirectory contains the scale
             dir_label = dir_labels[dirnum]   # get the label that corresponds to the directory
             scale_factor = float(dir_label)/max_dir_size # factor for scaling the axes. Normalised by the maximum size (e.g. 1000)
-
-            ## manually get the coordinates of the central point:
-            meltYmin = float(getParameterFromLatte("input.txt","meltYmin"))
-            # ymax = meltYmin/(resolution/2)   #  WHAT IT SHOULD BE
-            ymax = meltYmin/(200/2)   # in real units (meters)
-            # print(f'max y coord: {max(myExp["y coord"])}')
-            print(f'ymax: {ymax}')
-            # ymax = 0.77
-            print(f'meltYmin: {meltYmin}')
-            xmax = 0.3    # 0.5 if point is in the middle
-            matches_x = np.where(np.isclose(myExp["x coord"],xmax,atol=3e-3)==True)[0] # vertical
-            # print(matches_x) 
-            print(f'x matches: {len(matches_x)}')
-            tolerance_y = dom_size*100/300*1e-3 #dom_size/300*1e-3  for 200,400,...,10000
-            matches_y = np.where(np.isclose(myExp["y coord"],ymax,atol=tolerance_y)==True)[0]
-            # print(matches_y) 
-            print(f'y matches: {len(matches_y)}')
-            # if dir_label == '08000':
-            #     max_id = 45858   #  index of a point w coord 0.2975,0.980603
-            #     xmax = myExp.loc[45707, 'x coord']
-            #     ymax = myExp.loc[max_id, 'y coord']
-            # if dir_label == '10000':
-            #     max_id = 45858   #  index of a point w coord 0.2975,0.980603
-            #     # max_id = 45707   #  index of the point with the maximum pressure value
-            #     xmax = myExp.loc[max_id, 'x coord']
-            #     ymax = myExp.loc[max_id, 'y coord']
-                # offset = 100   # so that they are all centered around 0 on the x axis. It's the shift in the x direction.
-            # max_id = np.where(np.isclose(myExp["x coord"],xmax,atol=1e-2) & np.isclose(myExp["y coord"],ymax,atol=1e-3)).index   #  index of the point with the maximum pressure value
-            max_ids = myExp[(np.isclose(myExp["x coord"],xmax,atol=4e-3) & np.isclose(myExp["y coord"],ymax,atol=tolerance_y))].index   #  index of the point with the maximum pressure value
-            # print(f'all matches for max_ids: {max_ids} ')
-            if len(max_ids)>0:
-                max_id = max_ids[0]
-            else:
-                max_id = max_ids
-
-            # max_id = myExp_upper['Pressure'].idxmax()   #  index of the point with the maximum pressure value
-            
-            # what it should be:
-            # offset = max_id%resolution   # so that they are all centered around 0 on the x axis. It's the shift in the x direction.
-            # what works bc I haven't changed the location of the point yet:
-            offset = max_id%200   # so that they are all centered around 0 on the x axis. It's the shift in the x direction.
-
+       
         elif "press0" in dir.split("/")[-2]:   # If the second to last subdirectory contains the scale
             scale_factor = float(dir_label)/1000.0 # factor for scaling the axes. Normalised by the standard size
             dir_label = dir_labels[dirnum]   # get the label that corresponds to the directory
@@ -168,7 +126,52 @@ for dirnum,dir in enumerate(dir_list):
         #     scale_factor = 1 # default factor for scaling the axes. 
         else:  # set manually
             dir_label = dir_labels[dirnum]   # get the label that corresponds to the directory
-            scale_factor = 1 # default factor for scaling the axes. 
+            scale_factor = dom_size # default factor for scaling the axes. 
+
+
+        ## manually get the coordinates of the central point:
+        meltYmin = float(getParameterFromLatte("input.txt","meltYmin"))
+        # ymax = meltYmin/(resolution/2)   #  WHAT IT SHOULD BE
+        # ymax = meltYmin/(200/2)   # in real units (meters)
+        ymax = 0.02   # TEMPORARY, CLOSE TO THE BOTTOM
+        # print(f'max y coord: {max(myExp["y coord"])}')
+        print(f'ymax: {ymax}')
+        print(f'meltYmin: {meltYmin}')
+        xmax = 0.2    # 0.5 if point is in the middle
+
+        tolerance_y = dom_size*100/300*1e-4 #dom_size/300*1e-3  for 200,400,...,10000
+        tolerance_x = dom_size*100/300*1e-4 #dom_size/300*1e-3  for 200,400,...,10000
+        matches_x = np.where(np.isclose(myExp["x coord"],xmax,atol=tolerance_x)==True)[0] # vertical
+        print(f'x matches: {len(matches_x)}')
+        matches_y = np.where(np.isclose(myExp["y coord"],ymax,atol=tolerance_y)==True)[0]
+        # print(matches_y) 
+        print(f'y matches: {len(matches_y)}')
+        # if dir_label == '08000':
+        #     max_id = 45858   #  index of a point w coord 0.2975,0.980603
+        #     xmax = myExp.loc[45707, 'x coord']
+        #     ymax = myExp.loc[max_id, 'y coord']
+        # if dir_label == '10000':
+        #     max_id = 45858   #  index of a point w coord 0.2975,0.980603
+        #     # max_id = 45707   #  index of the point with the maximum pressure value
+        #     xmax = myExp.loc[max_id, 'x coord']
+        #     ymax = myExp.loc[max_id, 'y coord']
+            # offset = 100   # so that they are all centered around 0 on the x axis. It's the shift in the x direction.
+        # max_id = np.where(np.isclose(myExp["x coord"],xmax,atol=1e-2) & np.isclose(myExp["y coord"],ymax,atol=1e-3)).index   #  index of the point with the maximum pressure value
+        max_ids = myExp[(np.isclose(myExp["x coord"],xmax,atol=tolerance_x) & np.isclose(myExp["y coord"],ymax,atol=tolerance_y))].index   #  index of the point with the maximum pressure value
+        # print(f'all matches for max_ids: {max_ids} ')
+        if len(max_ids)>0:
+            max_id = max_ids[0]
+        else:
+            max_id = max_ids
+
+        # max_id = myExp_upper['Pressure'].idxmax()   #  index of the point with the maximum pressure value
+        
+        # what it should be:
+        # offset = max_id%resolution   # so that they are all centered around 0 on the x axis. It's the shift in the x direction.
+        # what works bc I haven't changed the location of the point yet:
+        offset = max_id%200   # so that they are all centered around 0 on the x axis. It's the shift in the x direction.
+
+
 
         # else:
             # xmax = myExp_upper.loc[myExp_upper['Pressure'].idxmax(), 'x coord']
