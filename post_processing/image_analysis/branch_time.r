@@ -34,7 +34,8 @@ if (var_is_visc){
 } else {
     x_variable <- c('1e8','2e8','3e8','4e8','5e8','6e8','7e8','8e8','9e8')  # the values of the x variable to plot (def rate)
 }
-melt_rate_list <- c('01','02','03','04','05','06','07','08','09')#,'1','2')
+# melt_rate_list <- c('01','02','03','04','05','06','07','08','09')#,'1','2')
+melt_rate_list <- c('02','04','06','08')#,'1','2')
 time_all <- c(40e6,60e6)
 
 
@@ -93,6 +94,8 @@ open_file <- function(file_to_open,norm_time,df_m,x,m,true_m_rate,time) {
 
 # open file, extract values
 build_branch_df <- function(x,m,time) {
+        var_is_visc <- 1
+        var_is_def <- 0
         # to keep the amount of melt constant, we look at smaller times if melt rate is higher, later times if it's lower. This num will build the file name
         norm_time = round(time/1e6/as.double(m))*1e6  # from accurate number, round so that it opens a file that exists
 
@@ -105,20 +108,21 @@ build_branch_df <- function(x,m,time) {
         }
         if (var_is_visc) {
             ##  build the path. unlist(strsplit(x,"e"))[2] splits '5e3' into 5 and 3 and takes the second (3)
-            file_to_open <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis',x,'_mR_',m,'/',csv_file_name,sep="")
-            # file_to_open <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis1e2_mR_',m,'/',csv_file_name,sep="")
+            # file_to_open <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis',x,'_mR_',m,'/',csv_file_name,sep="")
+            file_to_open <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis1e2_mR_',m,'/',csv_file_name,sep="")
             # file_to_open_bot <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis1e2_mR_',m,'/',csv_file_name,sep="")
-            file_to_open_bot <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis',x,'_mR_',m,'/',csv_file_name,sep="")
+            # file_to_open_bot <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis',x,'_mR_',m,'/',csv_file_name,sep="")
             # print(file_to_open)
         }else if (var_is_def) {
             file_to_open <- paste(base_path,'/thdef',x,'/vis1e2_mR_',m,'/',csv_file_name,sep="")
+            # file_to_open_bot <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis',x,'_mR_',m,'/',csv_file_name,sep="")
         }
         if (file.exists(file_to_open)) {    
             df_m <- open_file(file_to_open,norm_time,df_m,x,m,true_m_rate,time)
         }
-        else if (file.exists(file_to_open_bot)){
-            df_m <- open_file(file_to_open_bot,norm_time,df_m,x,m,true_m_rate,time)
-        }
+        # else if (file.exists(file_to_open_bot)){
+        #     df_m <- open_file(file_to_open_bot,norm_time,df_m,x,m,true_m_rate,time)
+        # }
         else {
             print(paste("file does not exist:",file_to_open))
         }
@@ -131,10 +135,7 @@ B_20=double(),B_21=double(),B_C=double(),B_22=double(),
 n_I=double(),n_Y=double(),n_X=double(),n_B=double(),n_L=double(),
 time=double(),norm_time=double())#,stringsAsFactors=FALSE)
 
-df_average <- data.frame(viscosity=double(),melt_rate=factor(levels=melt_rate_list),
-B_20=double(),B_21=double(),B_C=double(),B_22=double(),
-n_I=double(),n_Y=double(),n_X=double(),n_B=double(),n_L=double(),
-time=double(),norm_time=double())#,stringsAsFactors=FALSE)
+
 
 for (t in time_all) {
     for (x_var in x_variable) {
@@ -150,7 +151,7 @@ df_m["C_L"] <- 2*(df_m$n_Y+df_m$n_X)/df_m$n_L
 df_m["n_XY"] <- df_m$n_Y+df_m$n_X
 
 df_m
-df_m[df_m$time == time_all[1],]
+#df_m[df_m$time == time_all[1],]
 #  -------------------  ternary plots -------------------
 
 # import the library to create ternary plots
@@ -174,7 +175,47 @@ if (FALSE) {
     dev.off()
 }
 
-if (TRUE) {
+if (FALSE) {
+    # colour by melt rate
+    df_m$melt_rate_factor <- factor(df_m$melt_rate, ordered = TRUE)
+    # pt1 <- ggtern(data=df_m,aes(x=n_Y,y=n_I,z=n_X))+ geom_point(aes(fill=as.factor(true_m_rate)),shape = 21,stroke=2,size=2,colour="black")+ 
+    # pt1 <- ggtern(data=df_m[df_m$time == time_all[1],],aes(x=n_Y,y=n_I,z=n_X))+ geom_point(aes(color=as.factor(true_m_rate)))+ 
+    pt1 <- ggtern(data=df_m,aes(x=n_Y,y=n_I,z=n_X))+ geom_point(aes(color=as.factor(true_m_rate),alpha = as.factor(time)))+ 
+    scale_colour_brewer(palette='Blues')+
+    scale_fill_distiller(direction=+1)+
+    scale_fill_discrete(guide = guide_legend(reverse=TRUE))+    
+    labs(x = expression('N'[Y]),y = expression('N'[I]),z = expression('N'[X]),colour = "Melt Rate")+
+    guides(color = guide_legend(reverse=TRUE))+    # low at the bottom, high at the top
+    theme(plot.background = element_rect(fill='transparent', color=NA),
+        #panel.grid.major = element_line(linetype = "dotted",colour = "black"),
+        legend.background = element_rect(fill='transparent'),
+        panel.background = element_rect(fill = "#e6dbd5"),
+        legend.key = element_rect(fill = "#e6dbd5"),
+        legend.position = c(.85, .65))#,alpha=0.8))
+    ggsave(paste(base_path,"/branch_plots/br_ter_melt_time.png",sep=''), pt1, bg='transparent')
+}
+
+df_average <- data.frame(B_20=double(),B_21=double(),B_C=double(),B_22=double(),
+n_I=double(),n_Y=double(),n_X=double(),n_B=double(),n_L=double(),
+time=double(),norm_time=double())#,stringsAsFactors=FALSE)
+
+for (t in time_all)
+{
+    print(paste("time = ",t))
+    # condition: select all times
+    av_n_I <- mean(df_m[df_m$time==t,]$n_I)
+    print(paste("av n_I is",av_n_I))
+    ## build dataframe
+    df_av <- list(B_20=double(),B_21=double(),B_C=double(),B_22=double(),
+    n_I=av_n_I,n_Y=double(),n_X=double(),n_B=double(),n_L=double(),
+    time=t,norm_time=double())
+
+    df_average <- rbind(df_average,df_av)#,stringsAsFactors=FALSE)
+}
+
+df_average
+
+if (FALSE) {
     # colour by melt rate
     df_m$melt_rate_factor <- factor(df_m$melt_rate, ordered = TRUE)
     # pt1 <- ggtern(data=df_m,aes(x=n_Y,y=n_I,z=n_X))+ geom_point(aes(fill=as.factor(true_m_rate)),shape = 21,stroke=2,size=2,colour="black")+ 
