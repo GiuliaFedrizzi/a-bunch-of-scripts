@@ -12,7 +12,7 @@ from PIL import Image
 from viz_functions import gallery,build_array,build_melt_labels_t,set_ax_options
 
 
-variab = "def_rate"  # options: def_rate, viscosity
+variab = "viscosity"  # options: def_rate, viscosity
 
 times = range(5,31,1)  # (start, end, step)
 # melt_labels = ['0.009','0.008','0.007','0.006','0.005','0.004','0.003','0.002','0.001'] 

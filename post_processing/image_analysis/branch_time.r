@@ -37,7 +37,7 @@ if (var_is_visc){
 }
 # melt_rate_list <- c('01','02','03','04','05','06','07','08','09')#,'1','2')
 melt_rate_list <- c('02','04','06','08')#,'1','2')
-time_all <- c(40e6,60e6)
+time_all <- c(50e6,75e6,100e6,125e6,150e6,175e6,200e6)
 
 
 if (grepl("prod",base_path)){
@@ -111,16 +111,12 @@ build_branch_df <- function(x,m,time) {
             ##  build the path. unlist(strsplit(x,"e"))[2] splits '5e3' into 5 and 3 and takes the second (3)
             # file_to_open <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis',x,'_mR_',m,'/',csv_file_name,sep="")
             potential_file_path <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis',x,'_mR_',m,'/',sep="")
-            print(potential_file_path)
             if (dir.exists(potential_file_path)) {
-                print("it exists!")
             }else {   # try a different version
                 potential_file_path <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis1e2_mR_',m,'/',csv_file_name,sep="")
-                print("trying a different version")
                 if (dir.exists(potential_file_path)) {
-                    print("this one exists")
                 }else{
-                    print("I've tried twice without success")
+                    print("I've tried the path twice without success")
                 }
             }
             # file_to_open <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis1e2_mR_',m,'/',csv_file_name,sep="")
@@ -215,29 +211,30 @@ time=double(),norm_time=double())#,stringsAsFactors=FALSE)
 for (t in time_all)
 {
     print(paste("time = ",t))
-    # condition: select all times
+    # condition: select all times that correspond to t
     av_n_I <- mean(df_m[df_m$time==t,]$n_I)
-    print(paste("av n_I is",av_n_I))
+    av_n_Y <- mean(df_m[df_m$time==t,]$n_Y)
+    av_n_X <- mean(df_m[df_m$time==t,]$n_X)
+    print(paste("length of dataframe at this time step:",nrow(df_m[df_m$time==t,])))
     ## build dataframe
-    df_av <- list(B_20=double(),B_21=double(),B_C=double(),B_22=double(),
-    n_I=av_n_I,n_Y=double(),n_X=double(),n_B=double(),n_L=double(),
-    time=t,norm_time=double())
-
+    df_av <- list(B_20=0.0,B_21=0.0,B_C=0.0,B_22=0.0,
+    n_I=av_n_I,n_Y=av_n_Y,n_X=av_n_X,n_B=0.0,n_L=0.0,
+    time=t,norm_time=0.0)
+    # add the new line to the dataframe
     df_average <- rbind(df_average,df_av)#,stringsAsFactors=FALSE)
 }
 
 df_average
 
-if (FALSE) {
-    # colour by melt rate
-    df_m$melt_rate_factor <- factor(df_m$melt_rate, ordered = TRUE)
+if (TRUE) {
+    
     # pt1 <- ggtern(data=df_m,aes(x=n_Y,y=n_I,z=n_X))+ geom_point(aes(fill=as.factor(true_m_rate)),shape = 21,stroke=2,size=2,colour="black")+ 
     # pt1 <- ggtern(data=df_m[df_m$time == time_all[1],],aes(x=n_Y,y=n_I,z=n_X))+ geom_point(aes(color=as.factor(true_m_rate)))+ 
-    pt1 <- ggtern(data=df_m,aes(x=n_Y,y=n_I,z=n_X))+ geom_point(aes(color=as.factor(true_m_rate),alpha = as.factor(time)))+ 
+    pt1 <- ggtern(data=df_average,aes(x=n_Y,y=n_I,z=n_X))+ geom_point(aes(color=as.factor(time)))+ 
     scale_colour_brewer(palette='Blues')+
     scale_fill_distiller(direction=+1)+
     scale_fill_discrete(guide = guide_legend(reverse=TRUE))+    
-    labs(x = expression('N'[Y]),y = expression('N'[I]),z = expression('N'[X]),colour = "Melt Rate")+
+    labs(x = expression('N'[Y]),y = expression('N'[I]),z = expression('N'[X]),colour = "Time")+
     guides(color = guide_legend(reverse=TRUE))+    # low at the bottom, high at the top
     theme(plot.background = element_rect(fill='transparent', color=NA),
         #panel.grid.major = element_line(linetype = "dotted",colour = "black"),
@@ -245,5 +242,5 @@ if (FALSE) {
         panel.background = element_rect(fill = "#e6dbd5"),
         legend.key = element_rect(fill = "#e6dbd5"),
         legend.position = c(.85, .65))#,alpha=0.8))
-    ggsave(paste(base_path,"/branch_plots/br_ter_melt_time.png",sep=''), pt1, bg='transparent')
+    ggsave(paste(base_path,"/branch_plots/br_ter_time_IXY.png",sep=''), pt1, bg='transparent')
 }
