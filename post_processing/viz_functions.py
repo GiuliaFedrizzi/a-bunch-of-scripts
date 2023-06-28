@@ -32,11 +32,9 @@ def build_array(big_array,variab,x,x_val,melt_rate,file_number,row,cols):
         
         ## 2 levels
         potential_file_path = 'visc_'+exp+'_'+x_val+'/vis1e2_mR_'+melt_rate+'/'
-        if os.path.isdir(potential_file_path):
-        else:    # try a different version, the one that doesn't change with viscosity
+        if os.path.isdir(potential_file_path) == False:
             potential_file_path ='visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_'+melt_rate+'/'
-            if os.path.isdir(potential_file_path):
-            else:
+            if os.path.isdir(potential_file_path) == False:
                 print("I've tried twice without success")
             
         poro_file = potential_file_path +'/a_porosity_'+file_number+'.png' 
