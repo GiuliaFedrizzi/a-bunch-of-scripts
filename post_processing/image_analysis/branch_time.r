@@ -30,7 +30,8 @@ var_is_def = 0
 
 # list of viscosity and melt rate values 
 if (var_is_visc){
-    x_variable <- c('1e1','5e1','1e2','5e2','1e3','5e3','1e4') # the values of the x variable to plot (viscosity)
+    # x_variable <- c('1e1','5e1','1e2','5e2','1e3','5e3','1e4') # the values of the x variable to plot (viscosity)
+    x_variable <- c('1e1','1e2','5e2','1e3','5e3','1e4') # the values of the x variable to plot (viscosity)
 } else {
     x_variable <- c('1e8','2e8','3e8','4e8','5e8','6e8','7e8','8e8','9e8')  # the values of the x variable to plot (def rate)
 }
@@ -109,9 +110,21 @@ build_branch_df <- function(x,m,time) {
         if (var_is_visc) {
             ##  build the path. unlist(strsplit(x,"e"))[2] splits '5e3' into 5 and 3 and takes the second (3)
             # file_to_open <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis',x,'_mR_',m,'/',csv_file_name,sep="")
-            file_to_open <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis1e2_mR_',m,'/',csv_file_name,sep="")
-            # file_to_open_bot <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis1e2_mR_',m,'/',csv_file_name,sep="")
-            # file_to_open_bot <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis',x,'_mR_',m,'/',csv_file_name,sep="")
+            potential_file_path <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis',x,'_mR_',m,'/',sep="")
+            print(potential_file_path)
+            if (dir.exists(potential_file_path)) {
+                print("it exists!")
+            }else {   # try a different version
+                potential_file_path <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis1e2_mR_',m,'/',csv_file_name,sep="")
+                print("trying a different version")
+                if (dir.exists(potential_file_path)) {
+                    print("this one exists")
+                }else{
+                    print("I've tried twice without success")
+                }
+            }
+            # file_to_open <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis1e2_mR_',m,'/',csv_file_name,sep="")
+            file_to_open <- paste(potential_file_path,csv_file_name,sep="")
             # print(file_to_open)
         }else if (var_is_def) {
             file_to_open <- paste(base_path,'/thdef',x,'/vis1e2_mR_',m,'/',csv_file_name,sep="")

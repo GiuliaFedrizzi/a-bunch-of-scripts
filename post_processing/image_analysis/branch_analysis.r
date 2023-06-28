@@ -79,7 +79,20 @@ build_branch_df <- function(x,m,time) {
             ##  build the path. unlist(strsplit(x,"e"))[2] splits '5e3' into 5 and 3 and takes the second (3)
             if (two_subdirs){
                 ## 2 levels
-                file_to_open <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis',x,'_mR_',m,'/',csv_file_name,sep="")
+                potential_file_path <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis',x,'_mR_',m,'/',sep="")
+                print(potential_file_path)
+                if (dir.exists(potential_file_path)) {
+                    print("it exists!")
+                }else {   # try a different version, the one that doesn't change with viscosity
+                    potential_file_path <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis1e2_mR_',m,'/',csv_file_name,sep="")
+                    print("trying a different version")
+                    if (dir.exists(potential_file_path)) {
+                        print("this one exists")
+                    }else{
+                        print("I've tried twice without success")
+                    }
+                }   
+                # file_to_open <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis',x,'_mR_',m,'/',csv_file_name,sep="")
                 # file_to_open <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis1e2_mR_',m,'/',csv_file_name,sep="")
             } else {
                 ## only 1 level
