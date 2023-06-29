@@ -13,7 +13,7 @@ from viz_functions import gallery,build_array,build_melt_labels_t,set_ax_options
 
 variab = find_variab()
 
-times = range(35,71,5)  # (start, end, step)
+times = range(135,181,5)  # (start, end, step)
 # melt_labels = ['0.009','0.008','0.007','0.006','0.005','0.004','0.003','0.002','0.001'] 
 melt_labels = ['0.008','0.006','0.004','0.002'] 
 # melt_labels = ['0.001'] 
