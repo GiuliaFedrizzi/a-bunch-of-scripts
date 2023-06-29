@@ -104,3 +104,12 @@ def set_ax_options(ax,variab,x_variable,melt_labels,t):
     # plt.yticks(np.arange(441,883*4,883), ['0.01','0.02','0.03','0.04'])
     ax.set_title("$t_{ref}$ = "+str(t),fontsize=8)
     plt.tight_layout()
+
+def find_variab():
+    if True in ['thdef' in x for x in os.listdir('.')]:  # if at least one of the directories contains "thdef",
+        variab = "def_rate"    # it means that the variable is deformation rate
+    elif True in ['visc' in x for x in os.listdir('.')]:
+        variab = "viscosity"  # in this case, variable is viscosity
+    else:
+        raise ValueError('Could not find directories with names that tells me what the variable is')
+    return variab
