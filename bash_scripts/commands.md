@@ -27,3 +27,8 @@ rm -rf $HOME/.vscode-server
 print out time and date:
 
 > find . -type f -name "my*.csv" -size -12000k  -printf "%p %TY-%Tm-%Td %TH:%TM \n" | sort
+
+
+## replace recursively
+
+> for t in visc_*; do sed -i -e 's/replPresse3/replPresse1/g' $t/baseFiles/input.txt; done 

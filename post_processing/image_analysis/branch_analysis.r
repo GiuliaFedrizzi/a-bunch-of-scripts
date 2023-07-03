@@ -270,7 +270,7 @@ if (FALSE) {
 # import the library to create ternary plots
 library("ggplot2")
 library("ggtern")
-if (FALSE) {
+if (TRUE) {
     # # connected-connected - isolated-connected - isolated-isolated
     # df_m["P_I"] <- df_m$N_I/(df_m$N_I+3*df_m$N_Y+4*df_m$N_X)   # probability of an I node
     # df_m["P_C"] <- (3*df_m$N_Y+4*df_m$N_X)/(df_m$N_I+3*df_m$N_Y+4*df_m$N_X)   # probability of a C node
@@ -339,7 +339,7 @@ if (FALSE) {
 
 # --------------------- heatmaps --------------------
 # heatmap for B20,B21,B_C,B22
-if (FALSE) {
+if (TRUE) {
     #png_name <- paste(base_path,"/branch_plots/br_heat_B_",time_string,".png",sep='')  # build name of png
     #png(file=png_name,width = 1400,height = 1400,res=200)
     if (var_is_visc){

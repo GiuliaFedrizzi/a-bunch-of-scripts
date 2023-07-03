@@ -37,7 +37,7 @@ if (var_is_visc){
 }
 # melt_rate_list <- c('01','02','03','04','05','06','07','08','09')#,'1','2')
 melt_rate_list <- c('02','04','06','08')#,'1','2')
-time_all <- c(20e6,30e6,40e6,50e6,60e6,70e6)
+time_all <- c(20e6,30e6,40e6,50e6,60e6,70e6,80e6,90e6)
 
 
 if (grepl("prod",base_path)){
