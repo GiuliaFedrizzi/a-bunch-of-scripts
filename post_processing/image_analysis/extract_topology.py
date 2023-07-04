@@ -411,6 +411,8 @@ def topo_analysis(g: nx.Graph,tstep_number: float) -> dict:
     W. (2015). The use of topology in fracture network characterization. Journal
     of Structural Geology, 72, 55-66. https://doi.org/10.1016/j.jsg.2015.01.005
 
+    attributes of g are: .edges  .degree   g.nodes()
+    attributes of .edges are: .edges.data('d') = distance
     """
     input_tstep = 0   # in case there is no input.txt (e.g. field image)
     if os.path.isfile("input.txt"):
@@ -418,6 +420,9 @@ def topo_analysis(g: nx.Graph,tstep_number: float) -> dict:
     edge_lengths = [d for (u,v,d) in g.edges.data('d')]  # distance values are stored under the attribute "d"
     print(f'n of branches: {len(edge_lengths)}')
     print(f'branch lengths: {edge_lengths}')
+
+    # print(f'g.edges: {g.edges(data=True)}')  # print edges and all of their attributes
+    # print(f'attributes for edges: {list(list(g.edges(data=True))[0][-1].keys())}')
     # print(f'edge_d: {edge_d}, type: {type(edge_d)}') 
     # all_degrees = (nx.degree(g)).values()
     all_degrees = [x for ((u,v),x) in list(g.degree)]
@@ -449,6 +454,21 @@ def topo_analysis(g: nx.Graph,tstep_number: float) -> dict:
                    "branches_tot_length":branches_tot_length} # dictionary with info that I just calculated
     return branch_info
 
+def orientation_calc(g: nx.Graph,tstep_number: float) -> dict:
+    """
+    Calculate the orientation of the edges
+    """
+    edge_coord = [x for x in g.edges()]
+    edge_lengths = [d for (u,v,d) in g.edges.data('d')]  # distance values are stored under the attribute "d"
+
+    print(f'edge_coord: {edge_coord}')
+    print(f'edge_lengths: {edge_lengths}')
+    for i,e in enumerate(edge_coord):   
+        print(f'edge_coord[i]: {edge_coord[i]}')
+        print(f'edge length[i]: {edge_lengths[i]}')
+    orientations = {}
+    return orientations
+
 def analyse_png(png_file: str, part_to_analyse: str) -> dict:
     color = '(255, 255, 255)'  # select the colour: do the analysis on the white parts
     assert color[0] == '('
@@ -464,7 +484,8 @@ def analyse_png(png_file: str, part_to_analyse: str) -> dict:
     if part_to_analyse == 'w': # whole domain
     # Setting the points for cropped image
     # left = 316; top = 147; right = 996; bottom = 819 # worked when images were generated on my laptop
-        left = 475; top = 223; right = 1490; bottom = 1228 # worked when images were generated on ARC
+        # left = 475; top = 223; right = 1490; bottom = 1228 # worked when images were generated on ARC
+        left = 475; top = 223; right = 1490; bottom = 1210 # worked when images were generated on ARC
         # left = 428; top = 162; right = 1492; bottom = 1211  # worked for threeAreas/prod/p01
         out_path = "p_"+png_file.replace('.png', '_nx.grid.png')
     elif part_to_analyse == 'b':
@@ -502,6 +523,7 @@ def analyse_png(png_file: str, part_to_analyse: str) -> dict:
     
     # do some statistics
     branch_info = topo_analysis(g,timestep_number)
+    orientation_info = orientation_calc(g,timestep_number)
 
     # viz grid with networkx's plot
     ax = draw_nx_graph(im, g)
