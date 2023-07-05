@@ -63,6 +63,7 @@ import os
 import csv
 import glob
 import re   # regex
+import math
 
 # sys.path.append('/home/home01/scgf/myscripts/post_processing')   # where to look for useful_functions.py
 # from useful_functions import getTimeStep
@@ -450,20 +451,19 @@ def topo_analysis(g: nx.Graph,tstep_number: float) -> dict:
                    "branches_tot_length":branches_tot_length} # dictionary with info that I just calculated
     return branch_info
 
-def orientation_calc(g: nx.Graph,tstep_number: float) -> dict:
+def orientation_calc(g: nx.Graph) -> nx.Graph:
     """
-    Calculate the orientation of the edges
+    Calculate the orientation of the edges. Add it to the edge attributes
     """
     edge_coord = [x for x in g.edges()]
-    edge_lengths = [d for (u,v,d) in g.edges.data('d')]  # distance values are stored under the attribute "d"
 
-    print(f'edge_coord: {edge_coord}')
-    print(f'edge_lengths: {edge_lengths}')
     for i,e in enumerate(edge_coord):   
-        print(f'edge_coord[i]: {edge_coord[i]}')
-        print(f'edge length[i]: {edge_lengths[i]}')
-    orientations = {}
-    return orientations
+        x1,y1=e[0]; x2,y2=e[1]  # extract individual node coordinates from edge 
+        alpha = math.atan( (y1-y2)/(x1-x2) ) * 180 / math.pi  # angle in degrees
+        g[e[0]][e[1]][0]['orientation']=alpha    # to access edges: e0, e1, key, attribute
+        # print(alpha)
+    # print(g.edges(keys=True,data=True))
+    return g
 
 def analyse_png(png_file: str, part_to_analyse: str) -> dict:
     color = '(255, 255, 255)'  # select the colour: do the analysis on the white parts
@@ -488,7 +488,7 @@ def analyse_png(png_file: str, part_to_analyse: str) -> dict:
 
     left = min(X)+5; top = min(Y)+7; right = max(X)-5; bottom = max(Y)-5 # auto from blue
     height = bottom - top
-    print(left,top,right,bottom)
+    # print(left,top,right,bottom)
 
     crop_im = 1
     # if part_to_analyse == 'w': # whole domain  - this is the default!
@@ -531,7 +531,8 @@ def analyse_png(png_file: str, part_to_analyse: str) -> dict:
     
     # do some statistics
     branch_info = topo_analysis(g,timestep_number)
-    orientation_info = orientation_calc(g,timestep_number)
+    g = orientation_calc(g)  
+    # print(g.edges(data=True))
 
     # viz grid with networkx's plot
     ax = draw_nx_graph(im, g)
