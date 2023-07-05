@@ -385,12 +385,15 @@ def draw_nx_graph(im: Image, g: nx.Graph) -> None:
     nx.draw_networkx_labels(g,pos=pos_higher,ax=ax,labels=lab,font_weight='bold',font_color='r',font_size=3)  # degrees only
     
     #edge labels
-    edge_d = [d for (u,v,d) in g.edges.data('d')]  # distance values are stored under the attribute "d"
-    edge_lab = dict(zip(g.edges(),edge_d))   # create a dictionary that can be used to plot labels
+    edge_d = [("{:.2f}".format(d)) for (u,v,d) in g.edges.data('d')]  # distance values are stored under the attribute "d"
+    edge_or =  [("{:.2f}".format(o)) for (u,v,o) in g.edges.data('orientation')]  # get the attribute "orientation"
+    edge_d_or = [d+", "+o for d,o in zip(edge_d,edge_or)]
+    print(edge_d_or)
+    edge_lab = dict(zip(g.edges(),edge_d_or))   # create a dictionary that can be used to plot labels
     # print(f'edge_lab{edge_lab}')
     # print('edge_lab '+str(edge_lab))
     bbox_options = {"boxstyle":'round', "ec":(1.0, 1.0, 1.0), "fc":(1.0, 1.0, 1.0), "alpha": 0.7}
-    nx.draw_networkx_edge_labels(g,pos=pos,edge_labels=edge_lab,ax=ax,font_size=2,bbox=bbox_options)
+    nx.draw_networkx_edge_labels(g,pos=pos,edge_labels=edge_lab,ax=ax,font_size=5,bbox=bbox_options)
 
     plt.axis("on")  # show the axes
     plt.axis('equal')  # keep true aspect ratio
@@ -400,6 +403,13 @@ def draw_nx_graph(im: Image, g: nx.Graph) -> None:
     # plt.gca().invert_xaxis()
     #plt.savefig(out_path)  
     # plt.show()
+def get_timestep():
+    """ check if there is an input.txt file. If there is, look for the timestep.
+    If not, return 0 """
+    if os.path.isfile("input.txt"):
+        return float(getTimeStep("input.txt"))  # needed to calculate time (1st row of csv)
+    else:
+        return 0  # in case there is no input.txt (e.g. field image)
 
 def topo_analysis(g: nx.Graph,tstep_number: float) -> dict:
     """
@@ -411,12 +421,12 @@ def topo_analysis(g: nx.Graph,tstep_number: float) -> dict:
     attributes of g are: .edges  .degree   g.nodes()
     attributes of .edges are: .edges.data('d') = distance
     """
-    input_tstep = 0   # in case there is no input.txt (e.g. field image)
-    if os.path.isfile("input.txt"):
-        input_tstep = float(getTimeStep("input.txt"))  # needed to calculate time (1st row of csv)
+
     edge_lengths = [d for (u,v,d) in g.edges.data('d')]  # distance values are stored under the attribute "d"
     print(f'n of branches: {len(edge_lengths)}')
     print(f'branch lengths: {edge_lengths}')
+
+    input_tstep = get_timestep()
 
     # print(f'g.edges: {g.edges(data=True)}')  # print edges and all of their attributes
     # print(f'attributes for edges: {list(list(g.edges(data=True))[0][-1].keys())}')
@@ -459,7 +469,10 @@ def orientation_calc(g: nx.Graph) -> nx.Graph:
 
     for i,e in enumerate(edge_coord):   
         x1,y1=e[0]; x2,y2=e[1]  # extract individual node coordinates from edge 
-        alpha = math.atan( (y1-y2)/(x1-x2) ) * 180 / math.pi  # angle in degrees
+        print(e[0],e[1])
+        alpha = math.atan( -(y1-y2)/(x1-x2) ) * 180 / math.pi  # angle in degrees.
+        if alpha<0:
+            alpha = alpha + 180
         g[e[0]][e[1]][0]['orientation']=alpha    # to access edges: e0, e1, key, attribute
         # print(alpha)
     # print(g.edges(keys=True,data=True))
@@ -524,6 +537,12 @@ def analyse_png(png_file: str, part_to_analyse: str) -> dict:
 
     print(f'Street RGB: {rgb}')
     print(f'Street pixels: {px.sum()}')
+    if px.sum() == 0:  # if no fractures, skip analysis and return a dictionary full of zeros
+        print("px 0")
+        input_tstep = get_timestep()
+        branch_info = {"time":timestep_number*input_tstep,"n_I":0,"n_2":0,"n_3":0,"n_4":0,"n_5":0,
+                "branches_tot_length":0} # dictionary with all zeros: there are no fractures in this area
+        return branch_info
     g = extract_network(px,im)
     print(f'Extracted street network:')
     print(f'  - {len(g.nodes())} nodes')
