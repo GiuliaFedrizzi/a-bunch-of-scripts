@@ -38,16 +38,12 @@ Giulia's edits:
 crop images:
 
 # Setting the points for cropped image
-left = 316    # limit
-top = 147     # limit. 0 is at top, so top < bottom
-right = 996   # limit
-bottom = 819  # limit. 0 is at top, so bottom > top
+the background (no fractures) must be set to blue.
+The code detects the minimum and maximum blue pixel in the x and y direction and sets 
+the boundaries from cropping there (if full domain is chosen, option 'w'), or at fractions
+of the domain height (if only top or bottom parts are requested)
 
-# Cropped image of above dimension
-# (It will not change original image)
-im1 = im.crop((left, top, right, bottom))
-
-On ARC: works with python 3.6
+On ARC: works with python 3.9, in the conda env extr_py39
 """
 
 import sys
@@ -482,7 +478,7 @@ def analyse_png(png_file: str, part_to_analyse: str) -> dict:
     pim = Image.open(png_file).convert('RGB') # Load image, convert to rgb
     im_array  = np.array(pim) # make into Numpy array
 
-    # Define the blue colour we want to find - PIL uses RGB ordering
+    # Define blue - this is the image background, = no fractures
     blue = [0,0,255]
 
     # Get X and Y coordinates of all blue pixels
