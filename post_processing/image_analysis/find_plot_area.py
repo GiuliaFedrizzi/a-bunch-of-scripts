@@ -1,8 +1,8 @@
 from PIL import Image
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
-part_to_analyse = 'w'
+part_to_analyse = 't'
 
 # im = Image.open("py_bb_087000.png")
 
@@ -21,21 +21,20 @@ print(min(X),max(X),min(Y),max(Y))
 
 im = Image.open("py_bb_087000.png")
 
+left = min(X)+5; top = min(Y)+7; right = max(X)-5; bottom = max(Y)-5 # auto from blue
+height = bottom - top
+
 
 crop_im = 1
-if part_to_analyse == 'w': # whole domain
+# if part_to_analyse == 'w': # whole domain
 # Setting the points for cropped image
-# left = 316; top = 147; right = 996; bottom = 819 # worked when images were generated on my laptop
-    # left = 475; top = 223; right = 1490; bottom = 1228 # worked when images were generated on ARC
-    # left = 475; top = 223; right = 1490; bottom = 1210 # latest version 5/7/23
-    left = min(X)+5; top = min(Y)+7; right = max(X)-5; bottom = max(Y)-5 # auto from blue
-    # left = 428; top = 162; right = 1492; bottom = 1211  # worked for threeAreas/prod/p01
-elif part_to_analyse == 'b':
-    left = 475; top = 1027; right = 1490; bottom = 1228 # BOTTOM - melt-production zone
+
+
+if part_to_analyse == 'b':
+    top = top + 0.9*height # BOTTOM - melt-production zone
 elif part_to_analyse == 't':
-    #left = 475; top = 223; right = 1490; bottom = 1027 # TOP = melt-production zone - if prod zone is 0-0.2
-    #left = 475; top = 223; right = 1490; bottom = 1178 # TOP = melt-production zone  - if prod zone is 0-0.05:  1228-(1228-223)*0.05
-    left = 475; top = 223; right = 1490; bottom = 1128 # TOP = melt-production zone  - if prod zone is 0-0.1
+    # it is 0.9 of the original domain height
+    bottom = bottom - 0.1*height # TOP = melt-production zone  - if prod zone is 0-0.1
     
     
 elif part_to_analyse == 'f': # full, or field = do not crop

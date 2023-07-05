@@ -478,35 +478,47 @@ def analyse_png(png_file: str, part_to_analyse: str) -> dict:
     assert png_file.endswith('.png')
     
     timestep_number = float(re.findall(r'\d+',png_file)[0])   # regex to find numbers in string. Then convert to float. Will be used to name the csv file 
+        
+    pim = Image.open(png_file).convert('RGB') # Load image, convert to rgb
+    im_array  = np.array(pim) # make into Numpy array
+
+    # Define the blue colour we want to find - PIL uses RGB ordering
+    blue = [0,0,255]
+
+    # Get X and Y coordinates of all blue pixels
+    Y, X = np.where(np.all(im_array==blue,axis=2))
+
     im = Image.open(png_file)
 
-    crop_im = 1 # flag for cropping the image or not. default is yes (it's no for part_to_analyse = f)
-    if part_to_analyse == 'w': # whole domain
+    left = min(X)+5; top = min(Y)+7; right = max(X)-5; bottom = max(Y)-5 # auto from blue
+    height = bottom - top
+    print(left,top,right,bottom)
+
+    crop_im = 1
+    # if part_to_analyse == 'w': # whole domain  - this is the default!
     # Setting the points for cropped image
-    # left = 316; top = 147; right = 996; bottom = 819 # worked when images were generated on my laptop
-        # left = 475; top = 223; right = 1490; bottom = 1228 # worked when images were generated on ARC
-        left = 475; top = 223; right = 1490; bottom = 1210 # worked when images were generated on ARC
-        # left = 428; top = 162; right = 1492; bottom = 1211  # worked for threeAreas/prod/p01
+
+    if part_to_analyse == 'w':
         out_path = "p_"+png_file.replace('.png', '_nx.grid.png')
+
     elif part_to_analyse == 'b':
-        left = 475; top = 1027; right = 1490; bottom = 1228 # BOTTOM - melt-production zone
+        top = top + 0.9*height # BOTTOM - melt-production zone
         out_path = "p_bot_"+png_file.replace('.png', '_nx.grid.png')
+
     elif part_to_analyse == 't':
-        #left = 475; top = 223; right = 1490; bottom = 1027 # TOP = melt-production zone - if prod zone is 0-0.2
-        #left = 475; top = 223; right = 1490; bottom = 1178 # TOP = melt-production zone  - if prod zone is 0-0.05:  1228-(1228-223)*0.05
-        left = 475; top = 223; right = 1490; bottom = 1128 # TOP = melt-production zone  - if prod zone is 0-0.1
-        
+        # remove 0.1 of the original domain height from the bottom
+        bottom = bottom - 0.1*height # TOP = melt-production zone  - if prod zone is 0-0.1
         out_path = "p_top_"+png_file.replace('.png', '_nx.grid.png')
         
     elif part_to_analyse == 'f': # full, or field = do not crop
         crop_im = 0  # in this case, do not crop 
         out_path = "p_"+png_file.replace('.png', '_nx.grid.png')
 
-    # im.show()
     if crop_im:  # crop the image if flag is true
         # Cropped image of above dimension
         im = im.crop((left, top, right, bottom))
-        # Apply median filter to smooth the edges
+    
+    # Apply median filter to smooth the edges
     im = im.filter(ImageFilter.ModeFilter(size=7)) # https://stackoverflow.com/questions/62078016/smooth-the-edges-of-binary-images-face-using-python-and-open-cv 
     # out_path = png_file.replace('.png', '_median.png')
     # im.save(out_path)
