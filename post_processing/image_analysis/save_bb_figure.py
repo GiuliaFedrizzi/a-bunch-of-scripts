@@ -24,7 +24,7 @@ from useful_functions import *
 from useful_functions_moments import *
  
 # palette_option = ['white','black']  # this one works on my laptop
-palette_option = {-1:'w',0:'k'}       # this one works on ARC
+palette_option = {-1:'w',0:'b'}       # this one works on ARC
 
 
 
