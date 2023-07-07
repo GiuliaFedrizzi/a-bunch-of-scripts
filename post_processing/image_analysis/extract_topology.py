@@ -388,7 +388,6 @@ def draw_nx_graph(im: Image, g: nx.Graph) -> None:
     edge_d = [("{:.2f}".format(d)) for (u,v,d) in g.edges.data('d')]  # distance values are stored under the attribute "d"
     edge_or =  [("{:.2f}".format(o)) for (u,v,o) in g.edges.data('orientation')]  # get the attribute "orientation"
     edge_d_or = [d+", "+o for d,o in zip(edge_d,edge_or)]
-    print(edge_d_or)
     edge_lab = dict(zip(g.edges(),edge_d_or))   # create a dictionary that can be used to plot labels
     # print(f'edge_lab{edge_lab}')
     # print('edge_lab '+str(edge_lab))
@@ -410,6 +409,42 @@ def get_timestep():
         return float(getTimeStep("input.txt"))  # needed to calculate time (1st row of csv)
     else:
         return 0  # in case there is no input.txt (e.g. field image)
+
+def draw_rose_diagram(g: nx.Graph):
+    """
+    get the orientations from the graph and plot them in a rose diagram
+    to do: proportional to branch length
+    """
+   #prepare data
+    #angles = np.array([168.6900675259798, 59.14124477892943, 68.96248897457819, 121.15272609593733, 124.28687697720896, 59.748306649964874])
+    angles =  np.array([o for (u,v,o) in g.edges.data('orientation')])  # get the attribute "orientation"
+
+    bins = np.arange(-5, 366, 10)
+    angles_in_bins, bins = np.histogram(angles, bins)
+
+    # Sum the last value with the first value.
+    angles_in_bins[0] += angles_in_bins[-1]
+    print(angles_in_bins)
+
+    # shouldn't be necessary, but in case there are angles > 180, sum them to their corresponding 
+    # angle between 0 and 180. This way the result is symmetric: bottom half is the same 
+    # as top half but mirrored
+    single_half = np.sum(np.split(angles_in_bins[:-1], 2), 0)
+    full_range = np.concatenate([single_half,single_half])  # repeat the sequence twice
+
+    # make plot
+    fig = plt.figure(figsize=(8,8))
+    ax = fig.add_subplot(111, projection='polar')
+
+    # the height of each bar is the number of angles in that bin
+    ax.bar(np.deg2rad(np.arange(0, 360, 10)), full_range, 
+        width=np.deg2rad(10), bottom=0.0, color='.8', edgecolor='k')
+
+    ax.set_theta_zero_location('N') # zero starts at North
+    ax.set_theta_direction(-1)
+    ax.set_thetagrids(np.arange(0, 360, 10), labels=np.arange(0, 360, 10))
+    ax.set_rgrids(np.arange(1, full_range.max() + 1, 2), angle=0, weight= 'black')
+    return ax
 
 def topo_analysis(g: nx.Graph,tstep_number: float) -> dict:
     """
@@ -466,16 +501,17 @@ def orientation_calc(g: nx.Graph) -> nx.Graph:
     Calculate the orientation of the edges. Add it to the edge attributes
     """
     edge_coord = [x for x in g.edges()]
-
+    # print("id,x1,y1,x2,y2,angle")
     for i,e in enumerate(edge_coord):   
         x1,y1=e[0]; x2,y2=e[1]  # extract individual node coordinates from edge 
-        print(e[0],e[1])
-        alpha = math.atan( -(y1-y2)/(x1-x2) ) * 180 / math.pi  # angle in degrees.
-        if alpha<0:
-            alpha = alpha + 180
-        g[e[0]][e[1]][0]['orientation']=alpha    # to access edges: e0, e1, key, attribute
-        # print(alpha)
-    # print(g.edges(keys=True,data=True))
+        angle = math.atan( -(y1-y2)/(x1-x2) ) * 180 / math.pi  # angle in degrees.
+        if angle<0:
+            angle = angle + 180  # second and fourth quadrant
+        g[e[0]][e[1]][0]['orientation']=angle    # to access edges: e0, e1, key, attribute
+        # print(i,x1,y1,x2,y2,angle)
+        # print(angle)
+    # print(g.edges(data=True))
+    # print([o for (u,v,o) in g.edges.data('orientation')])
     return g
 
 def analyse_png(png_file: str, part_to_analyse: str) -> dict:
@@ -508,20 +544,20 @@ def analyse_png(png_file: str, part_to_analyse: str) -> dict:
     # Setting the points for cropped image
 
     if part_to_analyse == 'w':
-        out_path = "p_"+png_file.replace('.png', '_nx.grid.png')
+        out_path = "p_"+png_file.replace('.png', '_nx')
 
     elif part_to_analyse == 'b':
         top = top + 0.9*height # BOTTOM - melt-production zone
-        out_path = "p_bot_"+png_file.replace('.png', '_nx.grid.png')
+        out_path = "p_bot_"+png_file.replace('.png', '_nx')
 
     elif part_to_analyse == 't':
         # remove 0.1 of the original domain height from the bottom
         bottom = bottom - 0.1*height # TOP = melt-production zone  - if prod zone is 0-0.1
-        out_path = "p_top_"+png_file.replace('.png', '_nx.grid.png')
+        out_path = "p_top_"+png_file.replace('.png', '_nx')
         
     elif part_to_analyse == 'f': # full, or field = do not crop
         crop_im = 0  # in this case, do not crop 
-        out_path = "p_"+png_file.replace('.png', '_nx.grid.png')
+        out_path = "p_"+png_file.replace('.png', '_nx')
 
     if crop_im:  # crop the image if flag is true
         # Cropped image of above dimension
@@ -555,9 +591,13 @@ def analyse_png(png_file: str, part_to_analyse: str) -> dict:
 
     # viz grid with networkx's plot
     ax = draw_nx_graph(im, g)
-    plt.savefig(out_path,dpi=200)
+    plt.savefig(out_path+".grid.png",dpi=200)
     plt.clf()
     # plt.show()
+
+    ax1 = draw_rose_diagram(g)
+    plt.savefig("rose_"+out_path,dpi=200)
+    plt.clf()
 
     return branch_info
 

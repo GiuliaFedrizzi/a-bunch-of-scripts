@@ -44,13 +44,13 @@ from pathlib import Path
 # import functions from external file
 from useful_functions import * 
 
-var_to_plot = "Pressure"
+var_to_plot = "Movement in Gravity"
 # options: Pressure, Mean Stress, Actual Movement, Gravity, Porosity, Sigma_1, Sigma_2, Youngs Modulus
 #         F_P_x, F_P_y, pf_grad_x, pf_grad_y, Original Movement, Movement in Gravity
 
 # dir_labels = ['400','200']  # res400.elle, res200.elle
-dir_labels = ['02']
-# dir_labels = ['00400','00800']
+# dir_labels = ['02']
+dir_labels = ['00400','00800']
 # dir_labels = ['00200', '00400','00600','00800','01000']
 # dir_labels = ['02000','04000','06000','08000','10000'] 
 # dir_labels = ['00200', '00400','00600','00800','01000','02000','04000','06000']#,'08000','10000'] 
@@ -70,8 +70,9 @@ sizes = []
 for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/wd_viscTest/vis_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj190/size'+str(i)) 
-    dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/th60/vis1e2_mR_'+str(i))  
+    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/th60/vis1e2_mR_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
+    dir_list.append('/nobackup/scgf/myExperiments/smooth/sm01/size'+str(i))  
     
 print(dir_list)
 
@@ -131,13 +132,13 @@ for dirnum,dir in enumerate(dir_list):
 
         ## manually get the coordinates of the central point:
         meltYmin = float(getParameterFromLatte("input.txt","meltYmin"))
-        # ymax = meltYmin/(resolution/2)   #  WHAT IT SHOULD BE
+        ymax = meltYmin/(resolution/2)   #  WHAT IT SHOULD BE
         # ymax = meltYmin/(200/2)   # in real units (meters)
-        ymax = 0.02   # TEMPORARY, CLOSE TO THE BOTTOM
+        # ymax = 0.02   # TEMPORARY, CLOSE TO THE BOTTOM
         # print(f'max y coord: {max(myExp["y coord"])}')
         print(f'ymax: {ymax}')
         print(f'meltYmin: {meltYmin}')
-        xmax = 0.2    # 0.5 if point is in the middle
+        xmax = 0.5    # 0.5 if point is in the middle
 
         tolerance_y = dom_size*100/300*1e-4 #dom_size/300*1e-3  for 200,400,...,10000
         tolerance_x = dom_size*100/300*1e-4 #dom_size/300*1e-3  for 200,400,...,10000
@@ -244,6 +245,7 @@ for dirnum,dir in enumerate(dir_list):
             sigmas_diff_true.append(var_array_y.values[-2]-var_array_y.values[1])   # top - bottom (they're <0, so difference is >0)
             sigmas_diff_theor.append(sigma_bot_theor-sigma_top_theor)   # bottom - top (they're >0)
             sigmas_diff_ratio.append((var_array_y.values[-2]-var_array_y.values[1])/(sigma_bot_theor-sigma_top_theor))   # bottom - top (they're >0)
+        print(f'max Movement: {max(var_array_y.values)}')
     # end of dir loop
 # ax3 = g_y.twinx()
 

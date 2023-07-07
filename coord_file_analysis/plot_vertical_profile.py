@@ -14,7 +14,7 @@ plot_figure = 1
 dir_label = '00400'
 res = 200
 filename = "my_experiment00500.csv"
-first_part_of_path = '/nobackup/scgf/myExperiments/gaussJan2022/gj190/'
+first_part_of_path = '/nobackup/scgf/myExperiments/smooth/sm09/'
 
 dir = first_part_of_path+'size'+str(dir_label)        # res200
 
@@ -32,7 +32,8 @@ def read_calculate_plot(filename):
 
     x = range(0,len(df_v),1)
     plt.plot(porosity_vals,x)
-    plt.ylabel("Porosity")
+    plt.xlabel("Porosity")
+    plt.ylabel("y")
     plt.gca().get_xaxis().get_major_formatter().set_useOffset(False)  # to avoid offset in plot 
     plt.show()
 
