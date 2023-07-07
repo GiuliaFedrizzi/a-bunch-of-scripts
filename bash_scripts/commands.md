@@ -19,7 +19,7 @@ rm -rf $HOME/.vscode-server
 > conda activate extr_py39
 
 ## sub all the sub_pvbatch.sh scripts in the subdirs
-> for v in vis*; do cp paravParam.py $v; cd $v; qsub sub_pvbatch.sh; cd ..; done
+> for v in visc_\*/vis\*; do cp paravParam.py $v; cd $v; qsub sub_pvbatch.sh; cd ../..; done
 
 ## find csv files that are too small (contain NaNs)   CHECK SIZE - there are new variables being saved
 > find . -type f -name "my*.csv" -size -9900k -delete 

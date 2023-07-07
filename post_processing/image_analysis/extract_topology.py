@@ -410,17 +410,24 @@ def get_timestep():
     else:
         return 0  # in case there is no input.txt (e.g. field image)
 
-def draw_rose_diagram(g: nx.Graph):
+def draw_rose_diagram(g: nx.Graph,proportional: bool):
     """
     get the orientations from the graph and plot them in a rose diagram
-    to do: proportional to branch length
     """
    #prepare data
     #angles = np.array([168.6900675259798, 59.14124477892943, 68.96248897457819, 121.15272609593733, 124.28687697720896, 59.748306649964874])
     angles =  np.array([o for (u,v,o) in g.edges.data('orientation')])  # get the attribute "orientation"
-
+    
+    print(angles)
     bins = np.arange(-5, 366, 10)
-    angles_in_bins, bins = np.histogram(angles, bins)
+    if proportional:
+        lengths =  np.array([d for (u,v,d) in g.edges.data('d')])  # get the attribute "orientation"
+        # normalise lengths so that they go from 0 to 1
+        lengths_norm = (lengths-np.min(lengths))/(np.max(lengths)-np.min(lengths))
+        # use lengths as weights for the histogram
+        angles_in_bins, bins = np.histogram(angles, bins,weights=lengths_norm)
+    else:
+        angles_in_bins, bins = np.histogram(angles, bins)
 
     # Sum the last value with the first value.
     angles_in_bins[0] += angles_in_bins[-1]
@@ -504,7 +511,10 @@ def orientation_calc(g: nx.Graph) -> nx.Graph:
     # print("id,x1,y1,x2,y2,angle")
     for i,e in enumerate(edge_coord):   
         x1,y1=e[0]; x2,y2=e[1]  # extract individual node coordinates from edge 
-        angle = math.atan( -(y1-y2)/(x1-x2) ) * 180 / math.pi  # angle in degrees.
+        if (x1-x2) != 0:  # not horizontal 
+            angle = math.atan( -(y1-y2)/(x1-x2) ) * 180 / math.pi  # angle in degrees.
+        else:
+            angle = 0
         if angle<0:
             angle = angle + 180  # second and fourth quadrant
         g[e[0]][e[1]][0]['orientation']=angle    # to access edges: e0, e1, key, attribute
@@ -595,8 +605,12 @@ def analyse_png(png_file: str, part_to_analyse: str) -> dict:
     plt.clf()
     # plt.show()
 
-    ax1 = draw_rose_diagram(g)
+    ax1 = draw_rose_diagram(g,False)  # proportional to branch length?
     plt.savefig("rose_"+out_path,dpi=200)
+    plt.clf()
+
+    ax2 = draw_rose_diagram(g,True)  # proportional to branch length?
+    plt.savefig("rose_weight_"+out_path,dpi=200)
     plt.clf()
 
     return branch_info
