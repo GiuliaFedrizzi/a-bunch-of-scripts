@@ -12,25 +12,26 @@ from PIL import Image
 from viz_functions import gallery,build_array,build_melt_labels_t,set_ax_options,find_variab
 
 variab = find_variab()
-
-times = range(65,171,5)  # (start, end, step)
-melt_labels = ['0.009','0.008','0.007','0.006','0.005','0.004','0.003','0.002','0.001'] 
-# melt_labels = ['0.008','0.006','0.004','0.002'] 
+im_length = 875
+im_height = 883
+times = range(25,31,5)  # (start, end, step)
+# melt_labels = ['0.009','0.008','0.007','0.006','0.005','0.004','0.003','0.002','0.001'] 
+melt_labels = ['0.008','0.006','0.004','0.002'] 
 
 if variab == "viscosity":
-    x_variable = ['1e1']  # the values of the x variable to plot (e.g. viscosity)
+    # x_variable = ['1e1']  # the values of the x variable to plot (e.g. viscosity)
     # x_variable = ['1e1','1e2','5e2','1e3','5e3','1e4']#,'2e4','4e4']  # the values of the x variable to plot (e.g. viscosity)
-    # x_variable = ['1e1','5e1','1e2','5e2','1e3','5e3','1e4']#,'2e4','4e4']  # the values of the x variable to plot (e.g. viscosity)
+    x_variable = ['1e1','5e1','1e2','5e2','1e3','5e3','1e4']#,'2e4','4e4']  # the values of the x variable to plot (e.g. viscosity)
 elif variab == "def_rate":
     x_variable = ['1e8','2e8','3e8','4e8','5e8','6e8','7e8','8e8','9e8']#,'3e11','4e11']  # the values of the x variable to plot (e.g. def rate)
 
-def setup_array(x_variable,melt_labels,t):
+def setup_array(x_variable,melt_labels,t,im_length,im_height):
     print(melt_labels)
     melt_labels_t = [None] * len(melt_labels) # labels with extra term for time. Empty string list, same size as melt_labels
     rows = len(melt_labels)  # how many values of melt rate
     cols = len(x_variable)*2
     # initialise the big array
-    big_array = np.full(shape=(rows*cols, 875, 883, 3),fill_value=255)  # 1st number is the number of images to display, then size, then colour channels (RGB). Set initial values to 255 (white)
+    big_array = np.full(shape=(rows*cols, im_length, im_height, 3),fill_value=255)  # 1st number is the number of images to display, then size, then colour channels (RGB). Set initial values to 255 (white)
 
     # for row in range(0,rows):
     for row,melt_rate in enumerate(melt_labels):
@@ -50,14 +51,14 @@ def setup_array(x_variable,melt_labels,t):
 
 ncols = len(x_variable)*2
 for t in times:
-    array,melt_and_time = setup_array(x_variable,melt_labels,t)   # load all files
+    array,melt_and_time = setup_array(x_variable,melt_labels,t,im_length,im_height)   # load all files
     result = gallery(array,ncols)           # organise in gallery view
     fig, ax = plt.subplots()
     ax.imshow(result.astype('uint8')) # uint8 explanation: https://stackoverflow.com/questions/49643907/clipping-input-data-to-the-valid-range-for-imshow-with-rgb-data-0-1-for-floa
 
-    set_ax_options(ax,variab,x_variable,melt_labels,t)
+    set_ax_options(ax,variab,x_variable,melt_labels,t,im_length)
     ax.set_yticklabels(melt_and_time,fontsize=4)   #  position and values of ticks on the y axis. Start: 441 (half of image height) End: height of image times num of images in one column, Step: 883 (height of image)
-    y_ticks_positions = np.arange(441,883*len(melt_labels)+441,883)
+    y_ticks_positions = np.arange(im_height/2,im_height*len(melt_labels)+im_height/2,im_height)
     ax.set_yticks(y_ticks_positions)
     if not os.path.exists('images_in_grid'):
         os.makedirs('images_in_grid')

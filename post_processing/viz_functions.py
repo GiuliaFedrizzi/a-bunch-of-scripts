@@ -87,11 +87,11 @@ def build_melt_labels_t(melt_labels,t,file_number,row):
         return melt_labels[row]+" ("+file_number+"*)"   # add a flag that says it's not exact
 
 
-def set_ax_options(ax,variab,x_variable,melt_labels,t):
+def set_ax_options(ax,variab,x_variable,melt_labels,t,im_length):
     """
     set ticks, labels, title etc for the final plot
     """
-    ax.set_xticks(np.arange(437,875*len(x_variable)*2,875*2)) #  position and values of ticks on the x axis. Start: 437 (half width of an image) End: length of image times num of images in one row, Step: 883 (legth of image)
+    ax.set_xticks(np.arange(im_length/2,im_length*len(x_variable)*2,im_length*2)) #  position and values of ticks on the x axis. Start: 437 (half width of an image) End: length of image times num of images in one row, Step: 883 (legth of image)
     ax.set_xticklabels(x_variable,fontsize=4)
 
     if variab == "viscosity":
