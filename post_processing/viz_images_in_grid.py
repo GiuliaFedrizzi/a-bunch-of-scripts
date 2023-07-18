@@ -9,9 +9,10 @@ import matplotlib.pyplot as plt
 import os
 from PIL import Image
 
-from viz_functions import gallery,build_array,build_melt_labels_t,set_ax_options,find_variab
+from viz_functions import gallery,build_array,build_melt_labels_t,set_ax_options,find_variab,setup_array
 
 variab = find_variab()
+rose = False
 im_length = 875
 im_height = 883
 times = range(25,31,5)  # (start, end, step)
@@ -25,33 +26,11 @@ if variab == "viscosity":
 elif variab == "def_rate":
     x_variable = ['1e8','2e8','3e8','4e8','5e8','6e8','7e8','8e8','9e8']#,'3e11','4e11']  # the values of the x variable to plot (e.g. def rate)
 
-def setup_array(x_variable,melt_labels,t,im_length,im_height):
-    print(melt_labels)
-    melt_labels_t = [None] * len(melt_labels) # labels with extra term for time. Empty string list, same size as melt_labels
-    rows = len(melt_labels)  # how many values of melt rate
-    cols = len(x_variable)*2
-    # initialise the big array
-    big_array = np.full(shape=(rows*cols, im_length, im_height, 3),fill_value=255)  # 1st number is the number of images to display, then size, then colour channels (RGB). Set initial values to 255 (white)
-
-    # for row in range(0,rows):
-    for row,melt_rate in enumerate(melt_labels):
-        melt_rate = melt_rate.replace("0.0","")   # e.g. from 0.001 to 01, or from 0.02 to 2
-        file_number = str(int(t/(int(melt_rate)))).zfill(5)  # normalise t by the melt rate.  .zfill(5) fills the string with 0 until it's 5 characters long
-
-        for x,x_val in enumerate(x_variable):
-            big_array = build_array(big_array,variab,x,x_val,melt_rate,file_number,row,cols)   # fill the array with data from images!
-            # ----------------------------------
-        melt_labels_t[row] = build_melt_labels_t(melt_labels,t,file_number,row)
-        print(melt_labels_t[row])
-
-    return big_array,melt_labels_t  # the number of columns is the num of x variable times two (two images for each sim)
-    # return np.array([bb,poro,bb,poro])
-
 
 
 ncols = len(x_variable)*2
 for t in times:
-    array,melt_and_time = setup_array(x_variable,melt_labels,t,im_length,im_height)   # load all files
+    array,melt_and_time = setup_array(x_variable,melt_labels,t,im_length,im_height,variab,rose)   # load all files
     result = gallery(array,ncols)           # organise in gallery view
     fig, ax = plt.subplots()
     ax.imshow(result.astype('uint8')) # uint8 explanation: https://stackoverflow.com/questions/49643907/clipping-input-data-to-the-valid-range-for-imshow-with-rgb-data-0-1-for-floa

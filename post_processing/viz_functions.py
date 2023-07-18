@@ -1,5 +1,5 @@
 """
-Functions called by viz_images* scripts.
+Functions called by viz_images* and viz_rose* scripts.
 """
 
 import matplotlib.pyplot as plt
@@ -22,7 +22,7 @@ def gallery(array, ncols):
               .reshape(height*nrows, width*ncols, intensity))
     return result
 
-def build_array(big_array,variab,x,x_val,melt_rate,file_number,row,cols):
+def build_array(big_array,variab,x,x_val,melt_rate,file_number,row,cols,rose):
     """
     given all the properties (x variable, melt rate, time, coords in the big array),
     populate the big array that contains all the data and makes the final image
@@ -30,50 +30,67 @@ def build_array(big_array,variab,x,x_val,melt_rate,file_number,row,cols):
     if variab == "viscosity":
         exp = x_val.split('e')[-1] # the exponent after visc_ and before 5e3 or 1e4 etc
         
-        ## 2 levels
+        ###### path to the files
+        ## 2 levels, 2 options for viscosity
         potential_file_path = 'visc_'+exp+'_'+x_val+'/vis1e2_mR_'+melt_rate+'/'
         if os.path.isdir(potential_file_path) == False:
             potential_file_path ='visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_'+melt_rate+'/'
             if os.path.isdir(potential_file_path) == False:
                 print("I've tried twice without success")
-            
-        poro_file = potential_file_path +'/a_porosity_'+file_number+'.png' 
-        bb_file = potential_file_path +'/a_brokenBonds_'+file_number+'.png'
+        # if rose == False:
+        #     poro_file = potential_file_path +'/a_porosity_'+file_number+'.png' 
+        #     bb_file = potential_file_path +'/a_brokenBonds_'+file_number+'.png'
+        # else:
+        #     rose_file = potential_file_path +'/rose_weight_p_top_py_bb_'+file_number+'_nx.png' # try "top" first
+        #     if os.path.isfile(rose_file) == False:
+        #         rose_file = potential_file_path +'/rose_weight_p_py_bb_'+file_number+'_nx.png' 
         # poro_file = 'wd05_visc/visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_0'+str(melt_rate)+'/a_porosity_'+file_number+'.png' 
         # bb_file = 'wd05_visc/visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_0'+str(melt_rate)+'/a_brokenBonds_'+file_number+'.png'
-        
-        ## 2 levels of subdirs
-        # poro_file = 'visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_'+melt_rate+'/a_porosity_'+file_number+'.png' 
-        # bb_file = 'visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_'+melt_rate+'/a_brokenBonds_'+file_number+'.png'
-
-        # ## 2 levels, but "visc" value is fixed
-        # poro_file = 'visc_'+exp+'_'+x_val+'/vis1e2_mR_'+melt_rate+'/a_porosity_'+file_number+'.png' 
-        # bb_file = 'visc_'+exp+'_'+x_val+'/vis1e2_mR_'+melt_rate+'/a_brokenBonds_'+file_number+'.png'
         
         ##  only 1 level of subdirs
         # poro_file = 'vis'+x_val+'_mR_'+melt_rate+'/a_porosity_'+file_number+'.png' 
         # bb_file = 'vis'+x_val+'_mR_'+melt_rate+'/a_brokenBonds_'+file_number+'.png'
     elif variab == "def_rate":
-        poro_file = 'thdef'+x_val+'/vis1e2_mR_'+melt_rate+'/a_porosity_'+file_number+'.png' # .zfill(5) fills the string with 0 until it's 5 characters long
-        bb_file  = 'thdef'+x_val+'/vis1e2_mR_'+melt_rate+'/a_brokenBonds_'+file_number+'.png'
+        potential_file_path = 'thdef'+x_val+'/vis1e2_mR_'+melt_rate
 
-    if os.path.isfile(poro_file):
-        poro_big_file = Image.open(poro_file)  # I open it here so then I can call poro_big_file.close() and close it
-        poro = np.asarray(poro_big_file.crop((585,188,1468,1063)).convert('RGB'))
-        big_array[row*cols+2*x,:,:,:] = poro  # 0 2 4 rows*2 because there are 2 images for each simulation. First index is for each image
-        #print(row*cols+2*x)
-        poro_big_file.close()
-    else:
-        print("no file called ",poro_file)
+    # now we have the path, choose if I open "poro_file" and "bb_file" or "rose_file"
+    if rose == False:
+        """ "poro_file" and "bb_file"  """
+        poro_file = potential_file_path +'/a_porosity_'+file_number+'.png' 
+        bb_file  = potential_file_path +'/a_brokenBonds_'+file_number+'.png'
+    
+        if os.path.isfile(poro_file):
+            poro_big_file = Image.open(poro_file)  # I open it here so then I can call poro_big_file.close() and close it
+            poro = np.asarray(poro_big_file.crop((585,188,1468,1063)).convert('RGB'))
+            big_array[row*cols+2*x,:,:,:] = poro  # 0 2 4 rows*2 because there are 2 images for each simulation. First index is for each image
+            #print(row*cols+2*x)
+            poro_big_file.close()
+        else:
+            print("no file called ",poro_file)
 
-    if os.path.isfile(bb_file):
-        bb_big_file = Image.open(bb_file)
-        bb  =  np.asarray(bb_big_file.crop((585,188,1468,1063)).convert('RGB'))
-        big_array[row*cols+2*x+1,:,:,:] = bb  # 1 3 5 same as above, but +1 (the next one)
-        # print(row*cols+2*x+1)
-        bb_big_file.close()
+        if os.path.isfile(bb_file):
+            bb_big_file = Image.open(bb_file)
+            bb  =  np.asarray(bb_big_file.crop((585,188,1468,1063)).convert('RGB'))
+            big_array[row*cols+2*x+1,:,:,:] = bb  # 1 3 5 same as above, but +1 (the next one)
+            # print(row*cols+2*x+1)
+            bb_big_file.close()
+        else:
+            print("no file called ",bb_file)
+
     else:
-        print("no file called ",bb_file)
+        """ here "rose_file" only """
+        rose_file = potential_file_path +'/rose_weight_p_top_py_bb_'+file_number+'_nx.png' # try "top" first
+        if os.path.isfile(rose_file) == False:
+            """ try another version """
+            rose_file = potential_file_path +'/rose_weight_p_py_bb_'+file_number+'_nx.png' 
+        if os.path.isfile(rose_file):
+            rose_big_file = Image.open(rose_file) # to do: do I need to crop it?
+            # rf  =  np.asarray(bb_big_file.crop((585,188,1468,1063)).convert('RGB'))
+            big_array[row*cols+2*x+1,:,:,:] = rose_big_file  # 1 3 5 same as above, but +1 (the next one)
+            # print(row*cols+2*x+1)
+            rose_big_file.close()
+        else:
+            print("no file called ",rose_file)
     return big_array
 
 def build_melt_labels_t(melt_labels,t,file_number,row):
@@ -113,3 +130,65 @@ def find_variab():
     else:
         raise ValueError('Could not find directories with names that tells me what the variable is')
     return variab
+
+def setup_array(x_variable,melt_labels,t,im_length,im_height,variab,rose):
+    """ setup the big array with dimensions 
+         - rows*cols, 
+         - length and 
+         - height of each image, 
+         3 (RGB) 
+         """
+    print(melt_labels)
+    melt_labels_t = [None] * len(melt_labels) # labels with extra term for time. Empty string list, same size as melt_labels
+    rows = len(melt_labels)  # how many values of melt rate
+    cols = len(x_variable)*2
+    # initialise the big array
+    big_array = np.full(shape=(rows*cols, im_length, im_height, 3),fill_value=255)  # 1st number is the number of images to display, then size, then colour channels (RGB). Set initial values to 255 (white)
+
+    # for row in range(0,rows):
+    for row,melt_rate in enumerate(melt_labels):
+        melt_rate = melt_rate.replace("0.0","")   # e.g. from 0.001 to 01, or from 0.02 to 2
+        file_number = str(int(t/(int(melt_rate)))).zfill(5)  # normalise t by the melt rate.  .zfill(5) fills the string with 0 until it's 5 characters long
+
+        for x,x_val in enumerate(x_variable):
+            big_array = build_array(big_array,variab,x,x_val,melt_rate,file_number,row,cols,rose)   # fill the array with data from images!
+            # ----------------------------------
+        melt_labels_t[row] = build_melt_labels_t(melt_labels,t,file_number,row)
+        print(melt_labels_t[row])
+
+    return big_array,melt_labels_t  # the number of columns is the num of x variable times two (two images for each sim)
+    # return np.array([bb,poro,bb,poro])
+
+
+def setup_array_const_strain(x_variable,melt_labels,t,target_mr_def_ratios,im_length,im_height,variab,rose):
+    print(melt_labels)
+    melt_labels_t = [None] * len(melt_labels) # labels with extra term for time. Empty string list, same size as melt_labels
+    rows = len(target_mr_def_ratios)  # how many values of ratios: it's the number of rows
+    cols = len(x_variable)*2
+
+    # initialise the big array
+    big_array = np.full(shape=(rows*cols, im_length, im_height, 3),fill_value=255)  # 1st number is the number of images to display, then size, then colour channels (RGB). Set initial values to 255 (white)
+
+    for melt_rate in melt_labels:
+        melt_rate = melt_rate.replace("0.0","")   # e.g. from 0.001 to 01, or from 0.02 to 2
+        norm_time = t/(float(melt_rate))
+        print(norm_time)
+        file_number = str(round(norm_time)).zfill(5)  # normalise t by the melt rate.  .zfill(5) fills the string with 0 until it's 5 characters long
+        # if float(melt_rate)/
+
+        for x,x_val in enumerate(x_variable):
+            for n,current_mr_def_ratio in enumerate(target_mr_def_ratios):
+                # to have the same strain, we need the melt rate/defRate ratio to be fixed
+                mr_def_ratio = float(melt_rate)/(float(x_val)*1e-8)  # def rate is still in the 1e08 form (exp is actually negative)
+                # print(f'melt_rate: {melt_rate}, def rate: {x_val}, ratio {mr_def_ratio}')
+                if mr_def_ratio == current_mr_def_ratio:
+                    # print("right melt - def rate ratio! I'm saving this one...")    
+                    # n is the row number, one per target melt ratio
+                    big_array = build_array(big_array,variab,x,x_val,melt_rate,file_number,n,cols,rose)   # fill the array with data from images!
+                # ----------------------------------
+        print("mrate ",melt_rate)
+        # end of viscosity/deformation loop
+
+
+    return big_array,mr_def_ratio  # the number of columns is the num of x variable times two (two images for each sim)
+    
