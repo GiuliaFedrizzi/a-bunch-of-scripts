@@ -49,7 +49,7 @@ for t in times:
         filename = 'images_in_grid/rose_defRate_mRate_t'
         ax.set_ylabel('Pressure increment')
 
-    plt.savefig(filename+str(t).zfill(3)+'.png',dpi=600)
+    plt.savefig(filename+str(t/1000).zfill(3)+'.png',dpi=600)
     
     #plt.show()
 
