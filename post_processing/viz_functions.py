@@ -37,13 +37,6 @@ def build_array(big_array,variab,x,x_val,melt_rate,file_number,row,cols,rose):
             potential_file_path ='visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_'+melt_rate+'/'
             if os.path.isdir(potential_file_path) == False:
                 print("I've tried twice without success")
-        # if rose == False:
-        #     poro_file = potential_file_path +'/a_porosity_'+file_number+'.png' 
-        #     bb_file = potential_file_path +'/a_brokenBonds_'+file_number+'.png'
-        # else:
-        #     rose_file = potential_file_path +'/rose_weight_p_top_py_bb_'+file_number+'_nx.png' # try "top" first
-        #     if os.path.isfile(rose_file) == False:
-        #         rose_file = potential_file_path +'/rose_weight_p_py_bb_'+file_number+'_nx.png' 
         # poro_file = 'wd05_visc/visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_0'+str(melt_rate)+'/a_porosity_'+file_number+'.png' 
         # bb_file = 'wd05_visc/visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_0'+str(melt_rate)+'/a_brokenBonds_'+file_number+'.png'
         
@@ -84,9 +77,14 @@ def build_array(big_array,variab,x,x_val,melt_rate,file_number,row,cols,rose):
             """ try another version """
             rose_file = potential_file_path +'/rose_weight_p_py_bb_'+file_number+'_nx.png' 
         if os.path.isfile(rose_file):
-            rose_big_file = Image.open(rose_file) # to do: do I need to crop it?
+            print(f'found file {rose_file}')
+            rose_big_file = Image.open(rose_file)  # to do: do I need to crop it?
+
+            w, h = rose_big_file.size
+            print(f'w = {w}, h = {h}')
+            rf  =  np.asarray(rose_big_file.convert('RGB'))
             # rf  =  np.asarray(bb_big_file.crop((585,188,1468,1063)).convert('RGB'))
-            big_array[row*cols+2*x+1,:,:,:] = rose_big_file  # 1 3 5 same as above, but +1 (the next one)
+            big_array[row*cols+x,:,:,:] = rf  # only 1 figure per simulation now
             # print(row*cols+2*x+1)
             rose_big_file.close()
         else:
@@ -137,11 +135,16 @@ def setup_array(x_variable,melt_labels,t,im_length,im_height,variab,rose):
          - length and 
          - height of each image, 
          3 (RGB) 
+
+         calls build_array(), which populates the big array
          """
     print(melt_labels)
     melt_labels_t = [None] * len(melt_labels) # labels with extra term for time. Empty string list, same size as melt_labels
     rows = len(melt_labels)  # how many values of melt rate
-    cols = len(x_variable)*2
+    if rose==False:
+        cols = len(x_variable)*2
+    else:
+        cols = len(x_variable)
     # initialise the big array
     big_array = np.full(shape=(rows*cols, im_length, im_height, 3),fill_value=255)  # 1st number is the number of images to display, then size, then colour channels (RGB). Set initial values to 255 (white)
 
@@ -149,7 +152,8 @@ def setup_array(x_variable,melt_labels,t,im_length,im_height,variab,rose):
     for row,melt_rate in enumerate(melt_labels):
         melt_rate = melt_rate.replace("0.0","")   # e.g. from 0.001 to 01, or from 0.02 to 2
         file_number = str(int(t/(int(melt_rate)))).zfill(5)  # normalise t by the melt rate.  .zfill(5) fills the string with 0 until it's 5 characters long
-
+        if rose:
+            file_number = str(round(int(file_number)/1000)*1000).zfill(6)
         for x,x_val in enumerate(x_variable):
             big_array = build_array(big_array,variab,x,x_val,melt_rate,file_number,row,cols,rose)   # fill the array with data from images!
             # ----------------------------------
@@ -164,7 +168,10 @@ def setup_array_const_strain(x_variable,melt_labels,t,target_mr_def_ratios,im_le
     print(melt_labels)
     melt_labels_t = [None] * len(melt_labels) # labels with extra term for time. Empty string list, same size as melt_labels
     rows = len(target_mr_def_ratios)  # how many values of ratios: it's the number of rows
-    cols = len(x_variable)*2
+    if rose==False:
+        cols = len(x_variable)*2
+    else:
+        cols = len(x_variable)
 
     # initialise the big array
     big_array = np.full(shape=(rows*cols, im_length, im_height, 3),fill_value=255)  # 1st number is the number of images to display, then size, then colour channels (RGB). Set initial values to 255 (white)

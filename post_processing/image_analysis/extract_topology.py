@@ -413,6 +413,7 @@ def get_timestep():
 def draw_rose_diagram(g: nx.Graph,proportional: bool):
     """
     get the orientations from the graph and plot them in a rose diagram
+    proportional = if it should use weights when building the rose diagram
     """
    #prepare data
     #angles = np.array([168.6900675259798, 59.14124477892943, 68.96248897457819, 121.15272609593733, 124.28687697720896, 59.748306649964874])
@@ -577,14 +578,16 @@ def analyse_png(png_file: str, part_to_analyse: str) -> dict:
     im = im.filter(ImageFilter.ModeFilter(size=7)) # https://stackoverflow.com/questions/62078016/smooth-the-edges-of-binary-images-face-using-python-and-open-cv 
     # out_path = png_file.replace('.png', '_median.png')
     # im.save(out_path)
+    # im.show()   DO NOT DO im.show() ON BOLT OR IT WILL OPEN FIREFOX AND CRASH EVERYTHING
 
 
     px = find_color(im, rgb).T
 
     print(f'Street RGB: {rgb}')
     print(f'Street pixels: {px.sum()}')
-    if px.sum() == 0:  # if no fractures, skip analysis and return a dictionary full of zeros
-        print("px 0")
+    if px.sum() == 0:  
+        """ if no fractures, skip analysis and return a dictionary full of zeros """
+        print("0 pixel, skipping")
         input_tstep = get_timestep()
         branch_info = {"time":timestep_number*input_tstep,"n_I":0,"n_2":0,"n_3":0,"n_4":0,"n_5":0,
                 "branches_tot_length":0} # dictionary with all zeros: there are no fractures in this area
@@ -594,6 +597,14 @@ def analyse_png(png_file: str, part_to_analyse: str) -> dict:
     print(f'  - {len(g.nodes())} nodes')
     print(f'  - {len(g.edges())} edges')
     
+    if len(g.edges()) == 0:
+        """ if after extracting the network there are zero branches, skip analysis and return a dictionary full of zeros """
+        print("0 edges, skipping")
+        input_tstep = get_timestep()
+        branch_info = {"time":timestep_number*input_tstep,"n_I":0,"n_2":0,"n_3":0,"n_4":0,"n_5":0,
+                "branches_tot_length":0} # dictionary with all zeros: there are no fractures in this area
+        return branch_info
+
     # do some statistics
     branch_info = topo_analysis(g,timestep_number)
     g = orientation_calc(g)  
