@@ -192,26 +192,28 @@ def setup_array_const_strain(x_variable,melt_labels,t,target_mr_def_ratios,im_le
     for melt_rate in melt_labels:
         melt_rate = melt_rate.replace("0.0","")   # e.g. from 0.001 to 01, or from 0.02 to 2
         norm_time = t/(float(melt_rate))
-        print(norm_time)
+        # print(f'norm time: {norm_time}')
         file_number = str(round(norm_time)).zfill(5)  # normalise t by the melt rate.  .zfill(5) fills the string with 0 until it's 5 characters long
         if rose:
             file_number = str(round(int(file_number)/1000)*1000).zfill(6)
-        print(file_number)
+        # print(f'file n {file_number}')
         # if float(melt_rate)/
 
         for x,x_val in enumerate(x_variable):
+            real_mr_def_ratio = float(melt_rate)/(float(x_val)*1e-8)  # def rate is still in the 1e08 form (exp is actually negative)
+            # print(f'melt_rate: {melt_rate}, def rate: {x_val}, ratio {real_mr_def_ratio}')
             for n,current_mr_def_ratio in enumerate(target_mr_def_ratios):
                 # to have the same strain, we need the melt rate/defRate ratio to be fixed
-                mr_def_ratio = float(melt_rate)/(float(x_val)*1e-8)  # def rate is still in the 1e08 form (exp is actually negative)
-                # print(f'melt_rate: {melt_rate}, def rate: {x_val}, ratio {mr_def_ratio}')
-                if math.isclose(mr_def_ratio, current_mr_def_ratio, rel_tol=0.3):
-                    # print("right melt - def rate ratio! I'm saving this one...")    
-                    # n is the row number, one per target melt ratio
+                # n is the row number, one per target melt ratio
+
+                if math.isclose(real_mr_def_ratio, current_mr_def_ratio, rel_tol=0.1):
+                    print(f'-  real: {real_mr_def_ratio}, current ideal: {current_mr_def_ratio}, diff {real_mr_def_ratio-current_mr_def_ratio}')
                     big_array = build_array(big_array,variab,x,x_val,melt_rate,file_number,n,cols,rose)   # fill the array with data from images!
+                # otherwise skip it
                 # ----------------------------------
-        print("mrate ",melt_rate)
+        print("mrate ",melt_rate,"\n")
         # end of viscosity/deformation loop
 
 
-    return big_array,mr_def_ratio  # the number of columns is the num of x variable times two (two images for each sim)
+    return big_array  # the number of columns is the num of x variable times two (two images for each sim)
     

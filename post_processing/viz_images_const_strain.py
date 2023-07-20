@@ -19,7 +19,7 @@ im_length = 875
 im_height = 883
 
 target_mr_def_ratios = [3.0,2.0,1.0,1/2,1/3]  # save figures with this melt rate - deformation rate ratio (= constant strain)
-times = range(30,31,5)  # (start, end, step)
+times = range(20,31,5)  # (start, end, step)
 # melt_labels = ['0.009','0.008','0.007','0.006','0.005','0.004','0.003','0.002','0.001'] 
 melt_labels = ['0.008','0.006','0.004','0.002'] 
 # melt_labels = ['0.001'] 
@@ -28,7 +28,7 @@ x_variable = ['1e8','2e8','3e8','4e8','5e8','6e8','7e8','8e8','9e8']  # the valu
 
 ncols = len(x_variable)*2
 for t in times:
-    array,mr_def_ratio = setup_array_const_strain(x_variable,melt_labels,t,target_mr_def_ratios,im_length,im_height,variab,rose)   # load all files
+    array = setup_array_const_strain(x_variable,melt_labels,t,target_mr_def_ratios,im_length,im_height,variab,rose)   # load all files
     result = gallery(array,ncols)           # organise in gallery view
     fig, ax = plt.subplots()
     ax.imshow(result.astype('uint8')) # uint8 explanation: https://stackoverflow.com/questions/49643907/clipping-input-data-to-the-valid-range-for-imshow-with-rgb-data-0-1-for-floa
