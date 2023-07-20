@@ -43,7 +43,7 @@ for t in times:
     elif variab =="def_rate":
         filename = 'images_in_grid/cs_defRate_mRate_t'
         ax.set_ylabel('Melt rate / def rate')
-    plt.savefig(filename+str(t).zfill(3)+'.png',dpi=600)
+    plt.savefig(filename+str(int(t)).zfill(3)+'.png',dpi=600)
     
     #plt.show()
 

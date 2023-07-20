@@ -4,6 +4,7 @@ Functions called by viz_images* and viz_rose* scripts.
 
 import matplotlib.pyplot as plt
 import os
+import math
 from PIL import Image
 import numpy as np
 
@@ -138,7 +139,7 @@ def setup_array(x_variable,melt_labels,t,im_length,im_height,variab,rose):
          - rows*cols, 
          - length and 
          - height of each image, 
-         3 (RGB) 
+         - 3 (RGB) 
 
          calls build_array(), which populates the big array
          """
@@ -155,7 +156,7 @@ def setup_array(x_variable,melt_labels,t,im_length,im_height,variab,rose):
     # for row in range(0,rows):
     for row,melt_rate in enumerate(melt_labels):
         melt_rate = melt_rate.replace("0.0","")   # e.g. from 0.001 to 01, or from 0.02 to 2
-        file_number = str(int(t/(int(melt_rate)))).zfill(5)  # normalise t by the melt rate.  .zfill(5) fills the string with 0 until it's 5 characters long
+        file_number = str(round(t/(int(melt_rate)))).zfill(5)  # normalise t by the melt rate.  .zfill(5) fills the string with 0 until it's 5 characters long
         if rose:
             file_number = str(round(int(file_number)/1000)*1000).zfill(6)
         for x,x_val in enumerate(x_variable):
@@ -169,6 +170,14 @@ def setup_array(x_variable,melt_labels,t,im_length,im_height,variab,rose):
 
 
 def setup_array_const_strain(x_variable,melt_labels,t,target_mr_def_ratios,im_length,im_height,variab,rose):
+    """ setup the 'big array' with dimensions:
+         - rows*cols, 
+         - length and 
+         - height of each image, 
+         - 3 (RGB) 
+        Keeps strain constant (not just melt amount)
+
+         calls build_array(), which populates the big array """
     print(melt_labels)
     melt_labels_t = [None] * len(melt_labels) # labels with extra term for time. Empty string list, same size as melt_labels
     rows = len(target_mr_def_ratios)  # how many values of ratios: it's the number of rows
@@ -185,6 +194,9 @@ def setup_array_const_strain(x_variable,melt_labels,t,target_mr_def_ratios,im_le
         norm_time = t/(float(melt_rate))
         print(norm_time)
         file_number = str(round(norm_time)).zfill(5)  # normalise t by the melt rate.  .zfill(5) fills the string with 0 until it's 5 characters long
+        if rose:
+            file_number = str(round(int(file_number)/1000)*1000).zfill(6)
+        print(file_number)
         # if float(melt_rate)/
 
         for x,x_val in enumerate(x_variable):
@@ -192,7 +204,7 @@ def setup_array_const_strain(x_variable,melt_labels,t,target_mr_def_ratios,im_le
                 # to have the same strain, we need the melt rate/defRate ratio to be fixed
                 mr_def_ratio = float(melt_rate)/(float(x_val)*1e-8)  # def rate is still in the 1e08 form (exp is actually negative)
                 # print(f'melt_rate: {melt_rate}, def rate: {x_val}, ratio {mr_def_ratio}')
-                if mr_def_ratio == current_mr_def_ratio:
+                if math.isclose(mr_def_ratio, current_mr_def_ratio, rel_tol=0.3):
                     # print("right melt - def rate ratio! I'm saving this one...")    
                     # n is the row number, one per target melt ratio
                     big_array = build_array(big_array,variab,x,x_val,melt_rate,file_number,n,cols,rose)   # fill the array with data from images!
