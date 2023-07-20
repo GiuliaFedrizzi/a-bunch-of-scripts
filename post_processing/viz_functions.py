@@ -81,7 +81,7 @@ def build_array(big_array,variab,x,x_val,melt_rate,file_number,row,cols,rose):
             rose_big_file = Image.open(rose_file)  # to do: do I need to crop it?
 
             w, h = rose_big_file.size
-            print(f'w = {w}, h = {h}')
+            # print(f'w = {w}, h = {h}')
             rf  =  np.asarray(rose_big_file.convert('RGB'))
             # rf  =  np.asarray(bb_big_file.crop((585,188,1468,1063)).convert('RGB'))
             big_array[row*cols+x,:,:,:] = rf  # only 1 figure per simulation now
@@ -102,11 +102,15 @@ def build_melt_labels_t(melt_labels,t,file_number,row):
         return melt_labels[row]+" ("+file_number+"*)"   # add a flag that says it's not exact
 
 
-def set_ax_options(ax,variab,x_variable,melt_labels,t,im_length):
+def set_ax_options(ax,variab,x_variable,melt_labels,t,im_length,rose):
     """
     set ticks, labels, title etc for the final plot
     """
-    ax.set_xticks(np.arange(im_length/2,im_length*len(x_variable)*2,im_length*2)) #  position and values of ticks on the x axis. Start: 437 (half width of an image) End: length of image times num of images in one row, Step: 883 (legth of image)
+    if rose:
+        ax.set_xticks(np.arange(im_length/2,im_length*len(x_variable),im_length)) #  position and values of ticks on the x axis. Start: 437 (half width of an image) End: length of image times num of images in one row, Step: 883 (legth of image)
+    else:
+        ax.set_xticks(np.arange(im_length/2,im_length*len(x_variable)*2,im_length*2)) #  position and values of ticks on the x axis. Start: 437 (half width of an image) End: length of image times num of images in one row, Step: 883 (legth of image)
+
     ax.set_xticklabels(x_variable,fontsize=4)
 
     if variab == "viscosity":

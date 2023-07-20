@@ -33,7 +33,7 @@ for t in times:
     fig, ax = plt.subplots()
     ax.imshow(result.astype('uint8')) # uint8 explanation: https://stackoverflow.com/questions/49643907/clipping-input-data-to-the-valid-range-for-imshow-with-rgb-data-0-1-for-floa
 
-    set_ax_options(ax,variab,x_variable,melt_labels,t,im_length)
+    set_ax_options(ax,variab,x_variable,melt_labels,t,im_length,rose)
     ax.set_yticks([(i+0.5)*883 for i in range(0,len(target_mr_def_ratios),1)])  # 883 is height of image. Start from 0.5 times the height etc.
     ax.set_yticklabels(target_mr_def_ratios,fontsize=4)   #  position and values of ticks on the y axis. Start: 441 (half of image height) End: height of image times num of images in one column, Step: 883 (height of image)
     if not os.path.exists('images_in_grid'):

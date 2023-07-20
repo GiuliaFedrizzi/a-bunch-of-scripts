@@ -35,7 +35,7 @@ for t in times:
     fig, ax = plt.subplots()
     ax.imshow(result.astype('uint8')) # uint8 explanation: https://stackoverflow.com/questions/49643907/clipping-input-data-to-the-valid-range-for-imshow-with-rgb-data-0-1-for-floa
 
-    set_ax_options(ax,variab,x_variable,melt_labels,t,im_length)
+    set_ax_options(ax,variab,x_variable,melt_labels,t,im_length,rose)
     ax.set_yticklabels(melt_and_time,fontsize=4)   #  position and values of ticks on the y axis. Start: 441 (half of image height) End: height of image times num of images in one column, Step: 883 (height of image)
     y_ticks_positions = np.arange(im_height/2,im_height*len(melt_labels)+im_height/2,im_height)
     ax.set_yticks(y_ticks_positions)

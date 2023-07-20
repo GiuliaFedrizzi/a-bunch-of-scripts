@@ -36,7 +36,7 @@ for t in times:
     fig, ax = plt.subplots()
     ax.imshow(result.astype('uint8')) # uint8 explanation: https://stackoverflow.com/questions/49643907/clipping-input-data-to-the-valid-range-for-imshow-with-rgb-data-0-1-for-floa
 
-    set_ax_options(ax,variab,x_variable,melt_labels,t,im_length)
+    set_ax_options(ax,variab,x_variable,melt_labels,t,im_length,rose)
     ax.set_yticklabels(melt_and_time,fontsize=4)   #  position and values of ticks on the y axis. Start: 441 (half of image height) End: height of image times num of images in one column, Step: 883 (height of image)
     y_ticks_positions = np.arange(im_height/2,im_height*len(melt_labels)+im_height/2,im_height)
     ax.set_yticks(y_ticks_positions)
@@ -49,7 +49,7 @@ for t in times:
         filename = 'images_in_grid/rose_defRate_mRate_t'
         ax.set_ylabel('Pressure increment')
 
-    plt.savefig(filename+str(t/1000).zfill(3)+'.png',dpi=600)
+    plt.savefig(filename+str(int(t/1000)).zfill(3)+'.png',dpi=600)  # back to the default name that matches viz_images_in_grid
     
     #plt.show()
 
