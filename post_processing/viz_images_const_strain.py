@@ -19,9 +19,9 @@ im_length = 875
 im_height = 883
 
 target_mr_def_ratios = [3.0,2.0,1.0,1/2,1/3]  # save figures with this melt rate - deformation rate ratio (= constant strain)
-times = range(20,31,5)  # (start, end, step)
-# melt_labels = ['0.009','0.008','0.007','0.006','0.005','0.004','0.003','0.002','0.001'] 
-melt_labels = ['0.008','0.006','0.004','0.002'] 
+times = range(10,101,5)  # (start, end, step)
+melt_labels = ['0.009','0.008','0.007','0.006','0.005','0.004','0.003','0.002','0.001'] 
+# melt_labels = ['0.008','0.006','0.004','0.002'] 
 # melt_labels = ['0.001'] 
 x_variable = ['1e8','2e8','3e8','4e8','5e8','6e8','7e8','8e8','9e8']  # the values of the x variable to plot (e.g. def rate)
 

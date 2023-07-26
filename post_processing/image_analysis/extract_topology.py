@@ -205,7 +205,7 @@ def is_valid_self_loop(path: List[Tuple[int, int]], min_self_loop_distance: int)
     return len([c for c, n in Counter(path).items() if n >= 2]) == 1
 
 
-def find_paths(skel: np.ndarray, nodes: List[Tuple[int]], min_distance=5) -> List[Path]:
+def find_paths(skel: np.ndarray, nodes: List[Tuple[int]], min_distance=4) -> List[Path]:
     """Find paths between nodes in the graph using the connectivity in the skeleton.
 
     This returns a list of edges (pairs of nodes) with the following properties.
@@ -215,6 +215,8 @@ def find_paths(skel: np.ndarray, nodes: List[Tuple[int]], min_distance=5) -> Lis
     This will early-out if a path shorter than min_distance is found.
 
     There may be multiple distinct paths between the same nodes, or a path between a node and itself.
+    
+    I think min_distance is for pruning -> getting rid of a branch, completely
     """
    
     width, height = skel.shape
@@ -351,7 +353,7 @@ def simplify_paths(g: nx.Graph, tolerance=1) -> nx.Graph:
     return g
 
 
-def extract_network(px: np.ndarray, im: Image, min_distance=12) -> nx.Graph:
+def extract_network(px: np.ndarray, im: Image, min_distance=7) -> nx.Graph:  # was 12
     skel = morphology.thin(px)
     print(f'Skeleton px={skel.sum()}')
     g = connect_graph(skel, min_distance)
@@ -361,6 +363,15 @@ def extract_network(px: np.ndarray, im: Image, min_distance=12) -> nx.Graph:
 
     # simplify:
     g = simplify_paths(g)
+    
+    to_remove = []  # edges that need to be removed because they are duplicates
+    for u, v, key in g.edges(keys=True):
+        if key > 0:
+            # this is a duplicate!
+            print(f'key is {key} in {u}, {v}')
+            to_remove.append((u, v, key))
+    g.remove_edges_from(to_remove)
+
     return g
 
 
@@ -419,7 +430,6 @@ def draw_rose_diagram(g: nx.Graph,proportional: bool):
     #angles = np.array([168.6900675259798, 59.14124477892943, 68.96248897457819, 121.15272609593733, 124.28687697720896, 59.748306649964874])
     angles =  np.array([o for (u,v,o) in g.edges.data('orientation')])  # get the attribute "orientation"
     
-    print(angles)
     bins = np.arange(-5, 366, 10)
     if proportional:
         lengths =  np.array([d for (u,v,d) in g.edges.data('d')])  # get the attribute "orientation"
@@ -432,7 +442,6 @@ def draw_rose_diagram(g: nx.Graph,proportional: bool):
 
     # Sum the last value with the first value.
     angles_in_bins[0] += angles_in_bins[-1]
-    print(angles_in_bins)
 
     # shouldn't be necessary, but in case there are angles > 180, sum them to their corresponding 
     # angle between 0 and 180. This way the result is symmetric: bottom half is the same 
@@ -499,7 +508,7 @@ def topo_analysis(g: nx.Graph,tstep_number: float) -> dict:
     # branches_to_line = n_of_branches / n_of_lines
     # print(f'branches/lines: {branches_to_line}')
     branches_tot_length = sum(edge_lengths)
-    print(f'branches tot length: {branches_tot_length}')
+    # print(f'branches tot length: {branches_tot_length}')
     branch_info = {"time":tstep_number*input_tstep,"n_I":n_I,"n_2":n_2,"n_3":n_3,"n_4":n_4,"n_5":n_5,
                    "branches_tot_length":branches_tot_length} # dictionary with info that I just calculated
     return branch_info
@@ -509,8 +518,9 @@ def orientation_calc(g: nx.Graph) -> nx.Graph:
     Calculate the orientation of the edges. Add it to the edge attributes
     """
     edge_coord = [x for x in g.edges()]
-    # print("id,x1,y1,x2,y2,angle")
-    for i,e in enumerate(edge_coord):   
+    # print(f'n edges: {len(edge_coord)},\nedges: {edge_coord}')
+    # for e in edge_coord:   
+    for e in g.edges():   
         x1,y1=e[0]; x2,y2=e[1]  # extract individual node coordinates from edge 
         if (x1-x2) != 0:  # not horizontal 
             angle = math.atan( -(y1-y2)/(x1-x2) ) * 180 / math.pi  # angle in degrees.
@@ -519,9 +529,9 @@ def orientation_calc(g: nx.Graph) -> nx.Graph:
         if angle<0:
             angle = angle + 180  # second and fourth quadrant
         g[e[0]][e[1]][0]['orientation']=angle    # to access edges: e0, e1, key, attribute
-        # print(i,x1,y1,x2,y2,angle)
+        # print(x1,y1,x2,y2,angle)
         # print(angle)
-    # print(g.edges(data=True))
+    # print(g.edges(keys=True))  # I used to have duplicate, and they had key = 1
     # print([o for (u,v,o) in g.edges.data('orientation')])
     return g
 
@@ -532,7 +542,7 @@ def analyse_png(png_file: str, part_to_analyse: str) -> dict:
     rgb = tuple(int(v) for v in color[1:-1].split(','))
     assert len(rgb) == 3
     assert png_file.endswith('.png')
-    
+    print(f'file is {png_file}')
     timestep_number = float(re.findall(r'\d+',png_file)[0])   # regex to find numbers in string. Then convert to float. Will be used to name the csv file 
         
     pim = Image.open(png_file).convert('RGB') # Load image, convert to rgb
@@ -543,7 +553,7 @@ def analyse_png(png_file: str, part_to_analyse: str) -> dict:
 
     # Get X and Y coordinates of all blue pixels
     Y, X = np.where(np.all(im_array==blue,axis=2))
-
+    
     im = Image.open(png_file)
 
     left = min(X)+5; top = min(Y)+7; right = max(X)-5; bottom = max(Y)-5 # auto from blue
@@ -578,22 +588,22 @@ def analyse_png(png_file: str, part_to_analyse: str) -> dict:
     im = im.filter(ImageFilter.ModeFilter(size=7)) # https://stackoverflow.com/questions/62078016/smooth-the-edges-of-binary-images-face-using-python-and-open-cv 
     # out_path = png_file.replace('.png', '_median.png')
     # im.save(out_path)
-    # im.show()   DO NOT DO im.show() ON BOLT OR IT WILL OPEN FIREFOX AND CRASH EVERYTHING
+    # im.show()   DO NOT DO im.show() ON BOLT/OFFICE COMPUTER OR IT WILL OPEN FIREFOX AND CRASH EVERYTHING
 
 
     px = find_color(im, rgb).T
 
-    print(f'Street RGB: {rgb}')
-    print(f'Street pixels: {px.sum()}')
+    print(f'Fracture RGB: {rgb}')
+    print(f'Fracture pixels: {px.sum()}')
     if px.sum() == 0:  
         """ if no fractures, skip analysis and return a dictionary full of zeros """
-        print("0 pixel, skipping")
+        print("0 pixels, skipping")
         input_tstep = get_timestep()
         branch_info = {"time":timestep_number*input_tstep,"n_I":0,"n_2":0,"n_3":0,"n_4":0,"n_5":0,
                 "branches_tot_length":0} # dictionary with all zeros: there are no fractures in this area
         return branch_info
     g = extract_network(px,im)
-    print(f'Extracted street network:')
+    print(f'Extracted fracture network:')
     print(f'  - {len(g.nodes())} nodes')
     print(f'  - {len(g.edges())} edges')
     

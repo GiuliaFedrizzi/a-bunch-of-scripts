@@ -51,8 +51,8 @@ if (var_is_visc){
 } else if (var_is_def) {
     x_variable <- c('1e8','2e8','3e8','4e8','5e8','6e8','7e8','8e8','9e8')#,'5e3','1e4')#,'2e4','4e4')  # the values of the x variable to plot (e.g. def rate)
 }
-# melt_rate_list <- c('01','02','03','05','04','06','08')#,'09')#,'1','2')
-melt_rate_list <- c('02','04','06','08')#,'09')#,'1','2')
+melt_rate_list <- c('01','02','03','05','04','06','08','09')#,'1','2')
+# melt_rate_list <- c('02','04','06','08')#,'09')#,'1','2')
 # melt_rate_list <- c('01')#,'09')
 
 # set some options automatically
@@ -339,7 +339,7 @@ if (TRUE) {
 
 # --------------------- heatmaps --------------------
 # heatmap for B20,B21,B_C,B22
-if (TRUE) {
+if (FALSE) {
     #png_name <- paste(base_path,"/branch_plots/br_heat_B_",time_string,".png",sep='')  # build name of png
     #png(file=png_name,width = 1400,height = 1400,res=200)
     if (var_is_visc){

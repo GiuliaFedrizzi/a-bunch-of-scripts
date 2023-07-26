@@ -16,8 +16,8 @@ rose = False
 im_length = 875
 im_height = 883
 times = range(25,31,5)  # (start, end, step)
-# melt_labels = ['0.009','0.008','0.007','0.006','0.005','0.004','0.003','0.002','0.001'] 
-melt_labels = ['0.008','0.006','0.004','0.002'] 
+melt_labels = ['0.009','0.008','0.007','0.006','0.005','0.004','0.003','0.002','0.001'] 
+# melt_labels = ['0.008','0.006','0.004','0.002'] 
 
 if variab == "viscosity":
     # x_variable = ['1e1']  # the values of the x variable to plot (e.g. viscosity)
