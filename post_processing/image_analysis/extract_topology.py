@@ -72,12 +72,12 @@ import math
 def find_color(im: Image, rgb: Tuple[int]) -> np.ndarray:
     """Given an RGB image, return an ndarray with 1s where the pixel is the given color."""
     px = np.asarray(im)
-    print(f'px shape: {px.shape}')
-    print(f'im size: {im.size}')
+    # print(f'px shape: {px.shape}')
+    # print(f'im size: {im.size}')
     width, height = im.size  # get width and height because I need to invert these
     # print(f'width {width}, height {height}')
     out = np.zeros((height,width), dtype=np.uint8)  # h,w instead of w,h because PIL treats them the other way round
-    print(f'out shape: {out.shape}')
+    # print(f'out shape: {out.shape}')
 
     r, g, b = rgb
     out[(px[:, :, 0] == r) & (px[:, :, 1] == g) & (px[:, :, 2] == b)] = 1
@@ -433,8 +433,14 @@ def draw_rose_diagram(g: nx.Graph,proportional: bool):
     bins = np.arange(-5, 366, 10)
     if proportional:
         lengths =  np.array([d for (u,v,d) in g.edges.data('d')])  # get the attribute "orientation"
-        # normalise lengths so that they go from 0 to 1
-        lengths_norm = (lengths-np.min(lengths))/(np.max(lengths)-np.min(lengths))
+        # print(f'lengths: {lengths}\nmin: {np.min(lengths)}, max: {np.max(lengths)}')
+        if np.max(lengths)-np.min(lengths) != 0:
+            # normalise lengths so that they go from 0 to 1
+            lengths_norm = (lengths-np.min(lengths))/(np.max(lengths)-np.min(lengths))
+        else:
+            # if they are all the same length, or if there is only one, 
+            # the normalised version of the array is 1 over their number (e.g. 1 in the case of 1 edge)
+            lengths_norm = np.ones(len(lengths))/len(lengths) 
         # use lengths as weights for the histogram
         angles_in_bins, bins = np.histogram(angles, bins,weights=lengths_norm)
     else:
@@ -475,7 +481,6 @@ def topo_analysis(g: nx.Graph,tstep_number: float) -> dict:
     """
 
     edge_lengths = [d for (u,v,d) in g.edges.data('d')]  # distance values are stored under the attribute "d"
-    print(f'n of branches: {len(edge_lengths)}')
     print(f'branch lengths: {edge_lengths}')
 
     input_tstep = get_timestep()
@@ -497,12 +502,12 @@ def topo_analysis(g: nx.Graph,tstep_number: float) -> dict:
     n_X = n_4 + n_5   # X nodes
 
     #connected = [x for x in all_degrees if (x!=1)]
-    print(f'all_degrees: {all_degrees}')
+    # print(f'all_degrees: {all_degrees}')
     print(f'num of I: {n_I}, Y: {n_Y}, X: {n_X}. tot = {n_I+n_Y+n_X}')
 
     # assert len(g.nodes())==n_I+n_Y+n_X, "Error: some of the nodes have not been taken into account. There might have too many connections."
     
-    n_of_lines = 0.5*(n_I+n_Y)
+    n_of_lines = 0.5*(n_1+n_Y)
     print(f'lines: {n_of_lines}')
     n_of_branches = 0.5*(n_I+3*n_3+4*n_4+5*n_5) + n_2 + n_0
     # branches_to_line = n_of_branches / n_of_lines
@@ -517,9 +522,7 @@ def orientation_calc(g: nx.Graph) -> nx.Graph:
     """
     Calculate the orientation of the edges. Add it to the edge attributes
     """
-    edge_coord = [x for x in g.edges()]
-    # print(f'n edges: {len(edge_coord)},\nedges: {edge_coord}')
-    # for e in edge_coord:   
+ 
     for e in g.edges():   
         x1,y1=e[0]; x2,y2=e[1]  # extract individual node coordinates from edge 
         if (x1-x2) != 0:  # not horizontal 
@@ -530,7 +533,6 @@ def orientation_calc(g: nx.Graph) -> nx.Graph:
             angle = angle + 180  # second and fourth quadrant
         g[e[0]][e[1]][0]['orientation']=angle    # to access edges: e0, e1, key, attribute
         # print(x1,y1,x2,y2,angle)
-        # print(angle)
     # print(g.edges(keys=True))  # I used to have duplicate, and they had key = 1
     # print([o for (u,v,o) in g.edges.data('orientation')])
     return g
