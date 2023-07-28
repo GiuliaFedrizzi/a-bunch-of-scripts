@@ -97,6 +97,9 @@ def set_colormap_pressure(transform1Display):
 
     # get opacity transfer function/opacity map for 'Pressure'
     pressurePWF = GetOpacityTransferFunction('Pressure')
+    
+    # hide potential colormaps that are not being used
+    hide_colormaps()
 
     # get color legend/bar for pressureLUT in view renderView1
     pressureLUTColorBar = GetScalarBar(pressureLUT, renderView1)
@@ -217,8 +220,9 @@ def set_colormap_porosity(transform1Display):
     # Apply a preset using its name. Note this may not work as expected when presets have duplicate names.
     # porosityLUT.ApplyPreset('BuPu', True)   # bad colours
     porosityLUT.ApplyPreset('Gray and Red', True)
-    porosityLUT.RGBPoints = [0.0383252, 0.101961, 0.101961, 0.101961, 0.060131396515999996, 0.227451, 0.227451, 0.227451, 0.08193759303199999, 0.359939, 0.359939, 0.359939, 0.10374396331639998, 0.502653, 0.502653, 0.502653, 0.12555015983239998, 0.631373, 0.631373, 0.631373, 0.1473563563484, 0.749865, 0.749865, 0.749865, 0.1691625528644, 0.843368, 0.843368, 0.843368, 0.19096874938039998, 0.926105, 0.926105, 0.926105, 0.22411532700061798, 0.999846, 0.997232, 0.995694, 0.2448800951242447, 0.994925, 0.908651, 0.857901, 0.2689235210418701, 0.982468, 0.800692, 0.706113, 0.2875025272369385, 0.960323, 0.66782, 0.536332, 0.3104530870914459, 0.894579, 0.503806, 0.399769, 0.3323107361793518, 0.81707, 0.33218, 0.281046, 0.3530755341053009, 0.728489, 0.155017, 0.197386, 0.36541866904520004, 0.576932, 0.055363, 0.14925, 0.385862, 0.403922, 0.0, 0.121569]
 
+    #RGBPoints is a list of doubles in the order (value_0, red_0, green_0, blue_0, value_1, red_1, green_1, blue_1, ...)
+    # porosityLUT.RGBPoints = [0.0383252, 0.101961, 0.101961, 0.101961, 0.060131396515999996, 0.227451, 0.227451, 0.227451, 0.08193759303199999, 0.359939, 0.359939, 0.359939, 0.10374396331639998, 0.502653, 0.502653, 0.502653, 0.12555015983239998, 0.631373, 0.631373, 0.631373, 0.1473563563484, 0.749865, 0.749865, 0.749865, 0.1691625528644, 0.843368, 0.843368, 0.843368, 0.19096874938039998, 0.926105, 0.926105, 0.926105, 0.22411532700061798, 0.999846, 0.997232, 0.995694, 0.2448800951242447, 0.994925, 0.908651, 0.857901, 0.2689235210418701, 0.982468, 0.800692, 0.706113, 0.2875025272369385, 0.960323, 0.66782, 0.536332, 0.3104530870914459, 0.894579, 0.503806, 0.399769, 0.3323107361793518, 0.81707, 0.33218, 0.281046, 0.3530755341053009, 0.728489, 0.155017, 0.197386, 0.36541866904520004, 0.576932, 0.055363, 0.14925, 0.385862, 0.403922, 0.0, 0.121569]
     # show color bar/color legend
     transform1Display.SetScalarBarVisibility(renderView1, True)
 
@@ -228,6 +232,7 @@ def set_colormap_porosity(transform1Display):
     
     # rescale color and/or opacity maps used to include current data range
     transform1Display.RescaleTransferFunctionToDataRange(True, False)
+    porosityLUT.RGBPoints = [0.23, 0.101961, 0.101961, 0.101961, 0.2552606165409088, 0.843368, 0.843368, 0.843368, 0.277074, 0.403922, 0.0, 0.121569]
 
     # get color legend/bar for brokenBondsLUT in view renderView1
     porosityLUTColorBar = GetScalarBar(porosityLUT, renderView1)
@@ -244,7 +249,7 @@ def set_colormap_porosity(transform1Display):
     
 
     # Rescale transfer function - set limits
-    porosityLUT.RescaleTransferFunction(0.02, 0.3)
+    # porosityLUT.RescaleTransferFunction(0.02, 0.3)
 
     # change scalar bar placement
     porosityLUTColorBar.WindowLocation = 'AnyLocation'
