@@ -50,7 +50,7 @@ def build_array(big_array,variab,x,x_val,melt_rate,file_number,row,cols,rose):
     # now we have the path, choose if I open "poro_file" and "bb_file" or "rose_file"
     if rose == False:
         """ "poro_file" and "bb_file"  """
-        poro_file = potential_file_path +'/a_porosity_'+file_number+'.png' 
+        poro_file = potential_file_path +'/a_porosity_160_'+file_number+'.png' 
         bb_file  = potential_file_path +'/a_brokenBonds_'+file_number+'.png'
     
         if os.path.isfile(poro_file):

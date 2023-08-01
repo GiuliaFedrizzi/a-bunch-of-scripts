@@ -15,7 +15,7 @@ variab = find_variab()
 rose = False
 im_length = 875
 im_height = 883
-times = range(60,170,5)  # (start, end, step)
+times = range(70,170,5)  # (start, end, step)
 melt_labels = ['0.009','0.008','0.007','0.006','0.005','0.004','0.003','0.002','0.001'] 
 # melt_labels = ['0.008','0.006','0.004','0.002'] 
 
@@ -43,7 +43,7 @@ for t in times:
         os.makedirs('images_in_grid')
     if variab == "viscosity":
         ax.set_ylabel('Melt increment per spot')
-        filename = 'images_in_grid/visc_mRate1_t'
+        filename = 'images_in_grid/visc_mRate_160_t'
     elif variab =="def_rate":
         filename = 'images_in_grid/defRate_mRate_t'
         ax.set_ylabel('Pressure increment')

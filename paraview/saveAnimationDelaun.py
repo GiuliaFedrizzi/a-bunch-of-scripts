@@ -218,7 +218,7 @@ if paravParam.porosity:
         set_colormap_porosity(transform1Display)
         #HideScalarBarIfNotNeeded(brokenBondsLUT, renderView1)
         # save animation
-        pathAndName = thisDirectory+'/a_porosity.png'
+        pathAndName = thisDirectory+'/a_porosity_160.png'
         SaveAnimation(pathAndName, renderView1, ImageResolution=[2054, 1248],
             FrameWindow=rangeForAnimation, 
             # PNG options
