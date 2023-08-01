@@ -44,7 +44,8 @@ if (sum(grepl("visc",dirs), na.rm=TRUE)>0){  # count how many times it finds "vi
 
 if (var_is_visc){
     if (two_subdirs){
-        x_variable <- c('1e1','5e1','1e2','5e2','1e3','5e3','1e4')  # the values of the x variable to plot (viscosity)
+        # x_variable <- c('1e1','5e1','1e2','5e2','1e3','5e3','1e4')  # the values of the x variable to plot (viscosity)
+        x_variable <- c('1e1','1e2','5e2','1e3','5e3','1e4')  # the values of the x variable to plot (viscosity)
     } else {
         x_variable <- c('1e2')  # just one value
     }
@@ -270,7 +271,7 @@ if (FALSE) {
 # import the library to create ternary plots
 library("ggplot2")
 library("ggtern")
-if (TRUE) {
+if (FALSE) {
     # # connected-connected - isolated-connected - isolated-isolated
     # df_m["P_I"] <- df_m$N_I/(df_m$N_I+3*df_m$N_Y+4*df_m$N_X)   # probability of an I node
     # df_m["P_C"] <- (3*df_m$N_Y+4*df_m$N_X)/(df_m$N_I+3*df_m$N_Y+4*df_m$N_X)   # probability of a C node
@@ -284,7 +285,7 @@ if (TRUE) {
     scale_colour_brewer(palette='Blues')+
     scale_fill_distiller(direction=+1)+
     scale_fill_discrete(guide = guide_legend(reverse=TRUE))+    
-    labs(x = expression('N'[Y]),y = expression('N'[I]),z = expression('N'[X]),colour = "Melt Rate")+
+    labs(x = expression('N'[Y]),y = expression('N'[I]),z = expression('N'[X]),colour = "Melt Rate")+   # labels for the vertices
     guides(color = guide_legend(reverse=TRUE))+    # low at the bottom, high at the top
     theme(plot.background = element_rect(fill='transparent', color=NA),
         #panel.grid.major = element_line(linetype = "dotted",colour = "black"),
@@ -373,13 +374,21 @@ if (FALSE) {
 
 # heatmaps combined with lineplots 
 if (TRUE) {
+    # heatmaps
     png_name <- paste(base_path,"/branch_plots/br_heat_B_",time_string,".png",sep='')  # build name of png
     png(file=png_name,width = 2800,height = 2800,res=100)
     if (var_is_visc){
-    p_heat1 <- ggplot(df_m,aes(factor(x=viscosity),melt_rate, fill=B_20))  + scale_fill_distiller(direction = +1)+ geom_tile() + theme(legend.key.size = unit(0.5, 'cm'))
-    p_heat2 <- ggplot(df_m,aes(factor(x=viscosity),melt_rate, fill=B_21))  + scale_fill_distiller(direction = +1)+ geom_tile()+ theme(legend.key.size = unit(0.5, 'cm'))
-    p_heat3 <- ggplot(df_m,aes(factor(x=viscosity),melt_rate, fill=B_C))  + scale_fill_distiller(direction = +1)+ geom_tile()+ theme(legend.key.size = unit(0.5, 'cm'))
-    p_heat4 <- ggplot(df_m,aes(factor(x=viscosity),melt_rate, fill=B_22))  + scale_fill_distiller(direction = +1)+ geom_tile()+ theme(legend.key.size = unit(0.5, 'cm'))
+    p_heat1 <- ggplot(df_m,aes(factor(x=viscosity),melt_rate, fill=B_20))  + scale_fill_distiller(direction = +1)+ geom_tile() + theme(legend.key.size = unit(0.5, 'cm'))+
+    labs(x = "Viscosity",y = "Melt Rate",fill =  expression('B'[20]))
+
+    p_heat2 <- ggplot(df_m,aes(factor(x=viscosity),melt_rate, fill=B_21))  + scale_fill_distiller(direction = +1)+ geom_tile()+ theme(legend.key.size = unit(0.5, 'cm'))+
+    labs(x = "Viscosity",y = "Melt Rate",fill =  expression('B'[21]))
+
+    p_heat3 <- ggplot(df_m,aes(factor(x=viscosity),melt_rate, fill=B_C))  + scale_fill_distiller(direction = +1)+ geom_tile()+ theme(legend.key.size = unit(0.5, 'cm'))+
+    labs(x = "Viscosity",y = "Melt Rate",fill =  expression('B'[C]))
+
+    p_heat4 <- ggplot(df_m,aes(factor(x=viscosity),melt_rate, fill=B_22))  + scale_fill_distiller(direction = +1)+ geom_tile()+ theme(legend.key.size = unit(0.5, 'cm'))+
+    labs(x = "Viscosity",y = "Melt Rate",fill =  expression('B'[22]))
     } else if (var_is_def){
     p_heat1 <- ggplot(df_m,aes(factor(x=def_rate),melt_rate, fill=B_20))  + scale_fill_distiller(direction = +1)+ geom_tile() + theme(legend.key.size = unit(0.5, 'cm'))
     p_heat2 <- ggplot(df_m,aes(factor(x=def_rate),melt_rate, fill=B_21))  + scale_fill_distiller(direction = +1)+ geom_tile()+ theme(legend.key.size = unit(0.5, 'cm'))
@@ -387,11 +396,23 @@ if (TRUE) {
     p_heat4 <- ggplot(df_m,aes(factor(x=def_rate),melt_rate, fill=B_22))  + scale_fill_distiller(direction = +1)+ geom_tile()+ theme(legend.key.size = unit(0.5, 'cm'))
     }
 
+    # melt rate v B   lineplots
     if (var_is_visc){
-    pm1 <- ggplot(data=df_m,mapping = aes(x=true_m_rate,y=B_20)) + geom_point(aes(color = factor(x=viscosity)))+ geom_line(aes(color = factor(x=viscosity)))+ theme(legend.key.size = unit(0.5, 'cm')) #+ coord_flip() #,linetype = "dashed") #+ scale_x_continuous(trans='log10') 
-    pm2 <- ggplot(data=df_m,mapping = aes(x=true_m_rate,y=B_21)) + geom_point(aes(color = factor(x=viscosity)))+ geom_line(aes(color = factor(x=viscosity)))+ theme(legend.key.size = unit(0.5, 'cm'))# + geom_line(aes(color = viscosity),linetype = "dashed") + scale_x_continuous(trans='log10')
-    pm3 <- ggplot(data=df_m,mapping = aes(x=true_m_rate,y=B_C)) + geom_point(aes(color = factor(x=viscosity)))+ geom_line(aes(color = factor(x=viscosity)))+ theme(legend.key.size = unit(0.5, 'cm')) #+ geom_line(aes(color = viscosity),linetype = "dashed") + scale_x_continuous(trans='log10')
-    pm4 <- ggplot(data=df_m,mapping = aes(x=true_m_rate,y=B_22)) + geom_point(aes(color = factor(x=viscosity)))+ geom_line(aes(color = factor(x=viscosity)))+ theme(legend.key.size = unit(0.5, 'cm'))# + geom_line(aes(color = viscosity),linetype = "dashed") + scale_x_continuous(trans='log10')
+    pm1 <- ggplot(data=df_m,mapping = aes(x=true_m_rate,y=B_20)) + geom_point(aes(color = factor(x=viscosity)))+ geom_line(aes(color = factor(x=viscosity)))+ theme(legend.key.size = unit(0.5, 'cm'))+ #+ coord_flip() #,linetype = "dashed") #+ scale_x_continuous(trans='log10') 
+    labs(x = "Melt Rate",y = expression('B'[20]),colour = "Viscosity")
+    pm1 <- pm1 + coord_flip()  # rotate data by 90 degrees
+
+    pm2 <- ggplot(data=df_m,mapping = aes(x=true_m_rate,y=B_21)) + geom_point(aes(color = factor(x=viscosity)))+ geom_line(aes(color = factor(x=viscosity)))+ theme(legend.key.size = unit(0.5, 'cm'))+# + geom_line(aes(color = viscosity),linetype = "dashed") + scale_x_continuous(trans='log10')
+    labs(x = "Melt Rate",y = expression('B'[21]),colour = "Viscosity")
+    pm2 <- pm2 + coord_flip()  # rotate data by 90 degrees
+
+    pm3 <- ggplot(data=df_m,mapping = aes(x=true_m_rate,y=B_C)) + geom_point(aes(color = factor(x=viscosity)))+ geom_line(aes(color = factor(x=viscosity)))+ theme(legend.key.size = unit(0.5, 'cm'))+ #+ geom_line(aes(color = viscosity),linetype = "dashed") + scale_x_continuous(trans='log10')
+    labs(x = "Melt Rate",y = expression('B'[C]),colour = "Viscosity")
+    pm3 <- pm3 + coord_flip()  # rotate data by 90 degrees
+    
+    pm4 <- ggplot(data=df_m,mapping = aes(x=true_m_rate,y=B_22)) + geom_point(aes(color = factor(x=viscosity)))+ geom_line(aes(color = factor(x=viscosity)))+ theme(legend.key.size = unit(0.5, 'cm'))+# + geom_line(aes(color = viscosity),linetype = "dashed") + scale_x_continuous(trans='log10')
+    labs(x = "Melt Rate",y = expression('B'[22]),colour = "Viscosity")
+    pm4 <- pm4 + coord_flip()  # rotate data by 90 degrees    
     #p4 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_22)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
     } else if (var_is_def){
     pm1 <- ggplot(data=df_m,mapping = aes(x=true_m_rate,y=B_20)) + geom_point(aes(color = factor(x=def_rate)))+ geom_line(aes(color = factor(x=def_rate)))+ theme(legend.key.size = unit(0.5, 'cm')) #+ coord_flip() #,linetype = "dashed") #+ scale_x_continuous(trans='log10') 
@@ -401,11 +422,16 @@ if (TRUE) {
     #p4 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_22)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
     }
 
+    # viscosity v B   lineplots
     if (var_is_visc){
-    pv1 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_20)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10') 
-    pv2 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_21)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
-    pv3 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_C)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
-    pv4 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_22)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
+    pv1 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_20)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10') +
+    labs(x = "Viscosity",y = expression('B'[20]),colour = "Melt Rate")
+    pv2 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_21)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')+
+    labs(x = "Viscosity",y = expression('B'[20]),colour = "Melt Rate")
+    pv3 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_C)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')+
+    labs(x = "Viscosity",y = expression('B'[20]),colour = "Melt Rate")
+    pv4 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_22)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')+
+    labs(x = "Viscosity",y = expression('B'[20]),colour = "Melt Rate")
     } else if (var_is_def){
     pv1 <- ggplot(data=df_m,mapping = aes(x=def_rate,y=B_20)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10') 
     pv2 <- ggplot(data=df_m,mapping = aes(x=def_rate,y=B_21)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
@@ -414,12 +440,13 @@ if (TRUE) {
     }
 
     # define the layout
-    hlay <- rbind(c(1,1,1,NA,NA, 2,2,2, NA,NA),
-                c(3,3,3, 4,4,  5,5,5,  6,6),
-                c(3,3,3, 4,4,  5,5,5,  6,6),
-                c(7,7,7,NA,NA, 8,8,8, NA,NA),
-                c(9,9,9,10,10,11,11,11,12,12),
-                c(9,9,9,10,10,11,11,11,12,12))
+    hlay <- rbind(c(1,1,1,NA,NA,NA, 2,2,2, NA,NA),  # NA means empty
+                c(3,3,3, 4,4,   NA,  5,5,5,  6,6),
+                c(3,3,3, 4,4,   NA,  5,5,5,  6,6),
+                c(NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA),
+                c(7,7,7,NA,NA,  NA,  8,8,8, NA,NA),
+                c(9,9,9,10,10,  NA,  11,11,11,12,12),
+                c(9,9,9,10,10,  NA,  11,11,11,12,12))
 
     pg <- grid.arrange(pv1,pv2,p_heat1,pm1,p_heat2,pm2,pv3,pv4,p_heat3,pm3,p_heat4,pm4, layout_matrix=hlay)
     print(pg)
