@@ -378,6 +378,7 @@ plot_options <- theme(   # x and y here are not affected by flipping. Same AFTER
     plot.background = element_blank(),
     panel.background = element_blank(),
     panel.grid.major = element_line(color = "#8ccde3",linewidth = 0.5,linetype = 2),
+    legend.key=element_blank(),
     # axis.title.y=element_blank(),
 	# axis.text.x=element_blank(),
 	axis.line=element_line(colour = "black"),
@@ -416,12 +417,16 @@ if (TRUE) {
     # melt rate v B   lineplots
     if (var_is_visc){
     pm1 <- ggplot(data=df_m,mapping = aes(x=true_m_rate,y=B_20)) + geom_point(aes(color = factor(x=viscosity)))+ geom_line(aes(color = factor(x=viscosity)))+ theme(legend.key.size = unit(0.5, 'cm')) #+ coord_flip() #,linetype = "dashed") #+ scale_x_continuous(trans='log10') 
-    pm1 <- pm1 + plot_options
+    pm1 <- pm1 + labs(x ="",y =  expression('B'[20]),colour = "Viscosity")
+    pm1 <- pm1 + plot_options +
+    scale_x_discrete(expand = c(0, 0)) + scale_y_discrete(expand = c(0, 0))
     # pm1 + theme_bw()
     # pm1 <- pm1 + theme(axis.title.y=element_blank())
     pm1 <- pm1 + coord_flip()  # rotate data by 90 degrees
-    # pm1 <- pm1 + labs(x ="",y =  expression('B'[20]),colour = "Viscosity")
-    # scale_x_discrete(expand = c(0, 0)) + scale_y_discrete(expand = c(0, 0)) 
+    # set axes: expand is to stop extra space around the plot area (tight around the data)
+    # BUT I need to manually set 'limits', to have the grid 
+    # pm1 <- pm1 + scale_x_discrete(breaks = seq(min(df_m$B_20), max(df_m$B_20), by = 10),expand = c(0, 0)) +   #  limits=factor(as.double(melt_rate_list)/1000)  didn't work
+    # scale_y_discrete(breaks = seq(min(df_m$B_20), max(df_m$B_20), by = 10),expand = c(0, 0)) 
 
     pm2 <- ggplot(data=df_m,mapping = aes(x=true_m_rate,y=B_21)) + geom_point(aes(color = factor(x=viscosity)))+ geom_line(aes(color = factor(x=viscosity)))+ theme(legend.key.size = unit(0.5, 'cm'))# + geom_line(aes(color = viscosity),linetype = "dashed") + scale_x_continuous(trans='log10')
     pm2 + theme_bw()
@@ -454,19 +459,27 @@ if (TRUE) {
 
     # viscosity v B   lineplots
     if (var_is_visc){
-    pv1 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_20)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10') +
+    pv1 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_20)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate)) + scale_x_continuous(trans='log10',expand = c(0, 0)) +
     labs(x = "Viscosity",y = expression('B'[20]),colour = "Melt Rate")
-    pv2 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_21)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')+
-    labs(x = "Viscosity",y = expression('B'[20]),colour = "Melt Rate")
-    pv3 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_C)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')+
-    labs(x = "Viscosity",y = expression('B'[20]),colour = "Melt Rate")
-    pv4 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_22)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')+
-    labs(x = "Viscosity",y = expression('B'[20]),colour = "Melt Rate")
+    pv1 <- pv1 + plot_options 
+
+    pv2 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_21)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate)) + scale_x_continuous(trans='log10',expand = c(0, 0))+
+    labs(x = "Viscosity",y = expression('B'[21]),colour = "Melt Rate")
+    pv2 <- pv2 + plot_options 
+
+    pv3 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_C)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate)) + scale_x_continuous(trans='log10',expand = c(0, 0))+
+    labs(x = "Viscosity",y = expression('B'[C]),colour = "Melt Rate")
+    pv3 <- pv3 + plot_options 
+
+    pv4 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_22)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate)) + scale_x_continuous(trans='log10',expand = c(0, 0))+
+    labs(x = "Viscosity",y = expression('B'[22]),colour = "Melt Rate")
+    pv4 <- pv4 + plot_options 
+
     } else if (var_is_def){
-    pv1 <- ggplot(data=df_m,mapping = aes(x=def_rate,y=B_20)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10') 
-    pv2 <- ggplot(data=df_m,mapping = aes(x=def_rate,y=B_21)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
-    pv3 <- ggplot(data=df_m,mapping = aes(x=def_rate,y=B_C)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
-    pv4 <- ggplot(data=df_m,mapping = aes(x=def_rate,y=B_22)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
+    pv1 <- ggplot(data=df_m,mapping = aes(x=def_rate,y=B_20)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate)) + scale_x_continuous(trans='log10') 
+    pv2 <- ggplot(data=df_m,mapping = aes(x=def_rate,y=B_21)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate)) + scale_x_continuous(trans='log10')
+    pv3 <- ggplot(data=df_m,mapping = aes(x=def_rate,y=B_C)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate)) + scale_x_continuous(trans='log10')
+    pv4 <- ggplot(data=df_m,mapping = aes(x=def_rate,y=B_22)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate)) + scale_x_continuous(trans='log10')
     }
 
     # define the layout
