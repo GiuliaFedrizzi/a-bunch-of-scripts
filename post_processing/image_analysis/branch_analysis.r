@@ -416,11 +416,12 @@ if (TRUE) {
     # melt rate v B   lineplots
     if (var_is_visc){
     pm1 <- ggplot(data=df_m,mapping = aes(x=true_m_rate,y=B_20)) + geom_point(aes(color = factor(x=viscosity)))+ geom_line(aes(color = factor(x=viscosity)))+ theme(legend.key.size = unit(0.5, 'cm')) #+ coord_flip() #,linetype = "dashed") #+ scale_x_continuous(trans='log10') 
-    pm1 + theme_bw()
-    pm1 <- pm1 + plot_options + theme(axis.title.y=element_blank())
+    pm1 <- pm1 + plot_options
+    # pm1 + theme_bw()
+    # pm1 <- pm1 + theme(axis.title.y=element_blank())
     pm1 <- pm1 + coord_flip()  # rotate data by 90 degrees
-    pm1 <- pm1 + labs(x ="",y =  expression('B'[20]),colour = "Viscosity")+
-    scale_x_discrete(expand = c(0, 0)) + scale_y_discrete(expand = c(0, 0))
+    # pm1 <- pm1 + labs(x ="",y =  expression('B'[20]),colour = "Viscosity")
+    # scale_x_discrete(expand = c(0, 0)) + scale_y_discrete(expand = c(0, 0)) 
 
     pm2 <- ggplot(data=df_m,mapping = aes(x=true_m_rate,y=B_21)) + geom_point(aes(color = factor(x=viscosity)))+ geom_line(aes(color = factor(x=viscosity)))+ theme(legend.key.size = unit(0.5, 'cm'))# + geom_line(aes(color = viscosity),linetype = "dashed") + scale_x_continuous(trans='log10')
     pm2 + theme_bw()
