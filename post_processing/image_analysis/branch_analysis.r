@@ -47,16 +47,16 @@ if (sum(grepl("visc",dirs), na.rm=TRUE)>0){  # count how many times it finds "vi
 if (var_is_visc){
     if (two_subdirs){
         # x_variable <- c('1e1','5e1','1e2','5e2','1e3','5e3','1e4')  # the values of the x variable to plot (viscosity)
-        # x_variable <- c('1e1','1e2','5e2','1e3','5e3','1e4')  # the values of the x variable to plot (viscosity)
-        x_variable <- c('1e1','1e2','1e3','1e4')  # the values of the x variable to plot (viscosity)
+        x_variable <- c('1e1','1e2','5e2','1e3','5e3','1e4')  # the values of the x variable to plot (viscosity)
+        # x_variable <- c('1e1','1e2','1e3','1e4')  # the values of the x variable to plot (viscosity)
     } else {
         x_variable <- c('1e2')  # just one value
     }
 } else if (var_is_def) {
     x_variable <- c('1e8','2e8','3e8','4e8','5e8','6e8','7e8','8e8','9e8')#,'5e3','1e4')#,'2e4','4e4')  # the values of the x variable to plot (e.g. def rate)
 }
-# melt_rate_list <- c('01','02','03','05','04','06','07','08','09')#,'1','2')
-melt_rate_list <- c('02','04','06','08')#,'08')#,'09')#,'1','2')
+melt_rate_list <- c('01','02','03','05','04','06','07','08','09')#,'1','2')
+# melt_rate_list <- c('02','04','06','08')#,'08')#,'09')#,'1','2')
 # melt_rate_list <- c('01')#,'09')
 
 # set some options automatically
@@ -390,24 +390,24 @@ plot_options <- theme(   # x and y here are not affected by flipping. Same AFTER
 if (TRUE) {
     # heatmaps
     png_name <- paste(base_path,"/branch_plots/br_heat_B_",time_string,".png",sep='')  # build name of png
-    png(file=png_name,width = 2800,height = 1800,res=100)
+    png(file=png_name,width = 3000,height = 1800,res=100)
     if (var_is_visc){
-        p_heat1 <- ggplot(df_m,aes(factor(x=viscosity),factor(true_m_rate), fill=B_20))  + scale_fill_distiller(direction = +1)+ geom_tile() + theme(legend.key.size = unit(0.5, 'cm'))+
+        p_heat1 <- ggplot(df_m,aes(factor(x=viscosity),factor(true_m_rate), fill=B_20))  + scale_fill_distiller(direction = +1,palette = 'Purples')+ geom_tile() + theme(legend.key.size = unit(0.5, 'cm'))+
         labs(x = "Viscosity",y = "Melt Rate",fill =  expression('B'[20]))+
         scale_x_discrete(expand = c(0, 0)) + scale_y_discrete(expand = c(0, 0))+
         theme(axis.text.x=element_text(size=12))
 
-        p_heat2 <- ggplot(df_m,aes(factor(x=viscosity),factor(true_m_rate), fill=B_21))  + scale_fill_distiller(direction = +1,palette = 'PuBuGn')+ geom_tile()+ theme(legend.key.size = unit(0.5, 'cm'))+
+        p_heat2 <- ggplot(df_m,aes(factor(x=viscosity),factor(true_m_rate), fill=B_21))  + scale_fill_distiller(direction = +1,palette = 'BuGn')+ geom_tile()+ theme(legend.key.size = unit(0.5, 'cm'))+
         labs(x = "Viscosity",y = "Melt Rate",fill =  expression('B'[21]))+
         scale_x_discrete(expand = c(0, 0)) + scale_y_discrete(expand = c(0, 0))+
         theme(axis.text.x=element_text(size=12))
 
-        p_heat3 <- ggplot(df_m,aes(factor(x=viscosity),factor(true_m_rate), fill=B_C))  + scale_fill_distiller(direction = +1,palette = 'GnBu')+ geom_tile()+ theme(legend.key.size = unit(0.5, 'cm'))+
+        p_heat3 <- ggplot(df_m,aes(factor(x=viscosity),factor(true_m_rate), fill=B_C))  + scale_fill_distiller(direction = +1,palette = 'Greys')+ geom_tile()+ theme(legend.key.size = unit(0.5, 'cm'))+
         labs(x = "Viscosity",y = "Melt Rate",fill =  expression('B'[C]))+
         scale_x_discrete(expand = c(0, 0)) + scale_y_discrete(expand = c(0, 0))+
         theme(axis.text.x=element_text(size=12))
 
-        p_heat4 <- ggplot(df_m,aes(factor(x=viscosity),factor(true_m_rate), fill=B_22))  + scale_fill_distiller(direction = +1,,palette = 'PuBu')+ geom_tile()+ theme(legend.key.size = unit(0.5, 'cm'))+
+        p_heat4 <- ggplot(df_m,aes(factor(x=viscosity),factor(true_m_rate), fill=B_22))  + scale_fill_distiller(direction = +1,,palette = 'Blues')+ geom_tile()+ theme(legend.key.size = unit(0.5, 'cm'))+
         labs(x = "Viscosity",y = "Melt Rate",fill =  expression('B'[22]))+
         scale_x_discrete(expand = c(0, 0)) + scale_y_discrete(expand = c(0, 0))+
         theme(axis.text.x=element_text(size=12))
@@ -501,11 +501,11 @@ if (TRUE) {
     }
     if(TRUE){
         hlay <- rbind(     # NA means empty
-                c(3,3, 1,1,   NA,  5,5,  2,2),
-                c(3,3, 4,4,   NA,  5,5,  6,6),
-                c(NA,NA,NA,NA,NA,NA,NA,NA,NA),
-                c(9,9, 7,7,   NA,  11,11,8,8),
-                c(9,9,10,10,  NA,  11,11,12,12))
+                c(3,3, 1,1,  5,5,  2,2),
+                c(3,3, 4,4,  5,5,  6,6),
+                # c(NA,NA,NA,NA,NA,NA,NA,NA,NA),
+                c(9,9, 7,7,  11,11,8,8),
+                c(9,9,10,10, 11,11,12,12))
     }
 
     pg <- grid.arrange(pv1,pv2,p_heat1,pm1,p_heat2,pm2,pv3,pv4,p_heat3,pm3,p_heat4,pm4, layout_matrix=hlay)
