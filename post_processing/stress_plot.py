@@ -21,7 +21,7 @@ from pathlib import Path
 from useful_functions import * 
 
 # dir_labels = ['00200', '00400','00600','00800','01000']
-dir_labels = ['00200', '00400','00600','00800','01000']#,'02000']#,'04000']#,'06000','08000']#,'10000']  # all sizes
+dir_labels = ['00400','00800']#,'02000']#,'04000']#,'06000','08000']#,'10000']  # all sizes
 # dir_labels = ['02000','04000','06000','08000','10000'] 
 # gj_dirs = ['gj71','gj72','gj69','gj73','gj74','gj75','gj70','gj76']
 # gj_lab = ['0.1','0.2','0.5','0.7','0.8','0.9','1','1.2'] # their labels
@@ -56,11 +56,14 @@ dir_labels = ['00200', '00400','00600','00800','01000']#,'02000']#,'04000']#,'06
 # gj_dirs = ['gj149','gj150','gj151']
 # gj_lab = ['1500','2700','3000']# densities
 
-gj_dirs = ['gj157','gj158','gj159']
-gj_lab = ['3000','2700','2500']# densities
+# gj_dirs = ['gj157','gj158','gj159']
+# gj_lab = ['3000','2700','2500']# densities
 
 # gj_dirs = ['gj159','gj160']
 # gj_lab = ['gj159 (smaller relax)','gj160 (larger relax)']# densities
+
+gj_dirs = ['sm13','sm14']
+gj_lab = ['sm13 rho = 2700','sm14 rho = 3000']
 
 fig, (ax1,ax2,ax3) = plt.subplots(nrows=1,ncols=3)
 resolution = 200
@@ -72,7 +75,7 @@ def dir_loop(gjdir,dir_labels,sigma_df,line_label):
     max_dir_size = float(dir_labels[-1])  # maximum size for the scaling of the plots: take the last directory (largest)
     for dir_label in dir_labels:
         """ loop through SIZE directories"""
-        os.chdir('/nobackup/scgf/myExperiments/gaussJan2022/'+gjdir+'/size'+dir_label)
+        os.chdir('/nobackup/scgf/myExperiments/smooth/'+gjdir+'/size'+dir_label)
         scale_factor = float(dir_label)/max_dir_size # factor for scaling the axes. Normalised by the maximum size (e.g. 1000)
 
         # open the first file after melt addition to find the max P

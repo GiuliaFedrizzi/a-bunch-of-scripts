@@ -539,6 +539,7 @@ def orientation_calc(g: nx.Graph) -> nx.Graph:
 
 def analyse_png(png_file: str, part_to_analyse: str) -> dict:
     color = '(255, 255, 255)'  # select the colour: do the analysis on the white parts
+    # color = '(0, 0, 0)'  # select the colour: do the analysis on the black parts
     assert color[0] == '('
     assert color[-1] == ')'
     rgb = tuple(int(v) for v in color[1:-1].split(','))
@@ -549,18 +550,18 @@ def analyse_png(png_file: str, part_to_analyse: str) -> dict:
         
     pim = Image.open(png_file).convert('RGB') # Load image, convert to rgb
     im_array  = np.array(pim) # make into Numpy array
+    im = Image.open(png_file)
 
     # Define blue - this is the image background, = no fractures
     blue = [0,0,255]
+    if part_to_analyse != 'f':
+        # Get X and Y coordinates of all blue pixels
+        Y, X = np.where(np.all(im_array==blue,axis=2))
+        
 
-    # Get X and Y coordinates of all blue pixels
-    Y, X = np.where(np.all(im_array==blue,axis=2))
-    
-    im = Image.open(png_file)
-
-    left = min(X)+5; top = min(Y)+7; right = max(X)-5; bottom = max(Y)-5 # auto from blue
-    height = bottom - top
-    # print(left,top,right,bottom)
+        left = min(X)+5; top = min(Y)+7; right = max(X)-5; bottom = max(Y)-5 # auto from blue
+        height = bottom - top
+        # print(left,top,right,bottom)
 
     crop_im = 1
     # if part_to_analyse == 'w': # whole domain  - this is the default!
@@ -644,9 +645,11 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
     os.chdir(parent_dir)
     print(os.getcwd())
     print(f'n of files: {len(glob.glob("py_bb_*.png"))}')
+    # print(f'n of files: {len(glob.glob("u_1_map_1_all_colours_fiji_bk*.png"))}')
 
     branch_info = []  # create an empty list. One row = one dictionary for each simulation
     for f,filename in enumerate(sorted(glob.glob("py_bb_*.png"))):
+    # for f,filename in enumerate(sorted(glob.glob("u_1_map_1_all_colours_fiji_bk*.png"))):
         """ Get the file name, run 'analyse_png', get the info on the branches,
         save it into a csv   """
         branch_info.append(analyse_png(filename,part_to_analyse))  # build the list of dictionaries

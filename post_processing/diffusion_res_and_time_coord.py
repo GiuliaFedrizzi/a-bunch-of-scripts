@@ -50,8 +50,8 @@ var_to_plot = "Sigma_1"
 
 # dir_labels = ['400','200']  # res400.elle, res200.elle
 # dir_labels = ['02']
-dir_labels = ['00400','00800']
-# dir_labels = ['00200', '00400','00600','00800','01000']
+# dir_labels = ['00200','00600','01000']
+dir_labels = ['00200','00400','00600','00800','01000']
 # dir_labels = ['02000','04000','06000','08000','10000'] 
 # dir_labels = ['00200', '00400','00600','00800','01000','02000','04000','06000']#,'08000','10000'] 
 # dir_labels = ['01','02','03','04','05','06','07','08','09'] 
@@ -72,12 +72,12 @@ for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj190/size'+str(i)) 
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/th60/vis1e2_mR_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
-    dir_list.append('/nobackup/scgf/myExperiments/smooth/sm09/size'+str(i))  
+    dir_list.append('/nobackup/scgf/myExperiments/smooth/sm43/size'+str(i))  
     
 print(dir_list)
 
-f1=0  # first file to plot. They account for "my_experiment-0003.csv" as the first file in dir
-f2=1  # second file. if f2 = 5 -> my_experiment00500.csv
+f1=2  # first file to plot. They account for "my_experiment-0003.csv" as the first file in dir
+f2=4  # second file. if f2 = 5 -> my_experiment00500.csv
 
 df_x = pd.DataFrame()
 df_y = pd.DataFrame()
