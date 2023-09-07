@@ -21,7 +21,7 @@ from pathlib import Path
 from useful_functions import * 
 
 # dir_labels = ['00200', '00400','00600','00800','01000']
-dir_labels = ['00400','00800']#,'02000']#,'04000']#,'06000','08000']#,'10000']  # all sizes
+dir_labels = ['00200','00400','00600']#,'02000']#,'04000']#,'06000','08000']#,'10000']  # all sizes
 # dir_labels = ['02000','04000','06000','08000','10000'] 
 # gj_dirs = ['gj71','gj72','gj69','gj73','gj74','gj75','gj70','gj76']
 # gj_lab = ['0.1','0.2','0.5','0.7','0.8','0.9','1','1.2'] # their labels
@@ -64,6 +64,9 @@ dir_labels = ['00400','00800']#,'02000']#,'04000']#,'06000','08000']#,'10000']  
 
 gj_dirs = ['sm13','sm14']
 gj_lab = ['sm13 rho = 2700','sm14 rho = 3000']
+
+gj_dirs = ['sm54','sm55']
+gj_lab = ['sm54 h = 200','sm55 h = 800']
 
 fig, (ax1,ax2,ax3) = plt.subplots(nrows=1,ncols=3)
 resolution = 200

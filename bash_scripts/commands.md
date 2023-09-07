@@ -1,6 +1,6 @@
 ## copy all baseFiles dirs only
 
-> rsync -vr --exclude={\*.sh.e*,\*.sh.o*,\*.csv,\*.png,brok\*,\*.log,vis\*,out.\*} ../prod/p01/ th01/  
+> rsync -vr --exclude={\*.sh.e*,\*.sh.o*,\*.csv,\*.png,brok\*,\*.log,vis\*0\*,out.\*} ../prod/p01/ th01/  
 
 
 ## clean conda only in my personal/home directory 

@@ -44,13 +44,13 @@ from pathlib import Path
 # import functions from external file
 from useful_functions import * 
 
-var_to_plot = "Sigma_1"
+var_to_plot = "Smooth function"
 # options: Pressure, Mean Stress, Actual Movement, Gravity, Porosity, Sigma_1, Sigma_2, Youngs Modulus
-#         F_P_x, F_P_y, pf_grad_x, pf_grad_y, Original Movement, Movement in Gravity
+#         F_P_x, F_P_y, pf_grad_x, pf_grad_y, Original Movement, Movement in Gravity, Smooth function
 
 # dir_labels = ['400','200']  # res400.elle, res200.elle
-# dir_labels = ['02']
-# dir_labels = ['00200','00600','01000']
+# dir_labels = ['00200','00400','00600','00800']#,'01000']
+# dir_labels = ['02000','04000','06000']#,'08000']
 dir_labels = ['00200','00400','00600','00800','01000']
 # dir_labels = ['02000','04000','06000','08000','10000'] 
 # dir_labels = ['00200', '00400','00600','00800','01000','02000','04000','06000']#,'08000','10000'] 
@@ -72,7 +72,7 @@ for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj190/size'+str(i)) 
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/th60/vis1e2_mR_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
-    dir_list.append('/nobackup/scgf/myExperiments/smooth/sm43/size'+str(i))  
+    dir_list.append('/nobackup/scgf/myExperiments/smooth/sm72/size'+str(i))  
     
 print(dir_list)
 
