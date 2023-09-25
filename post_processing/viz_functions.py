@@ -30,7 +30,8 @@ def build_array(big_array,variab,x,x_val,melt_rate,file_number,row,cols,rose):
     """
     if variab == "viscosity":
         exp = x_val.split('e')[-1] # the exponent after visc_ and before 5e3 or 1e4 etc
-        
+        if len(exp)==2:
+           exp = str((float(exp)/10)) # true number
         ###### path to the files
         ## 2 levels, 2 options for viscosity
         potential_file_path = 'visc_'+exp+'_'+x_val+'/vis1e2_mR_'+melt_rate+'/'
@@ -38,6 +39,8 @@ def build_array(big_array,variab,x,x_val,melt_rate,file_number,row,cols,rose):
             potential_file_path ='visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_'+melt_rate+'/'
             if os.path.isdir(potential_file_path) == False:
                 print("I've tried twice without success")
+                if os.path.isdir(potential_file_path) == False:
+                    potential_file_path ='visc_'+exp[0]+'_'+x_val+'/vis'+x_val+'_mR_'+melt_rate+'/'
         # poro_file = 'wd05_visc/visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_0'+str(melt_rate)+'/a_porosity_'+file_number+'.png' 
         # bb_file = 'wd05_visc/visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_0'+str(melt_rate)+'/a_brokenBonds_'+file_number+'.png'
         
@@ -73,10 +76,10 @@ def build_array(big_array,variab,x,x_val,melt_rate,file_number,row,cols,rose):
 
     else:
         """ here "rose_file" only """
-        rose_file = potential_file_path +'/rose_weight_p_top_py_bb_'+file_number+'_nx.png' # try "top" first
+        rose_file = potential_file_path +'/rose_norm_p_top_py_bb_'+file_number+'_nx.png' # try "top" first
         if os.path.isfile(rose_file) == False:
             """ try another version """
-            rose_file = potential_file_path +'/rose_weight_p_py_bb_'+file_number+'_nx.png' 
+            rose_file = potential_file_path +'/rose_norm_p_py_bb_'+file_number+'_nx.png' 
         if os.path.isfile(rose_file):
             print(f'found file {rose_file}')
             rose_big_file = Image.open(rose_file)  # to do: do I need to crop it?

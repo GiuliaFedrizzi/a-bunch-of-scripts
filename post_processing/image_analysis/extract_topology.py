@@ -432,7 +432,7 @@ def draw_rose_diagram(g: nx.Graph,proportional: bool):
     
     bins = np.arange(-5, 366, 10)
     if proportional:
-        lengths =  np.array([d for (u,v,d) in g.edges.data('d')])  # get the attribute "orientation"
+        lengths =  np.array([d for (u,v,d) in g.edges.data('d')])  # get the attribute "length", in "d"
         # print(f'lengths: {lengths}\nmin: {np.min(lengths)}, max: {np.max(lengths)}')
         if np.max(lengths)-np.min(lengths) != 0:
             # normalise lengths so that they go from 0 to 1
@@ -454,19 +454,45 @@ def draw_rose_diagram(g: nx.Graph,proportional: bool):
     # as top half but mirrored
     single_half = np.sum(np.split(angles_in_bins[:-1], 2), 0)
     full_range = np.concatenate([single_half,single_half])  # repeat the sequence twice
+    ax = draw_rose_plot(full_range)
 
+    return ax
+
+def calculate_rose(g: nx.Graph):
+    bins = np.arange(-5, 366, 10)
+    angles =  np.array([o for (u,v,o) in g.edges.data('orientation')])  # get the attribute "orientation"
+    lengths =  np.array([d for (u,v,d) in g.edges.data('d')])
+
+    if np.max(lengths)-np.min(lengths) != 0:
+        # normalise lengths so that they go from 0 to 1
+        lengths_norm = (lengths-np.min(lengths))/(np.max(lengths)-np.min(lengths))
+    else:
+        # if they are all the same length, or if there is only one, 
+        # the normalised version of the array is 1 over their number (e.g. 1 in the case of 1 edge)
+        lengths_norm = np.ones(len(lengths))/len(lengths) 
+
+    angles_in_bins, bins = np.histogram(angles, bins,weights=lengths_norm)
+    angles_in_bins[0] += angles_in_bins[-1]   # Sum the last value with the first value.
+    single_half = np.sum(np.split(angles_in_bins[:-1], 2), 0)
+    full_range = np.concatenate([single_half,single_half])  # repeat the sequence twice
+    return full_range
+
+def draw_rose_plot(full_range: np.ndarray):
     # make plot
     fig = plt.figure(figsize=(8,8))
     ax = fig.add_subplot(111, projection='polar')
 
-    # the height of each bar is the number of angles in that bin
-    ax.bar(np.deg2rad(np.arange(0, 360, 10)), full_range, 
-        width=np.deg2rad(10), bottom=0.0, color='.8', edgecolor='k')
+
 
     ax.set_theta_zero_location('N') # zero starts at North
     ax.set_theta_direction(-1)
-    ax.set_thetagrids(np.arange(0, 360, 10), labels=np.arange(0, 360, 10))
-    ax.set_rgrids(np.arange(1, full_range.max() + 1, 2), angle=0, weight= 'black')
+    # ax.set_thetagrids(np.arange(0, 360, 10), labels=np.arange(0, 360, 10))
+    # ax.set_rgrids(np.arange(1, full_range.max() + 1, 2), angle=0, weight= 'black')
+    # the height of each bar is the number of angles in that bin
+    ax.grid(False)
+    ax.bar(np.deg2rad(np.arange(0, 360, 10)), full_range, 
+        # width=np.deg2rad(10), bottom=0.0, color=(1, 0, 0, 0.5), edgecolor='k')
+        width=np.deg2rad(10), bottom=0.0, color=(1, 0, 0), edgecolor='r')
     return ax
 
 def topo_analysis(g: nx.Graph,tstep_number: float) -> dict:
@@ -598,13 +624,14 @@ def analyse_png(png_file: str, part_to_analyse: str) -> dict:
 
     print(f'Fracture RGB: {rgb}')
     print(f'Fracture pixels: {px.sum()}')
+
+    input_tstep = get_timestep()
     if px.sum() == 0:  
         """ if no fractures, skip analysis and return a dictionary full of zeros """
         print("0 pixels, skipping")
-        input_tstep = get_timestep()
         branch_info = {"time":timestep_number*input_tstep,"n_I":0,"n_2":0,"n_3":0,"n_4":0,"n_5":0,
                 "branches_tot_length":0} # dictionary with all zeros: there are no fractures in this area
-        return branch_info
+        return branch_info, np.zeros(36), "path" # sequences of zeros of the same length as the output of calculate_rose(). Placeholder for path
     g = extract_network(px,im)
     print(f'Extracted fracture network:')
     print(f'  - {len(g.nodes())} nodes')
@@ -613,10 +640,9 @@ def analyse_png(png_file: str, part_to_analyse: str) -> dict:
     if len(g.edges()) == 0:
         """ if after extracting the network there are zero branches, skip analysis and return a dictionary full of zeros """
         print("0 edges, skipping")
-        input_tstep = get_timestep()
         branch_info = {"time":timestep_number*input_tstep,"n_I":0,"n_2":0,"n_3":0,"n_4":0,"n_5":0,
                 "branches_tot_length":0} # dictionary with all zeros: there are no fractures in this area
-        return branch_info
+        return branch_info, np.zeros(36), "path"
 
     # do some statistics
     branch_info = topo_analysis(g,timestep_number)
@@ -637,7 +663,9 @@ def analyse_png(png_file: str, part_to_analyse: str) -> dict:
     plt.savefig("rose_weight_"+out_path,dpi=200)
     plt.clf()
 
-    return branch_info
+    rose_histogram = calculate_rose(g)
+
+    return branch_info, rose_histogram, out_path
 
 def file_loop(parent_dir: str,part_to_analyse: str) -> None:
     """ given the parent directory, cd there and go through all png files"""
@@ -648,12 +676,28 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
     # print(f'n of files: {len(glob.glob("u_1_map_1_all_colours_fiji_bk*.png"))}')
 
     branch_info = []  # create an empty list. One row = one dictionary for each simulation
+    rose_hist_list = [] # empty list to temporarily save all the values to build the rose diagram. Will be normalised by the maximum length.
+    out_paths = []
+
     for f,filename in enumerate(sorted(glob.glob("py_bb_*.png"))):
     # for f,filename in enumerate(sorted(glob.glob("u_1_map_1_all_colours_fiji_bk*.png"))):
         """ Get the file name, run 'analyse_png', get the info on the branches,
         save it into a csv   """
-        branch_info.append(analyse_png(filename,part_to_analyse))  # build the list of dictionaries
-    
+        branch_dict, rose_hist, out_path = analyse_png(filename,part_to_analyse)
+        branch_info.append(branch_dict)  # build the list of dictionaries
+        rose_hist_list.append(rose_hist)
+        out_paths.append(out_path)
+
+    print(rose_hist_list)
+    print(f'max rose_hist_list {np.max(rose_hist_list)}')
+    for i,r in enumerate(rose_hist_list):  # go through the multiple rows
+        # print(f'r : {r}')
+        print(f'r/max rose_hist_list: {r/np.max(rose_hist_list)}')
+        if any(element != 0 for element in r): # if at last one element is not zero
+            ax = draw_rose_plot(r/np.max(rose_hist_list))
+            plt.savefig("rose_norm_"+out_paths[i],dpi=200)
+
+
     keys = branch_info[0].keys()  #  read the command line arguments
 
     if part_to_analyse == 'w' or part_to_analyse == 'f': # whole domain

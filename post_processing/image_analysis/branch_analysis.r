@@ -47,7 +47,7 @@ if (sum(grepl("visc",dirs), na.rm=TRUE)>0){  # count how many times it finds "vi
 if (var_is_visc){
     if (two_subdirs){
         # x_variable <- c('1e1','5e1','1e2','5e2','1e3','5e3','1e4')  # the values of the x variable to plot (viscosity)
-        x_variable <- c('1e1','1e2','5e2','1e3','5e3','1e4')  # the values of the x variable to plot (viscosity)
+        x_variable <- c('1e1','1e15','1e2','1e25','1e3','1e35','1e4')  # the values of the x variable to plot (viscosity)
         # x_variable <- c('1e1','1e2','1e3','1e4')  # the values of the x variable to plot (viscosity)
     } else {
         x_variable <- c('1e2')  # just one value
@@ -102,12 +102,14 @@ build_branch_df <- function(x,m,time) {
             ##  build the path. unlist(strsplit(x,"e"))[2] splits '5e3' into 5 and 3 and takes the second (3)
             if (two_subdirs){
                 ## 2 levels
-                potential_file_path <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis',x,'_mR_',m,'/',sep="")
+                full_exponent <- unlist(strsplit(x,"e"))[2]  # could be 1 or 15, because there is no point (1.5)
+                true_exponent <- unlist(strsplit(full_exponent,""))[1]  # takes the first character (1 in 1.5, 2 in 2.5 etc)
+                potential_file_path <- paste(base_path,'/visc_',true_exponent,'_',x,'/vis',x,'_mR_',m,'/',sep="")
                 # print(potential_file_path)
                 if (dir.exists(potential_file_path)) {
                     # print("it exists!")
                 }else {   # try a different version, the one that doesn't change with viscosity
-                    potential_file_path <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis1e2_mR_',m,'/',sep="")
+                    potential_file_path <- paste(base_path,'/visc_',true_exponent,'_',x,'/vis1e2_mR_',m,'/',sep="")
                     print("trying a different version")
                     if (dir.exists(potential_file_path)) {
                         print("this one exists")
@@ -152,8 +154,16 @@ build_branch_df <- function(x,m,time) {
                     
                     ## build dataframe
                     if (var_is_visc) {
-                        de <- list(viscosity=as.double(x),melt_rate=m,true_m_rate=true_m_rate,B_20=B_20,B_21=B_21,B_C=B_C,B_22=B_22,
+                        if (nchar(x) == 4) {  # 1e15 -> 15 -> 1.5 -> 10^(1.5)
+                            de <- list(viscosity=10^(as.double(full_exponent)/10),melt_rate=m,true_m_rate=true_m_rate,B_20=B_20,B_21=B_21,B_C=B_C,B_22=B_22,
                         n_I=n_I,n_Y=n_Y,n_X=n_X,n_B=n_B,n_L=n_L,time=time,norm_time=norm_time)
+                            # visc <- 10^(as.double(full_exponent)/10)  
+                        } else {
+                            de <- list(viscosity=as.double(x),melt_rate=m,true_m_rate=true_m_rate,B_20=B_20,B_21=B_21,B_C=B_C,B_22=B_22,
+                        n_I=n_I,n_Y=n_Y,n_X=n_X,n_B=n_B,n_L=n_L,time=time,norm_time=norm_time)
+                            # visc <-as.double(x)
+                        }
+
                     } else if (var_is_def) {
                         x <- gsub("e+","e-", x)
                         de <- list(def_rate=as.double(x),melt_rate=m,true_m_rate=true_m_rate,B_20=B_20,B_21=B_21,B_C=B_C,B_22=B_22,
@@ -274,7 +284,7 @@ if (FALSE) {
 # import the library to create ternary plots
 library("ggplot2")
 library("ggtern")
-if (FALSE) {
+if (TRUE) {
     # # connected-connected - isolated-connected - isolated-isolated
     # df_m["P_I"] <- df_m$N_I/(df_m$N_I+3*df_m$N_Y+4*df_m$N_X)   # probability of an I node
     # df_m["P_C"] <- (3*df_m$N_Y+4*df_m$N_X)/(df_m$N_I+3*df_m$N_Y+4*df_m$N_X)   # probability of a C node
@@ -387,7 +397,7 @@ plot_options <- theme(   # x and y here are not affected by flipping. Same AFTER
     )
 
 # heatmaps combined with lineplots 
-if (TRUE) {
+if (FALSE) {
     # heatmaps
     png_name <- paste(base_path,"/branch_plots/br_heat_B_",time_string,".png",sep='')  # build name of png
     png(file=png_name,width = 3000,height = 1800,res=100)

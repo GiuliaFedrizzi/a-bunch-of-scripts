@@ -1,3 +1,8 @@
+"""
+Plot porosity profile (vertical).
+"""
+
+
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -11,11 +16,11 @@ from pathlib import Path
 
 # options to set:
 plot_figure = 1
-dir_label = '00400'
+dir_label = '08000'
 res = 200
 filename = "my_experiment00100.csv"
 filename_fluid = "fluidgrid00100.csv"
-first_part_of_path = '/nobackup/scgf/myExperiments/smooth/sm52/'
+first_part_of_path = '/nobackup/scgf/myExperiments/smooth/sm75/'
 
 dir = first_part_of_path+'size'+str(dir_label)        # res200
 
