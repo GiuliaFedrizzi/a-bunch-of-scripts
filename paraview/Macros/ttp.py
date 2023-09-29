@@ -5,6 +5,7 @@ from paraview.simple import *
 sys.path.append('/home/home01/scgf/myscripts/paraview')  # change if path to my_functions.py is different
 from my_functions import * 
 
+applyLightingAnd2Dview()
 
 tableToPain = TableToPoints()
 tableToPain.XColumn = 'x coord'

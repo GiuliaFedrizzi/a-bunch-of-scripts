@@ -115,6 +115,7 @@ def set_colormap_pressure(transform1Display):
 
 def hide_colormaps():
     """Hide the scalar bar for this color map if no visible data is colored by it."""
+    renderView1 = GetActiveViewOrCreate('RenderView')
     try:
         # hide pressure LUT
         pressureLUT = GetColorTransferFunction('Pressure')
