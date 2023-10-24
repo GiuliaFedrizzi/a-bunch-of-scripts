@@ -384,7 +384,7 @@ def draw_nx_graph(im: Image, g: nx.Graph) -> None:
     # degrees = [x for x in list(g.degree)]
     lab = dict(zip(g.nodes(), all_degrees))
     pos = {point: point for point in g.nodes()}  # save nodes in a format that can be used as position when plotting
-    ax = nx.draw(g,pos=pos,node_size=5)
+    ax = nx.draw(g,pos=pos,node_size=5,edge_color='g')
     # nx.draw_networkx_labels(g,pos=pos,labels=degrees,ax=ax)
     
     # node labels:
@@ -403,7 +403,7 @@ def draw_nx_graph(im: Image, g: nx.Graph) -> None:
     # print(f'edge_lab{edge_lab}')
     # print('edge_lab '+str(edge_lab))
     bbox_options = {"boxstyle":'round', "ec":(1.0, 1.0, 1.0), "fc":(1.0, 1.0, 1.0), "alpha": 0.7}
-    nx.draw_networkx_edge_labels(g,pos=pos,edge_labels=edge_lab,ax=ax,font_size=5,bbox=bbox_options)
+    # nx.draw_networkx_edge_labels(g,pos=pos,edge_labels=edge_lab,ax=ax,font_size=5,bbox=bbox_options)
 
     plt.axis("on")  # show the axes
     plt.axis('equal')  # keep true aspect ratio
@@ -572,7 +572,6 @@ def analyse_png(png_file: str, part_to_analyse: str) -> dict:
     assert len(rgb) == 3
     assert png_file.endswith('.png')
     print(f'file is {png_file}')
-    timestep_number = float(re.findall(r'\d+',png_file)[0])   # regex to find numbers in string. Then convert to float. Will be used to name the csv file 
         
     pim = Image.open(png_file).convert('RGB') # Load image, convert to rgb
     im_array  = np.array(pim) # make into Numpy array
@@ -626,6 +625,10 @@ def analyse_png(png_file: str, part_to_analyse: str) -> dict:
     print(f'Fracture pixels: {px.sum()}')
 
     input_tstep = get_timestep()
+    if input_tstep > 0:
+        timestep_number = float(re.findall(r'\d+',png_file)[0])   # regex to find numbers in string. Then convert to float. Will be used to name the csv file 
+    else:
+        timestep_number = 0
     if px.sum() == 0:  
         """ if no fractures, skip analysis and return a dictionary full of zeros """
         print("0 pixels, skipping")
@@ -672,7 +675,7 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
     # os.chdir("/Users/giuliafedrizzi/Library/CloudStorage/OneDrive-UniversityofLeeds/PhD/arc/myExperiments/wavedec2022/wd05_visc/visc_4_5e4/vis5e4_mR_09")
     os.chdir(parent_dir)
     print(os.getcwd())
-    print(f'n of files: {len(glob.glob("py_bb_*.png"))}')
+    # print(f'n of files: {len(glob.glob("py_bb_*.png"))}')
     # print(f'n of files: {len(glob.glob("u_1_map_1_all_colours_fiji_bk*.png"))}')
 
     branch_info = []  # create an empty list. One row = one dictionary for each simulation
@@ -680,7 +683,7 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
     out_paths = []
 
     for f,filename in enumerate(sorted(glob.glob("py_bb_*.png"))):
-    # for f,filename in enumerate(sorted(glob.glob("u_1_map_1_all_colours_fiji_bk*.png"))):
+    # for f,filename in enumerate(sorted(glob.glob("Long_drawn_OpeningInvert*.png"))):
         """ Get the file name, run 'analyse_png', get the info on the branches,
         save it into a csv   """
         branch_dict, rose_hist, out_path = analyse_png(filename,part_to_analyse)

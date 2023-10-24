@@ -48,8 +48,9 @@ def build_array(big_array,variab,x,x_val,melt_rate,file_number,row,cols,rose):
         # poro_file = 'vis'+x_val+'_mR_'+melt_rate+'/a_porosity_'+file_number+'.png' 
         # bb_file = 'vis'+x_val+'_mR_'+melt_rate+'/a_brokenBonds_'+file_number+'.png'
     elif variab == "def_rate":
-        potential_file_path = 'thdef'+x_val+'/vis1e2_mR_'+melt_rate
-
+        potential_file_path = 'thdef'+x_val+'/vis1e2_mR_'+ melt_rate   # transfer zone
+        if os.path.isdir(potential_file_path) == False:
+            potential_file_path ='pdef'+x_val+'/vis1e2_mR_'+ melt_rate'/'  # production zone
     # now we have the path, choose if I open "poro_file" and "bb_file" or "rose_file"
     if rose == False:
         """ "poro_file" and "bb_file"  """
@@ -129,7 +130,7 @@ def set_ax_options(ax,variab,x_variable,melt_labels,t,im_length,rose):
     plt.tight_layout()
 
 def find_variab():
-    if True in ['thdef' in x for x in os.listdir('.')]:  # if at least one of the directories contains "thdef",
+    if True in ['def' in x for x in os.listdir('.')]:  # if at least one of the directories contains "def",
         variab = "def_rate"    # it means that the variable is deformation rate
     elif True in ['visc' in x for x in os.listdir('.')]:
         variab = "viscosity"  # in this case, variable is viscosity

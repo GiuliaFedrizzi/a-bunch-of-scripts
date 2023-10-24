@@ -44,17 +44,18 @@ from pathlib import Path
 # import functions from external file
 from useful_functions import * 
 
-var_to_plot = "Sigma_1"
+var_to_plot = "gauss_scaling_par_sum"
 # options: Pressure, Mean Stress, Actual Movement, Gravity, Porosity, Sigma_1, Sigma_2, Youngs Modulus
-#         F_P_x, F_P_y, pf_grad_x, pf_grad_y, Original Movement, Movement in Gravity, Smooth function
+#         F_P_x, F_P_y, pf_grad_x, pf_grad_y, Original Movement, Movement in Gravity, Smooth function, area_par_fluid
+#         gauss_scaling_par, gauss_scaling_par_sum, gauss_scaling_par_n_tot, xy_melt_point
 
 # dir_labels = ['400','200']  # res400.elle, res200.elle
 # dir_labels = ['00200','00400','00600','00800']#,'01000']
 # dir_labels = ['02000','04000','06000']#,'08000']
 # dir_labels = ['00200','00400','00600','00800','01000']
-dir_labels = ['02000','04000','06000','08000','10000'] 
+# dir_labels = ['02000','04000','06000','08000','10000'] 
 # dir_labels = ['00200', '00400','00600','00800','01000','02000','04000','06000']#,'08000','10000'] 
-# dir_labels = ['01','02','03','04','05','06','07','08','09'] 
+dir_labels = ['01','02']#,'03','04','05','06','07','08','09'] 
 
 resolution = 200
 
@@ -70,14 +71,14 @@ sizes = []
 for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/wd_viscTest/vis_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj190/size'+str(i)) 
-    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/th60/vis1e2_mR_'+str(i))  
+    dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/pb45/visc_1_1e1/vis1e1_mR_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
-    dir_list.append('/nobackup/scgf/myExperiments/smooth/sm85/size'+str(i))  
+    # dir_list.append('/nobackup/scgf/myExperiments/smooth/sm85/size'+str(i))  
     
 print(dir_list)
 
-f1=2  # first file to plot. They account for "my_experiment-0003.csv" as the first file in dir
-f2=3  # second file. if f2 = 5 -> my_experiment00500.csv
+f1=40  # first file to plot. They account for "my_experiment-0003.csv" as the first file in dir :::  -1  =  0
+f2=45  # second file. if f2 = 5 -> my_experiment00500.csv
 
 df_x = pd.DataFrame()
 df_y = pd.DataFrame()
@@ -96,8 +97,8 @@ for dirnum,dir in enumerate(dir_list):
         print('skipping '+os.getcwd())
         continue
     else:
-        relaxed_file = getWhenItRelaxed("latte.log")
-        print(f'First file after complete relaxation: {relaxed_file}')
+        # relaxed_file = getWhenItRelaxed("latte.log")
+        # print(f'First file after complete relaxation: {relaxed_file}')  # not working
         first_file = sorted(glob.glob("my_experiment*"))[1]
         dom_size = float(getParameterFromLatte('input.txt','Scale'))
         print(f'scale: {dom_size}')
@@ -131,14 +132,13 @@ for dirnum,dir in enumerate(dir_list):
 
 
         ## manually get the coordinates of the central point:
-        meltYmin = float(getParameterFromLatte("input.txt","meltYmin"))
-        ymax = meltYmin/(resolution/2)   #  WHAT IT SHOULD BE
+        # meltYmin = float(getParameterFromLatte("input.txt","meltYmin"))
+        # ymax = meltYmin/(resolution/2)   #  WHAT IT SHOULD BE
         # ymax = meltYmin/(200/2)   # in real units (meters)
-        # ymax = 0.02   # TEMPORARY, CLOSE TO THE BOTTOM
+        ymax = 0.606173   # TEMPORARY, pb27
         # print(f'max y coord: {max(myExp["y coord"])}')
         print(f'ymax: {ymax}')
-        print(f'meltYmin: {meltYmin}')
-        xmax = 0.5    # 0.5 if point is in the middle
+        xmax = 0.0    # 0.5 if point is in the middle
 
         tolerance_y = dom_size*100/300*1e-4 #dom_size/300*1e-3  for 200,400,...,10000
         tolerance_x = dom_size*100/300*1e-4 #dom_size/300*1e-3  for 200,400,...,10000
@@ -190,7 +190,8 @@ for dirnum,dir in enumerate(dir_list):
         real_radius = myExp["real_radius"][0]
         print(f'real radius: {real_radius}')
 
-        for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[f1+1:f2+2:(f2-f1)]): #[beg:end:step]  set which timesteps (based on FILE NUMBER) to plot. first and second file are defined at the beginning
+        # for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[f1+1:f2+2:(f2-f1)]): #[beg:end:step]  set which timesteps (based on FILE NUMBER) to plot. first and second file are defined at the beginning
+        for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[f1+1:f2+2:3]): #[beg:end:step]  set which timesteps (based on FILE NUMBER) to plot. first and second file are defined at the beginning
             myfile = Path(os.getcwd()+'/'+filename)  # build file name including path
             if myfile.is_file():
                 print(filename)
@@ -198,7 +199,9 @@ for dirnum,dir in enumerate(dir_list):
                 # get the values of the selected variable along a horizontal and a vertical line
                 var_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc(var_to_plot)] 
                 var_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc(var_to_plot)]
-
+                if dirnum == 0:
+                    var_array_x = var_array_x*2
+                    var_array_y = var_array_y*2
                 input_tstep = float(getTimeStep("input.txt"))
                 input_viscosity = float(getViscosity("input.txt"))
                 file_num = float(filename.split("experiment")[1].split(".")[0])  # first take the part after "experiment", then the one before the "."

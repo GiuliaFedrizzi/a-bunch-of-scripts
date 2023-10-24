@@ -11,4 +11,4 @@ job_names=$(echo `seq -s, $1 $2`)
 #echo $job_names
 
 # the job will be held in the queue until all $job_names are completed
-qsub -hold_jid $job_names hello1.sh
+qsub -hold_jid $job_names sub_branchAn.sh

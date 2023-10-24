@@ -15,13 +15,13 @@ variab = find_variab()
 rose = False
 im_length = 875
 im_height = 883
-times = range(70,170,5)  # (start, end, step)
+times = range(5,60,5)  # (start, end, step)
 melt_labels = ['0.009','0.008','0.007','0.006','0.005','0.004','0.003','0.002','0.001'] 
 # melt_labels = ['0.008','0.006','0.004','0.002'] 
 
 if variab == "viscosity":
     x_variable = ['1e1']  # the values of the x variable to plot (e.g. viscosity)
-    # x_variable = ['1e1','1e2','5e2','1e3','5e3','1e4']#,'2e4','4e4']  # the values of the x variable to plot (e.g. viscosity)
+    # x_variable = ['1e1','1e15','1e2','1e25','1e3','1e35','1e4']#,'2e4','4e4']  # the values of the x variable to plot (e.g. viscosity)
     #x_variable = ['1e1','5e1','1e2','5e2','1e3','5e3','1e4']#,'2e4','4e4']  # the values of the x variable to plot (e.g. viscosity)
 elif variab == "def_rate":
     x_variable = ['1e8','2e8','3e8','4e8','5e8','6e8','7e8','8e8','9e8']#,'3e11','4e11']  # the values of the x variable to plot (e.g. def rate)
