@@ -31,7 +31,7 @@ def read_calculate_plot(filename, var_to_plot):
     # print(myExp.idxmax())#(axis=""))
     # df_v = myExp[50:len(myExp):res]    # dataframe only containing a vertical line. start from the 50th element and skip 2 rows of 200 elements
     df_v = myExp[0:len(myExp):int(res)]    # dataframe only containing a vertical line. start from the 50th element and skip 2 rows of 200 elements
-    df_h = myExp[int(res*res_y/2):int(res*res_y/2+res):1]    # dataframe only containing a vertical line. start from the 50th element and skip 2 rows of 200 elements
+    df_h = myExp[int(res*res_y/2+res):int(res*res_y/2+2*res):1]    # dataframe only containing a vertical line. start from the 50th element and skip 2 rows of 200 elements
     # print(len(df_v))
     variable_vals_v = df_v[var_to_plot].values
     variable_vals_h = df_h[var_to_plot].values
@@ -41,54 +41,8 @@ def read_calculate_plot(filename, var_to_plot):
 
 os.chdir(dir)
 myfile = Path(os.getcwd()+'/'+filename)  # build file name including path
-"""
-fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2)
-
-vars_to_plot = ["Pressure", "Porosity"]
-
-# prepare to store vertical and horizontal data
-all_data_v = {}
-all_data_h = {}
-
-for v in vars_to_plot:
-    (x_v, y_v), (x_h, y_h) = read_calculate_plot(filename, v)
-    all_data_v[v] = (x_v, y_v)
-    all_data_h[v] = (x_h, y_h)
-
-# print(all_data_h)
-
-x, y = all_data_h[vars_to_plot[0]]
-line1h, = ax1.plot(y, x, label=f"{v} (horizontal)")
-
-# Plotting the second variable using twiny
-ax2a = ax2.twiny()
-x, y = all_data_v[vars_to_plot[1]]
-line2v, = ax2a.plot(y, x, label=vars_to_plot[1], color='r')  # choosing a different color for distinction
-ax2a.set_xlabel(vars_to_plot[1])
-
-x, y = all_data_v[vars_to_plot[0]]
-line1v, = ax2.plot(y, x, label=vars_to_plot[0])
 
 
-ax2.set_ylabel("y")
-ax2.set_ylabel(vars_to_plot[0])
-ax2.get_xaxis().get_major_formatter().set_useOffset(False)
-
-
-
-# Plotting the second variable using twinx
-ax1a = ax1.twinx()
-x, y = all_data_h[vars_to_plot[1]]
-line2h, = ax1a.plot(x, y, label=vars_to_plot[1], color='r')  # choosing a different color for distinction
-ax1a.set_ylabel(vars_to_plot[1])
-
-
-
-# To create a single legend for both lines
-fig.legend([line1v, line2v], [vars_to_plot[0], vars_to_plot[1]], loc='upper right')
-
-plt.show()
-"""
 fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2)
 
 vars_to_plot = ["Pressure", "Porosity"]
@@ -110,8 +64,8 @@ x, y = all_data_v[vars_to_plot[0]]
 line1_v, = ax2.plot(y, x, label=vars_to_plot[0])
 
 # Set labels for ax1 and ax2
-ax1.set_ylabel("y (horizontal)")
-ax1.set_xlabel(vars_to_plot[0])
+ax1.set_ylabel(vars_to_plot[0])
+ax1.set_xlabel("x")
 ax2.set_ylabel("y")
 ax2.set_xlabel(vars_to_plot[0])
 
@@ -137,7 +91,8 @@ ax2.yaxis.tick_left()
 
 # Legend
 fig.legend([line1_v, line2_v], 
-           [vars_to_plot[0], vars_to_plot[1]], 
-           loc='upper right')
+           [vars_to_plot[0], vars_to_plot[1]],loc=(0.8, 0.8))
+
+plt.subplots_adjust(wspace=0.3)  # Adjust space between plots
 
 plt.show()
