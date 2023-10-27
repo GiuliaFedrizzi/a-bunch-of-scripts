@@ -35,11 +35,12 @@ dirs <- list.dirs()
 if (sum(grepl("visc",dirs), na.rm=TRUE)>0){  # count how many times it finds "visc" in the subdirectories. if it is > 0 ...
     var_is_visc = 1  # the variable is "viscosity"
     var_is_def = 0
-}else if (sum(grepl("thdef",dirs), na.rm=TRUE)>0){ # count how many times it finds "thdef" in the subdirectories
+}else if (sum(grepl("def",dirs), na.rm=TRUE)>0){ # count how many times it finds "thdef" in the subdirectories
     var_is_visc = 0
     var_is_def = 1
 }else{
-    stop("I can't find the variable (viscosity or defomation rate")
+    print(dirs)
+    stop("I can't find the variable (viscosity or defomation rate)")
 }
 # var_is_visc = 0
 # var_is_def = 1
@@ -83,7 +84,7 @@ build_branch_df <- function(x,m,time) {
         if (sum(grepl("visc",dirs), na.rm=TRUE)>0){  # count how many times it finds "visc" in the subdirectories. if it is > 0 ...
             var_is_visc = 1
             var_is_def = 0
-        }else if (sum(grepl("thdef",dirs), na.rm=TRUE)>0){ # count how many times it finds "thdef" in the subdirectories
+        }else if (sum(grepl("def",dirs), na.rm=TRUE)>0){ # count how many times it finds "thdef" in the subdirectories
             var_is_visc = 0
             var_is_def = 1
         }else{
@@ -125,7 +126,8 @@ build_branch_df <- function(x,m,time) {
                 file_to_open <- paste(base_path,'/vis',x,'_mR_',m,'/',csv_file_name,sep="")
             }
         } else if (var_is_def) {
-            file_to_open <- paste(base_path,'/thdef',x,'/vis1e2_mR_',m,'/',csv_file_name,sep="")
+            # file_to_open <- paste(base_path,'/thdef',x,'/vis1e2_mR_',m,'/',csv_file_name,sep="")
+            file_to_open <- paste(base_path,'/pdef',x,'/vis1e2_mR',m,'/',csv_file_name,sep="")
         }
         # print(file_to_open)
         if (file.exists(file_to_open)) {    
@@ -397,7 +399,7 @@ plot_options <- theme(   # x and y here are not affected by flipping. Same AFTER
     )
 
 # heatmaps combined with lineplots 
-if (FALSE) {
+if (TRUE) {
     # heatmaps
     png_name <- paste(base_path,"/branch_plots/br_heat_B_",time_string,".png",sep='')  # build name of png
     png(file=png_name,width = 3000,height = 1800,res=100)

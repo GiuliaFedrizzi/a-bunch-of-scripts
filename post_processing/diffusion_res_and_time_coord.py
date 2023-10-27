@@ -44,7 +44,7 @@ from pathlib import Path
 # import functions from external file
 from useful_functions import * 
 
-var_to_plot = "gauss_scaling_par_sum"
+var_to_plot = "Porosity"
 # options: Pressure, Mean Stress, Actual Movement, Gravity, Porosity, Sigma_1, Sigma_2, Youngs Modulus
 #         F_P_x, F_P_y, pf_grad_x, pf_grad_y, Original Movement, Movement in Gravity, Smooth function, area_par_fluid
 #         gauss_scaling_par, gauss_scaling_par_sum, gauss_scaling_par_n_tot, xy_melt_point
@@ -55,7 +55,7 @@ var_to_plot = "gauss_scaling_par_sum"
 # dir_labels = ['00200','00400','00600','00800','01000']
 # dir_labels = ['02000','04000','06000','08000','10000'] 
 # dir_labels = ['00200', '00400','00600','00800','01000','02000','04000','06000']#,'08000','10000'] 
-dir_labels = ['01','02']#,'03','04','05','06','07','08','09'] 
+dir_labels = ['01']#,'02']#,'03','04','05','06','07','08','09'] 
 
 resolution = 200
 
@@ -71,14 +71,14 @@ sizes = []
 for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/wd_viscTest/vis_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj190/size'+str(i)) 
-    dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/pb45/visc_1_1e1/vis1e1_mR_'+str(i))  
+    dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/pb47/visc_1_1e1/vis1e1_mR_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
     # dir_list.append('/nobackup/scgf/myExperiments/smooth/sm85/size'+str(i))  
     
 print(dir_list)
 
-f1=40  # first file to plot. They account for "my_experiment-0003.csv" as the first file in dir :::  -1  =  0
-f2=45  # second file. if f2 = 5 -> my_experiment00500.csv
+f1=1  # first file to plot. They account for "my_experiment-0003.csv" as the first file in dir :::  -1  =  0
+f2=1  # second file. if f2 = 5 -> my_experiment00500.csv
 
 df_x = pd.DataFrame()
 df_y = pd.DataFrame()
@@ -135,7 +135,7 @@ for dirnum,dir in enumerate(dir_list):
         # meltYmin = float(getParameterFromLatte("input.txt","meltYmin"))
         # ymax = meltYmin/(resolution/2)   #  WHAT IT SHOULD BE
         # ymax = meltYmin/(200/2)   # in real units (meters)
-        ymax = 0.606173   # TEMPORARY, pb27
+        ymax = 0.507  # TEMPORARY, pb27
         # print(f'max y coord: {max(myExp["y coord"])}')
         print(f'ymax: {ymax}')
         xmax = 0.0    # 0.5 if point is in the middle

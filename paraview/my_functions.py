@@ -255,14 +255,14 @@ def set_colormap_porosity(transform1Display):
     porosityLUTColorBar = GetScalarBar(porosityLUT, renderView1)
     porosityLUTColorBar.TitleBold = 1
     porosityLUTColorBar.Title = 'Porosity'
-    porosityLUTColorBar.ComponentTitle = '\nMelt Fraction'
+    porosityLUTColorBar.ComponentTitle = '\n(Melt Fraction)'
     porosityLUTColorBar.TitleFontSize = 21
     porosityLUTColorBar.LabelBold = 1
     porosityLUTColorBar.LabelFontSize = 20
 
 
     # porosityLUTColorBar.AutomaticLabelFormat = 0
-    porosityLUTColorBar.RangeLabelFormat = '%-#6.1g' 
+    porosityLUTColorBar.RangeLabelFormat = '%-#6.4g' 
     
 
     # Rescale transfer function - set limits

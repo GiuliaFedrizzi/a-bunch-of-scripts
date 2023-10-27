@@ -34,13 +34,13 @@ def build_array(big_array,variab,x,x_val,melt_rate,file_number,row,cols,rose):
            exp = str((float(exp)/10)) # true number
         ###### path to the files
         ## 2 levels, 2 options for viscosity
-        potential_file_path = 'visc_'+exp+'_'+x_val+'/vis1e2_mR_'+melt_rate+'/'
+        potential_file_path = 'visc_'+exp+'_'+x_val+'/vis1e2_mR_'+melt_rate#+'/'
         if os.path.isdir(potential_file_path) == False:
-            potential_file_path ='visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_'+melt_rate+'/'
+            potential_file_path ='visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_'+melt_rate#+'/'
             if os.path.isdir(potential_file_path) == False:
                 print("I've tried twice without success")
                 if os.path.isdir(potential_file_path) == False:
-                    potential_file_path ='visc_'+exp[0]+'_'+x_val+'/vis'+x_val+'_mR_'+melt_rate+'/'
+                    potential_file_path ='visc_'+exp[0]+'_'+x_val+'/vis'+x_val+'_mR_'+melt_rate#+'/'
         # poro_file = 'wd05_visc/visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_0'+str(melt_rate)+'/a_porosity_'+file_number+'.png' 
         # bb_file = 'wd05_visc/visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_0'+str(melt_rate)+'/a_brokenBonds_'+file_number+'.png'
         
@@ -50,12 +50,12 @@ def build_array(big_array,variab,x,x_val,melt_rate,file_number,row,cols,rose):
     elif variab == "def_rate":
         potential_file_path = 'thdef'+x_val+'/vis1e2_mR_'+ melt_rate   # transfer zone
         if os.path.isdir(potential_file_path) == False:
-            potential_file_path ='pdef'+x_val+'/vis1e2_mR_'+ melt_rate'/'  # production zone
+            potential_file_path ='pdef'+x_val+'/vis1e2_mR'+ melt_rate#+'/'  # production zone
     # now we have the path, choose if I open "poro_file" and "bb_file" or "rose_file"
     if rose == False:
         """ "poro_file" and "bb_file"  """
-        poro_file = potential_file_path +'a_porosity_160_'+file_number+'.png' 
-        bb_file  = potential_file_path +'a_brokenBonds_'+file_number+'.png'
+        poro_file = potential_file_path +'/a_porosity_160_'+file_number+'.png' 
+        bb_file  = potential_file_path +'/a_brokenBonds_'+file_number+'.png'
     
         if os.path.isfile(poro_file):
             poro_big_file = Image.open(poro_file)  # I open it here so then I can call poro_big_file.close() and close it
@@ -77,10 +77,10 @@ def build_array(big_array,variab,x,x_val,melt_rate,file_number,row,cols,rose):
 
     else:
         """ here "rose_file" only """
-        rose_file = potential_file_path +'/rose_norm_p_top_py_bb_'+file_number+'_nx.png' # try "top" first
+        rose_file = potential_file_path +'/rose_norm_p_top_py_bb_'+file_number+'_nx.png' # try "top" first    
         if os.path.isfile(rose_file) == False:
             """ try another version """
-            rose_file = potential_file_path +'/rose_norm_p_py_bb_'+file_number+'_nx.png' 
+            rose_file = potential_file_path +'/rose_norm_p_py_bb_'+file_number+'_nx.png'   # e.g.  rose_norm_p_py_bb_026000_nx
         if os.path.isfile(rose_file):
             print(f'found file {rose_file}')
             rose_big_file = Image.open(rose_file)  # to do: do I need to crop it?
