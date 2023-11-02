@@ -104,10 +104,16 @@ def set_colormap_pressure(transform1Display):
     # get color legend/bar for pressureLUT in view renderView1
     pressureLUTColorBar = GetScalarBar(pressureLUT, renderView1)
 
-    pressureLUTColorBar.TitleBold = 1
+    pressureLUTColorBar.Title = 'Fluid Pressure' # .Title
     #format:
-    pressureLUTColorBar.LabelFormat = '%-#6.3e'
-    pressureLUTColorBar.RangeLabelFormat = '%-#6.3e'
+    pressureLUTColorBar.LabelFormat = '%-#6.4e'
+    pressureLUTColorBar.RangeLabelFormat = '%-#6.4e'
+    pressureLUTColorBar.TitleBold = 1
+    brokenBondsLUTColorBar.LabelBold = 1
+
+    brokenBondsLUTColorBar.TitleFontSize = 21
+    brokenBondsLUTColorBar.LabelFontSize = 20
+
 
     # change scalar bar placement
     pressureLUTColorBar.WindowLocation = 'AnyLocation'
@@ -262,7 +268,9 @@ def set_colormap_porosity(transform1Display):
 
 
     # porosityLUTColorBar.AutomaticLabelFormat = 0
+    pressureLUTColorBar.LabelFormat = '%-#6.4e'
     porosityLUTColorBar.RangeLabelFormat = '%-#6.4g' 
+    
     
 
     # Rescale transfer function - set limits

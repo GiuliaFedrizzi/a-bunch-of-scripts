@@ -44,7 +44,7 @@ from pathlib import Path
 # import functions from external file
 from useful_functions import * 
 
-var_to_plot = "Porosity"
+var_to_plot = "Pressure"
 # options: Pressure, Mean Stress, Actual Movement, Gravity, Porosity, Sigma_1, Sigma_2, Youngs Modulus
 #         F_P_x, F_P_y, pf_grad_x, pf_grad_y, Original Movement, Movement in Gravity, Smooth function, area_par_fluid
 #         gauss_scaling_par, gauss_scaling_par_sum, gauss_scaling_par_n_tot, xy_melt_point
@@ -55,7 +55,10 @@ var_to_plot = "Porosity"
 # dir_labels = ['00200','00400','00600','00800','01000']
 # dir_labels = ['02000','04000','06000','08000','10000'] 
 # dir_labels = ['00200', '00400','00600','00800','01000','02000','04000','06000']#,'08000','10000'] 
-dir_labels = ['01']#,'02']#,'03','04','05','06','07','08','09'] 
+# dir_labels = ['01']#,'02']#,'03','04','05','06','07','08','09'] 
+# dir_labels = ['op03/vis1e1_mR_01','op04/vis1e1_mR_01']
+# dir_labels = ['p13/visc_4_1e4/vis1e4_mR_09']
+dir_labels = ['04','05','06'] # '02','03','04','05','06'
 
 resolution = 200
 
@@ -71,14 +74,17 @@ sizes = []
 for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/wd_viscTest/vis_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj190/size'+str(i)) 
-    dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/pb47/visc_1_1e1/vis1e1_mR_'+str(i))  
+    # dir_list.append('/nobackup/scgf/myExperiments/optimise/'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
     # dir_list.append('/nobackup/scgf/myExperiments/smooth/sm85/size'+str(i))  
+    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/'+str(i))  
+    dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/timestep/ts02/visc_1_1e1/vis1e1_tstep_'+str(i))  
     
 print(dir_list)
 
 f1=1  # first file to plot. They account for "my_experiment-0003.csv" as the first file in dir :::  -1  =  0
-f2=1  # second file. if f2 = 5 -> my_experiment00500.csv
+f2=5  # second file. if f2 = 5 -> my_experiment00500.csv
+step=2
 
 df_x = pd.DataFrame()
 df_y = pd.DataFrame()
@@ -138,7 +144,7 @@ for dirnum,dir in enumerate(dir_list):
         ymax = 0.507  # TEMPORARY, pb27
         # print(f'max y coord: {max(myExp["y coord"])}')
         print(f'ymax: {ymax}')
-        xmax = 0.0    # 0.5 if point is in the middle
+        xmax = 0.507    # 0.5 if point is in the middle
 
         tolerance_y = dom_size*100/300*1e-4 #dom_size/300*1e-3  for 200,400,...,10000
         tolerance_x = dom_size*100/300*1e-4 #dom_size/300*1e-3  for 200,400,...,10000
@@ -191,7 +197,7 @@ for dirnum,dir in enumerate(dir_list):
         print(f'real radius: {real_radius}')
 
         # for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[f1+1:f2+2:(f2-f1)]): #[beg:end:step]  set which timesteps (based on FILE NUMBER) to plot. first and second file are defined at the beginning
-        for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[f1+1:f2+2:3]): #[beg:end:step]  set which timesteps (based on FILE NUMBER) to plot. first and second file are defined at the beginning
+        for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[f1+1:f2+2:step]): #[beg:end:step]  set which timesteps (based on FILE NUMBER) to plot. first and second file are defined at the beginning
             myfile = Path(os.getcwd()+'/'+filename)  # build file name including path
             if myfile.is_file():
                 print(filename)
@@ -199,10 +205,11 @@ for dirnum,dir in enumerate(dir_list):
                 # get the values of the selected variable along a horizontal and a vertical line
                 var_array_x =  myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc(var_to_plot)] 
                 var_array_y = myExp.iloc[offset::resolution,myExp.columns.get_loc(var_to_plot)]
-                if dirnum == 0:
-                    var_array_x = var_array_x*2
-                    var_array_y = var_array_y*2
+                # if dirnum == 0:
+                #     var_array_x = var_array_x*2
+                #     var_array_y = var_array_y*2
                 input_tstep = float(getTimeStep("input.txt"))
+                print(f'timestep: {input_tstep}')
                 input_viscosity = float(getViscosity("input.txt"))
                 file_num = float(filename.split("experiment")[1].split(".")[0])  # first take the part after "experiment", then the one before the "."
                 # name of the line
@@ -224,6 +231,8 @@ for dirnum,dir in enumerate(dir_list):
         if var_to_plot ==  "Sigma_1" or var_to_plot ==  "Sigma_2":
             depth = getDepth("input.txt")
             solid_density = getDensity()
+            # solid_density = 3000
+            print(f'solid_density {solid_density}')
             sigma_top_theor = 0.66666 * solid_density*9.8*(float(depth)+2*float(real_radius))  # rho * g * depth+first row  (height of first row = 2*real_radius)
             sigma_bot_theor = 0.66666 * solid_density*9.8*(float(depth)+float(dom_size))  # rho * g * (depth+size)
 
@@ -288,7 +297,7 @@ if True:
     fig.suptitle(os.getcwd()) 
     plt.show()
 if var_to_plot == "Sigma_1" or var_to_plot == "Sigma_2":
-    if True:
+    if False:
         fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
         ax1.plot(sizes,sigmas_top_true,'-o',color='blue',label='top true')
         ax1.plot(sizes,sigmas_bot_true,'-o',color='green',label='bottom true')
@@ -302,7 +311,7 @@ if var_to_plot == "Sigma_1" or var_to_plot == "Sigma_2":
         ax1.set_ylabel(var_to_plot)
         plt.show()
 
-    if True:  # plot ratios
+    if False:  # plot ratios
         fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
         ax1.plot(sizes,sigmas_top_ratio,'-o',color='blue',label='top ratio')
         ax1.plot(sizes,sigmas_bot_ratio,'-o',color='green',label='bottom ratio')

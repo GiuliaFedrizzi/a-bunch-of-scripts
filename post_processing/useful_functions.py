@@ -1,3 +1,5 @@
+import os.path
+
 def getTimeStep(inputFile):
     with open(inputFile) as iFile:
         for num, line in enumerate(iFile,1):
@@ -30,7 +32,10 @@ def getParameterFromLatte(inputFile,word_to_find):
                 word_found = line.split(" ")[1]  # split before and after space, take the second word (value of variable)
                 return word_found   # stop searching, return the value (will be a string)
 def getDensity():
-        with open("experiment.cc") as iFile:
+    exp_file = "experiment.cc"
+    if not os.path.isfile(exp_file):
+        exp_file = "../baseFiles/experiment.cc"  # sometimes it is only stored in the baseFiles directory
+        with open(exp_file) as iFile:
             for num, line in enumerate(iFile,1):
                 if "setSolidDensity" in line:
                     # take the second part - after ( - then take the first part - before )
