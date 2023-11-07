@@ -56,3 +56,20 @@ def getWhenItRelaxed(lattefile):
                     relaxed_file = line.split(": ")[1]   # this line look like: Saving file: my_experiment00000.csv
                        # take the last part splitting around ": ", so something like "my_experiment00000.csv"
     return relaxed_file 
+
+
+def getFirstBrokenBond(lattefile):
+    broken_bond_string = "Broken Bonds"
+    time_string = "time is "
+    time_line = 0
+    with open(lattefile) as expFile:
+        for num, line in enumerate(expFile,1):
+            if time_string in line:
+                time_line = num  # gets overwritten every time until I find a broken bond. Then the value stays
+                time_line_whole = line
+            if broken_bond_string in line:  # at the FIRST occurrence of Broken Bonds, stop the search
+                x = time_line_whole.split("time is ") # split the line with the info about time around the string "time is"
+                timebb = x[1]    # take the second part, which is the one that comes after the string "time is"
+                timebb = timebb.replace("\n","")  # get rid of \n
+                return timebb  
+

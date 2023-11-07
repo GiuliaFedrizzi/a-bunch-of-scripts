@@ -10,6 +10,7 @@
 import matplotlib.pyplot as plt
 import glob
 import os as os
+from useful_functions import getFirstBrokenBond
 
 parent_directories = []
 for sigma_dir in sorted(glob.glob("sigma*/")):
@@ -25,18 +26,18 @@ fig, axs = plt.subplots(nrows=1, ncols=1)
 broken_bond_string = "Broken Bonds"
 time_string = "time is "
 
-def getFirstBrokenBond(myExp):
-    time_line = 0
-    with open(myExp) as expFile:
-        for num, line in enumerate(expFile,1):
-            if time_string in line:
-                time_line = num  # gets overwritten every time until I find a broken bond. Then the value stays
-                time_line_whole = line
-            if broken_bond_string in line:  # at the FIRST occurrence of Broken Bonds, stop the search
-                x = time_line_whole.split("time is ") # split the line with the info about time around the string "time is"
-                timebb = x[1]    # take the second part, which is the one that comes after the string "time is"
-                timebb = timebb.replace("\n","")  # get rid of \n
-                return timebb  
+# def getFirstBrokenBond(myExp):
+#     time_line = 0
+#     with open(myExp) as expFile:
+#         for num, line in enumerate(expFile,1):
+#             if time_string in line:
+#                 time_line = num  # gets overwritten every time until I find a broken bond. Then the value stays
+#                 time_line_whole = line
+#             if broken_bond_string in line:  # at the FIRST occurrence of Broken Bonds, stop the search
+#                 x = time_line_whole.split("time is ") # split the line with the info about time around the string "time is"
+#                 timebb = x[1]    # take the second part, which is the one that comes after the string "time is"
+#                 timebb = timebb.replace("\n","")  # get rid of \n
+#                 return timebb  
     
 for parent_directory in sorted(glob.glob("sigma*/")):   # sigma_*
     # change directory (I want to have 1 script that I keep outside of the many directories)
