@@ -50,7 +50,7 @@ def build_array(big_array,variab,x,x_val,melt_rate,file_number,row,cols,rose):
     elif variab == "def_rate":
         potential_file_path = 'thdef'+x_val+'/vis1e2_mR_'+ melt_rate   # transfer zone
         if os.path.isdir(potential_file_path) == False:
-            potential_file_path ='pdef'+x_val+'/vis1e2_mR'+ melt_rate#+'/'  # production zone
+            potential_file_path ='pdef'+x_val+'/vis1e2_mR_'+ melt_rate#+'/'  # production zone
     # now we have the path, choose if I open "poro_file" and "bb_file" or "rose_file"
     if rose == False:
         """ "poro_file" and "bb_file"  """

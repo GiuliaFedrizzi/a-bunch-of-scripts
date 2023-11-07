@@ -95,4 +95,5 @@ fig.legend([line1_v, line2_v],
 
 plt.subplots_adjust(wspace=0.3)  # Adjust space between plots
 
-plt.show()
+#plt.show()
+plt.savefig("poro_press_periodic.png",dpi=400)

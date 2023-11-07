@@ -682,7 +682,8 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
     rose_hist_list = [] # empty list to temporarily save all the values to build the rose diagram. Will be normalised by the maximum length.
     out_paths = []
 
-    for f,filename in enumerate(sorted(glob.glob("py_bb_*.png"))):
+    for f,filename in enumerate(sorted(glob.glob("ldo_*.png"))):
+    # for f,filename in enumerate(sorted(glob.glob("py_bb_*.png"))):
     # for f,filename in enumerate(sorted(glob.glob("Long_drawn_OpeningInvert*.png"))):
         """ Get the file name, run 'analyse_png', get the info on the branches,
         save it into a csv   """

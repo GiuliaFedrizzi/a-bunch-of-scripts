@@ -109,10 +109,10 @@ def set_colormap_pressure(transform1Display):
     pressureLUTColorBar.LabelFormat = '%-#6.4e'
     pressureLUTColorBar.RangeLabelFormat = '%-#6.4e'
     pressureLUTColorBar.TitleBold = 1
-    brokenBondsLUTColorBar.LabelBold = 1
+    pressureLUTColorBar.LabelBold = 1
 
-    brokenBondsLUTColorBar.TitleFontSize = 21
-    brokenBondsLUTColorBar.LabelFontSize = 20
+    pressureLUTColorBar.TitleFontSize = 21
+    pressureLUTColorBar.LabelFontSize = 20
 
 
     # change scalar bar placement
@@ -268,7 +268,7 @@ def set_colormap_porosity(transform1Display):
 
 
     # porosityLUTColorBar.AutomaticLabelFormat = 0
-    pressureLUTColorBar.LabelFormat = '%-#6.4e'
+    porosityLUTColorBar.LabelFormat = '%-#6.4e'
     porosityLUTColorBar.RangeLabelFormat = '%-#6.4g' 
     
     

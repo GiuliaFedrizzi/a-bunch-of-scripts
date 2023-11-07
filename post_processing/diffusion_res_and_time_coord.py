@@ -44,7 +44,7 @@ from pathlib import Path
 # import functions from external file
 from useful_functions import * 
 
-var_to_plot = "Pressure"
+var_to_plot = "Sigma_1"
 # options: Pressure, Mean Stress, Actual Movement, Gravity, Porosity, Sigma_1, Sigma_2, Youngs Modulus
 #         F_P_x, F_P_y, pf_grad_x, pf_grad_y, Original Movement, Movement in Gravity, Smooth function, area_par_fluid
 #         gauss_scaling_par, gauss_scaling_par_sum, gauss_scaling_par_n_tot, xy_melt_point
@@ -56,9 +56,9 @@ var_to_plot = "Pressure"
 # dir_labels = ['02000','04000','06000','08000','10000'] 
 # dir_labels = ['00200', '00400','00600','00800','01000','02000','04000','06000']#,'08000','10000'] 
 # dir_labels = ['01']#,'02']#,'03','04','05','06','07','08','09'] 
-# dir_labels = ['op03/vis1e1_mR_01','op04/vis1e1_mR_01']
+dir_labels = ['op03/vis1e1_mR_01','op07/vis1e1_mR_01']
 # dir_labels = ['p13/visc_4_1e4/vis1e4_mR_09']
-dir_labels = ['04','05','06'] # '02','03','04','05','06'
+# dir_labels = ['04','05','06'] # '02','03','04','05','06'
 
 resolution = 200
 
@@ -74,11 +74,11 @@ sizes = []
 for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/wd_viscTest/vis_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj190/size'+str(i)) 
-    # dir_list.append('/nobackup/scgf/myExperiments/optimise/'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
     # dir_list.append('/nobackup/scgf/myExperiments/smooth/sm85/size'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/'+str(i))  
-    dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/timestep/ts02/visc_1_1e1/vis1e1_tstep_'+str(i))  
+    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/timestep/ts02/visc_1_1e1/vis1e1_tstep_'+str(i))  
+    dir_list.append('/nobackup/scgf/myExperiments/optimise/'+str(i))  
     
 print(dir_list)
 

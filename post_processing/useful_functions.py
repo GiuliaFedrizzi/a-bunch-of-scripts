@@ -40,6 +40,7 @@ def getDensity():
                 if "setSolidDensity" in line:
                     # take the second part - after ( - then take the first part - before )
                     word_found = (line.split("(")[1]).split(")")[0]  
+                    print(f'density  {word_found}')
                     return float(word_found)   # stop searching, return the value (will be a string)
 
 def getWhenItRelaxed(lattefile):
