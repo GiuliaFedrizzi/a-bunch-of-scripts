@@ -61,11 +61,11 @@ def getWhenItRelaxed(lattefile):
 def getFirstBrokenBond(lattefile):
     broken_bond_string = "Broken Bonds"
     time_string = "time is "
-    time_line = 0
     with open(lattefile) as expFile:
         for num, line in enumerate(expFile,1):
+            # if num <1000:  # Skip the first x lines
+            #     continue
             if time_string in line:
-                time_line = num  # gets overwritten every time until I find a broken bond. Then the value stays
                 time_line_whole = line
             if broken_bond_string in line:  # at the FIRST occurrence of Broken Bonds, stop the search
                 x = time_line_whole.split("time is ") # split the line with the info about time around the string "time is"

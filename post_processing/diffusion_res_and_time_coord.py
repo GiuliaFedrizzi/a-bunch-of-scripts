@@ -56,8 +56,8 @@ var_to_plot = "Sigma_1"
 # dir_labels = ['02000','04000','06000','08000','10000'] 
 # dir_labels = ['00200', '00400','00600','00800','01000','02000','04000','06000']#,'08000','10000'] 
 # dir_labels = ['01']#,'02']#,'03','04','05','06','07','08','09'] 
-dir_labels = ['op03/vis1e1_mR_01','op07/vis1e1_mR_01']
-# dir_labels = ['p13/visc_4_1e4/vis1e4_mR_09']
+# dir_labels = ['op03/vis1e1_mR_01','op07/vis1e1_mR_01']
+dir_labels = ['p34/visc_4_1e4/vis1e4_mR_09','p35/visc_4_1e4/vis1e4_mR_09']
 # dir_labels = ['04','05','06'] # '02','03','04','05','06'
 
 resolution = 200
@@ -76,15 +76,15 @@ for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj190/size'+str(i)) 
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
     # dir_list.append('/nobackup/scgf/myExperiments/smooth/sm85/size'+str(i))  
-    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/'+str(i))  
+    dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/timestep/ts02/visc_1_1e1/vis1e1_tstep_'+str(i))  
-    dir_list.append('/nobackup/scgf/myExperiments/optimise/'+str(i))  
+    # dir_list.append('/nobackup/scgf/myExperiments/optimise/'+str(i))  
     
 print(dir_list)
 
-f1=1  # first file to plot. They account for "my_experiment-0003.csv" as the first file in dir :::  -1  =  0
-f2=5  # second file. if f2 = 5 -> my_experiment00500.csv
-step=2
+f1=-1  # first file to plot. They account for "my_experiment-0003.csv" as the first file in dir :::  -1  =  0
+f2=0  # second file. if f2 = 5 -> my_experiment00500.csv
+step=1
 
 df_x = pd.DataFrame()
 df_y = pd.DataFrame()
@@ -110,18 +110,18 @@ for dirnum,dir in enumerate(dir_list):
         print(f'scale: {dom_size}')
 
         myExp = pd.read_csv(first_file, header=0)
-        with open("latte.log") as iFile:
-            count = 1   # counter
-            relax_thresh=[]  # initialise vector of relaxation thresholds (there should be 2)
-            for num, line in enumerate(iFile,1):
-                if "Changing relaxthresh" in line:
-                    rel = line.split(" ")[-1]
-                    rel = rel.replace("\n","")
-                    relax_thresh.append(rel)  # split around spaces, take the last (=relax thresh value)
-                    count+=1
-                    if count==2:  # stop after finding the second occurrence
-                        continue  
-        print(f'relax thresholds: {relax_thresh[0]}, {relax_thresh[1]}')
+        # with open("latte.log") as iFile:
+        #     count = 1   # counter
+        #     relax_thresh=[]  # initialise vector of relaxation thresholds (there should be 2)
+        #     for num, line in enumerate(iFile,1):
+        #         if "Changing relaxthresh" in line:
+        #             rel = line.split(" ")[-1]
+        #             rel = rel.replace("\n","")
+        #             relax_thresh.append(rel)  # split around spaces, take the last (=relax thresh value)
+        #             count+=1
+        #             if count==2:  # stop after finding the second occurrence
+        #                 continue  
+        # print(f'relax thresholds: {relax_thresh[0]}, {relax_thresh[1]}')
         if "size" in dir.split("/")[-1]:      # try to get the size automatically. If the last subdirectory contains the scale
             dir_label = dir_labels[dirnum]   # get the label that corresponds to the directory
             scale_factor = float(dir_label)/max_dir_size # factor for scaling the axes. Normalised by the maximum size (e.g. 1000)
@@ -230,8 +230,8 @@ for dirnum,dir in enumerate(dir_list):
         # calculate and print out theoretical and true values of stresses
         if var_to_plot ==  "Sigma_1" or var_to_plot ==  "Sigma_2":
             depth = getDepth("input.txt")
-            solid_density = getDensity()
-            # solid_density = 3000
+            # solid_density = getDensity()
+            solid_density = 3000
             print(f'solid_density {solid_density}')
             sigma_top_theor = 0.66666 * solid_density*9.8*(float(depth)+2*float(real_radius))  # rho * g * depth+first row  (height of first row = 2*real_radius)
             sigma_bot_theor = 0.66666 * solid_density*9.8*(float(depth)+float(dom_size))  # rho * g * (depth+size)
@@ -257,7 +257,7 @@ for dirnum,dir in enumerate(dir_list):
             sigmas_diff_true.append(var_array_y.values[-2]-var_array_y.values[1])   # top - bottom (they're <0, so difference is >0)
             sigmas_diff_theor.append(sigma_bot_theor-sigma_top_theor)   # bottom - top (they're >0)
             sigmas_diff_ratio.append((var_array_y.values[-2]-var_array_y.values[1])/(sigma_bot_theor-sigma_top_theor))   # bottom - top (they're >0)
-        print(f'max Movement: {max(var_array_y.values)}')
+        # print(f'max Movement: {max(var_array_y.values)}')
     # end of dir loop
 # ax3 = g_y.twinx()
 
