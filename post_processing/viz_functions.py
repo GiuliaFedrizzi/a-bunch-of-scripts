@@ -32,18 +32,22 @@ def build_array(big_array,variab,x,x_val,melt_rate,file_number,row,cols,rose):
         exp = x_val.split('e')[-1] # the exponent after visc_ and before 5e3 or 1e4 etc
         if len(exp)==2:
            exp = str((float(exp)/10)) # true number
+        #    print(f'exp is {exp}')
         ###### path to the files
         ## 2 levels, 2 options for viscosity
         potential_file_path = 'visc_'+exp+'_'+x_val+'/vis1e2_mR_'+melt_rate#+'/'
         if os.path.isdir(potential_file_path) == False:
             potential_file_path ='visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_'+melt_rate#+'/'
+            # if os.path.isdir(potential_file_path) == False:
+                #print("I've tried twice without success")
             if os.path.isdir(potential_file_path) == False:
-                print("I've tried twice without success")
+                potential_file_path ='visc_'+exp[0]+'_'+x_val+'/vis'+x_val+'_mR_'+melt_rate#+'/'
                 if os.path.isdir(potential_file_path) == False:
-                    potential_file_path ='visc_'+exp[0]+'_'+x_val+'/vis'+x_val+'_mR_'+melt_rate#+'/'
+                    potential_file_path ='visc_'+exp[0]+'_'+x_val+'/vis5e'+exp[0]+'_mR_'+melt_rate#+'/'  # e.g. vis5e2_mR_01
+
         # poro_file = 'wd05_visc/visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_0'+str(melt_rate)+'/a_porosity_'+file_number+'.png' 
         # bb_file = 'wd05_visc/visc_'+exp+'_'+x_val+'/vis'+x_val+'_mR_0'+str(melt_rate)+'/a_brokenBonds_'+file_number+'.png'
-        
+        # print(f'path: {potential_file_path}')
         ##  only 1 level of subdirs
         # poro_file = 'vis'+x_val+'_mR_'+melt_rate+'/a_porosity_'+file_number+'.png' 
         # bb_file = 'vis'+x_val+'_mR_'+melt_rate+'/a_brokenBonds_'+file_number+'.png'

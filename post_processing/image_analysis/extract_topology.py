@@ -64,6 +64,7 @@ import csv
 import glob
 import re   # regex
 import math
+import json
 
 # sys.path.append('/home/home01/scgf/myscripts/post_processing')   # where to look for useful_functions.py
 # from useful_functions import getTimeStep
@@ -475,7 +476,7 @@ def calculate_rose(g: nx.Graph):
     angles_in_bins[0] += angles_in_bins[-1]   # Sum the last value with the first value.
     single_half = np.sum(np.split(angles_in_bins[:-1], 2), 0)
     full_range = np.concatenate([single_half,single_half])  # repeat the sequence twice
-    return full_range
+    return full_range, angles, lengths
 
 def draw_rose_plot(full_range: np.ndarray):
     # make plot
@@ -486,13 +487,13 @@ def draw_rose_plot(full_range: np.ndarray):
 
     ax.set_theta_zero_location('N') # zero starts at North
     ax.set_theta_direction(-1)
-    # ax.set_thetagrids(np.arange(0, 360, 10), labels=np.arange(0, 360, 10))
+    ax.set_thetagrids(np.arange(0, 360, 10), labels=np.arange(0, 360, 10))
     # ax.set_rgrids(np.arange(1, full_range.max() + 1, 2), angle=0, weight= 'black')
     # the height of each bar is the number of angles in that bin
-    ax.grid(False)
+    # ax.grid(False)
     ax.bar(np.deg2rad(np.arange(0, 360, 10)), full_range, 
-        # width=np.deg2rad(10), bottom=0.0, color=(1, 0, 0, 0.5), edgecolor='k')
-        width=np.deg2rad(10), bottom=0.0, color=(1, 0, 0), edgecolor='r')
+        width=np.deg2rad(10), bottom=0.0, color=(0.5, 0.5, 0.5, 0.5), edgecolor='k')
+        # width=np.deg2rad(10), bottom=0.0, color=(1, 0, 0), edgecolor='r')
     return ax
 
 def topo_analysis(g: nx.Graph,tstep_number: float) -> dict:
@@ -507,7 +508,7 @@ def topo_analysis(g: nx.Graph,tstep_number: float) -> dict:
     """
 
     edge_lengths = [d for (u,v,d) in g.edges.data('d')]  # distance values are stored under the attribute "d"
-    print(f'branch lengths: {edge_lengths}')
+    # print(f'branch lengths: {edge_lengths}')
 
     input_tstep = get_timestep()
 
@@ -563,7 +564,7 @@ def orientation_calc(g: nx.Graph) -> nx.Graph:
     # print([o for (u,v,o) in g.edges.data('orientation')])
     return g
 
-def analyse_png(png_file: str, part_to_analyse: str) -> dict:
+def analyse_png(png_file: str, part_to_analyse: str, all_angles: list) -> dict:
     color = '(255, 255, 255)'  # select the colour: do the analysis on the white parts
     # color = '(0, 0, 0)'  # select the colour: do the analysis on the black parts
     assert color[0] == '('
@@ -621,7 +622,7 @@ def analyse_png(png_file: str, part_to_analyse: str) -> dict:
 
     px = find_color(im, rgb).T
 
-    print(f'Fracture RGB: {rgb}')
+    # print(f'Fracture RGB: {rgb}')
     print(f'Fracture pixels: {px.sum()}')
 
     input_tstep = get_timestep()
@@ -634,7 +635,7 @@ def analyse_png(png_file: str, part_to_analyse: str) -> dict:
         print("0 pixels, skipping")
         branch_info = {"time":timestep_number*input_tstep,"n_I":0,"n_2":0,"n_3":0,"n_4":0,"n_5":0,
                 "branches_tot_length":0} # dictionary with all zeros: there are no fractures in this area
-        return branch_info, np.zeros(36), "path" # sequences of zeros of the same length as the output of calculate_rose(). Placeholder for path
+        return branch_info, np.zeros(36), "path", all_angles # sequences of zeros of the same length as the output of calculate_rose(). Placeholder for path
     g = extract_network(px,im)
     print(f'Extracted fracture network:')
     print(f'  - {len(g.nodes())} nodes')
@@ -645,7 +646,7 @@ def analyse_png(png_file: str, part_to_analyse: str) -> dict:
         print("0 edges, skipping")
         branch_info = {"time":timestep_number*input_tstep,"n_I":0,"n_2":0,"n_3":0,"n_4":0,"n_5":0,
                 "branches_tot_length":0} # dictionary with all zeros: there are no fractures in this area
-        return branch_info, np.zeros(36), "path"
+        return branch_info, np.zeros(36), "path", all_angles
 
     # do some statistics
     branch_info = topo_analysis(g,timestep_number)
@@ -666,9 +667,16 @@ def analyse_png(png_file: str, part_to_analyse: str) -> dict:
     plt.savefig("rose_weight_"+out_path,dpi=200)
     plt.clf()
 
-    rose_histogram = calculate_rose(g)
+    rose_histogram, angles, lengths = calculate_rose(g)
+    
+    all_angles.append({
+        'timestep_n': timestep_number,
+        'angles': angles.tolist(),
+        'lengths': lengths.tolist(),
+        'rose_histogram':rose_histogram.tolist()
+    })
 
-    return branch_info, rose_histogram, out_path
+    return branch_info, rose_histogram, out_path, all_angles
 
 def file_loop(parent_dir: str,part_to_analyse: str) -> None:
     """ given the parent directory, cd there and go through all png files"""
@@ -681,16 +689,20 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
     branch_info = []  # create an empty list. One row = one dictionary for each simulation
     rose_hist_list = [] # empty list to temporarily save all the values to build the rose diagram. Will be normalised by the maximum length.
     out_paths = []
-
-    for f,filename in enumerate(sorted(glob.glob("ldo_*.png"))):
-    # for f,filename in enumerate(sorted(glob.glob("py_bb_*.png"))):
+    all_angles = []
+    # for f,filename in enumerate(sorted(glob.glob("ldo_*.png"))):
+    for f,filename in enumerate(sorted(glob.glob("py_bb_*.png"))):
     # for f,filename in enumerate(sorted(glob.glob("Long_drawn_OpeningInvert*.png"))):
         """ Get the file name, run 'analyse_png', get the info on the branches,
         save it into a csv   """
-        branch_dict, rose_hist, out_path = analyse_png(filename,part_to_analyse)
+        branch_dict, rose_hist, out_path, all_angles = analyse_png(filename,part_to_analyse,all_angles)
         branch_info.append(branch_dict)  # build the list of dictionaries
         rose_hist_list.append(rose_hist)
         out_paths.append(out_path)
+    
+    # save angle data in a json file
+    with open('segments_angles.json', 'w') as file:
+        json.dump(all_angles, file)
 
     print(rose_hist_list)
     print(f'max rose_hist_list {np.max(rose_hist_list)}')

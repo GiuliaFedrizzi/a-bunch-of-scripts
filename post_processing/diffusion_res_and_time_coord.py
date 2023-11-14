@@ -52,13 +52,17 @@ var_to_plot = "Sigma_1"
 # dir_labels = ['400','200']  # res400.elle, res200.elle
 # dir_labels = ['00200','00400','00600','00800']#,'01000']
 # dir_labels = ['02000','04000','06000']#,'08000']
-# dir_labels = ['00200','00400','00600','00800','01000']
+# dir_labels = ['00200','00400','00600','00800','01000'] # 
 # dir_labels = ['02000','04000','06000','08000','10000'] 
 # dir_labels = ['00200', '00400','00600','00800','01000','02000','04000','06000']#,'08000','10000'] 
 # dir_labels = ['01']#,'02']#,'03','04','05','06','07','08','09'] 
 # dir_labels = ['op03/vis1e1_mR_01','op07/vis1e1_mR_01']
-dir_labels = ['p34/visc_4_1e4/vis1e4_mR_09','p35/visc_4_1e4/vis1e4_mR_09']
+# dir_labels = ['p39/visc_4_1e4/vis1e4_mR_09','p38/visc_4_1e4/vis1e4_mR_09','p37/visc_4_1e4/vis1e4_mR_09','p35/visc_4_1e4/vis1e4_mR_09','p36/visc_4_1e4/vis1e4_mR_09']
+dir_labels = ['p41/visc_1_1e1/vis1e1_mR_01','p42/visc_1_1e1/vis1e1_mR_01','p43/visc_1_1e1/vis1e1_mR_01']
 # dir_labels = ['04','05','06'] # '02','03','04','05','06'
+# dir_labels = ['gx06/gx_02','gx08/gx_02'] 
+
+my_labels = ['rel thresh 0.001','rel thresh 0.01','rel thresh 0.1'] # leave empty for default labels (= dir labels)
 
 resolution = 200
 
@@ -75,14 +79,15 @@ for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/wd_viscTest/vis_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj190/size'+str(i)) 
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
-    # dir_list.append('/nobackup/scgf/myExperiments/smooth/sm85/size'+str(i))  
-    dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/'+str(i))  
+    # dir_list.append('/nobackup/scgf/myExperiments/smooth/sm92/size'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/timestep/ts02/visc_1_1e1/vis1e1_tstep_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/optimise/'+str(i))  
+    dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/'+str(i))  
+    # dir_list.append('/nobackup/scgf/myExperiments/gravity_x/'+str(i))  
     
 print(dir_list)
 
-f1=-1  # first file to plot. They account for "my_experiment-0003.csv" as the first file in dir :::  -1  =  0
+f1=0  # first file to plot. They account for "my_experiment-0003.csv" as the first file in dir :::  -1  =  0
 f2=0  # second file. if f2 = 5 -> my_experiment00500.csv
 step=1
 
@@ -98,6 +103,7 @@ else:
 for dirnum,dir in enumerate(dir_list):
     """ loop through directories"""
     os.chdir(dir)
+    print(f'dir is {dir}')
     if len(sorted(glob.glob("my_experiment*"))) < f1:  # if there aren't enough files, skip
         #if not os.path.exists(os.getcwd()+'/'+first_file):  # if it can't find the file after my_experiment00000.csv
         print('skipping '+os.getcwd())
@@ -141,10 +147,10 @@ for dirnum,dir in enumerate(dir_list):
         # meltYmin = float(getParameterFromLatte("input.txt","meltYmin"))
         # ymax = meltYmin/(resolution/2)   #  WHAT IT SHOULD BE
         # ymax = meltYmin/(200/2)   # in real units (meters)
-        ymax = 0.507  # TEMPORARY, pb27
+        ymax = 0.502  # TEMPORARY, pb27
         # print(f'max y coord: {max(myExp["y coord"])}')
         print(f'ymax: {ymax}')
-        xmax = 0.507    # 0.5 if point is in the middle
+        xmax = 0.502    # 0.5 if point is in the middle
 
         tolerance_y = dom_size*100/300*1e-4 #dom_size/300*1e-3  for 200,400,...,10000
         tolerance_x = dom_size*100/300*1e-4 #dom_size/300*1e-3  for 200,400,...,10000
@@ -274,6 +280,7 @@ def set_axes_options(fig):
 
 if True:
     fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
+    # if 
     g_x = sns.lineplot(data=df_x ,x="x",y=var_to_plot,ax=ax1,hue='time',style='scale',alpha=0.5)
     g_y = sns.lineplot(data=df_y ,x="y",y=var_to_plot,ax=ax2,hue='time',style='scale',alpha=0.5)
     # if var_to_plot == "Actual Movement" or var_to_plot == "Original Movement":
@@ -281,7 +288,14 @@ if True:
     #         ax1.axhline(y=relax_thresh[1], linestyle='--',color='blue',label="second relaxation threshold")
     #         ax2.axhline(y=relax_thresh[0], linestyle='--',color='red')
     #         ax2.axhline(y=relax_thresh[1], linestyle='--',color='blue')
-        
+
+    if len(my_labels) == len(dir_list):
+        handles, labels = ax1.get_legend_handles_labels()    # Extract the handles and labels from the existing legend    
+        labels[-len(my_labels):] = my_labels             # Replace the labels for style
+        ax1.legend(handles=handles, labels=labels,fancybox=True, ncol=1)
+    else:
+        ax1.legend(fancybox=True, ncol=1)   # legend for the horizontal line plot
+
     ax1.set_title("Horizontal Profile")
     #ax1.set_xlim([-0.51,+0.51])  # zoom in. Limits are location of max pressure +- 0.05
     #ax2.set_xlim([-1.01,+0.12])  # zoom in. Limits are location of max pressure +- 0.05
@@ -290,7 +304,6 @@ if True:
     g_y.legend_.remove()
     
 
-    ax1.legend(fancybox=True, ncol=1)   # legend for the horizontal line plot
     # save:
     #plt.savefig("gaussScale50-100-200_diff_hrz-vrt.png", dpi=600,transparent=True)
     plt.tight_layout()
