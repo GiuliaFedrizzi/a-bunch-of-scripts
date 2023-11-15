@@ -142,7 +142,17 @@ def zhang_suen_node_detection(skel: np.ndarray) -> List[Tuple[int]]:
             + (p8 == 0 and p9 == 1)
             + (p9 == 0 and p2 == 1)
         )
-        return (components >= 3) or (components == 1)
+        def straight():
+            """
+            Check if the segments around the node with connectivity 2 are at opposite angles, meaning it is straight
+            """
+            if components==2:
+                is_straight = (p2 == 1 and p6 == 1) or (p4 == 1 and p8 == 1) or (p3 == 1 and p7 == 1) or (p5 == 1 and p9 == 1)  # if the neighbours are at opposite positions, the node is not an angle but a straight line -> ignore!
+                return is_straight
+
+        return (components >= 3) or (components == 1) or (components == 2 and not straight())
+
+        # return (components >= 3) or (components == 1)
 
     nodes = []
     w, h = skel.shape
@@ -320,7 +330,7 @@ def connect_graph(skel: np.ndarray, min_distance: int) -> nx.MultiGraph:
     # g = make_graph(nodes, edges)
 
     # plot
-    # im = Image.open('medianfilter.png') # open the image saved earlier
+    im = Image.open('py_bb_crop_008000_median.png') # open the image saved earlier
     # ax = draw_nx_graph(im,g)
     # plt.savefig('g01zhang')
     # plt.clf()
@@ -328,11 +338,21 @@ def connect_graph(skel: np.ndarray, min_distance: int) -> nx.MultiGraph:
     dense_nodes = find_dense_skeleton_nodes(skel)  # original
     nodes = add_dense_nodes(nodes, dense_nodes)  # original
     edges = find_paths(skel, nodes, min_distance)  # original
-    
 
+    
+    counter = 0
     any_changed = True
     while any_changed:
         any_changed = False
+        
+        # make graph and save it
+        gm = make_graph(nodes, edges)
+
+        ax = draw_nx_graph(im, gm)
+        plt.savefig("merged_"+str(counter).zfill(3)+".png",dpi=200)
+        plt.clf()
+        counter+=1
+
         for edge in edges:
             d = len(edge.path) - 1
             if d < min_distance:  # if they are too close to each other: merge them
@@ -397,10 +417,10 @@ def draw_nx_graph(im: Image, g: nx.Graph) -> None:
     nx.draw_networkx_labels(g,pos=pos_higher,ax=ax,labels=lab,font_weight='bold',font_color='r',font_size=3)  # degrees only
     
     #edge labels
-    edge_d = [("{:.2f}".format(d)) for (u,v,d) in g.edges.data('d')]  # distance values are stored under the attribute "d"
-    edge_or =  [("{:.2f}".format(o)) for (u,v,o) in g.edges.data('orientation')]  # get the attribute "orientation"
-    edge_d_or = [d+", "+o for d,o in zip(edge_d,edge_or)]
-    edge_lab = dict(zip(g.edges(),edge_d_or))   # create a dictionary that can be used to plot labels
+    # edge_d = [("{:.2f}".format(d)) for (u,v,d) in g.edges.data('d')]  # distance values are stored under the attribute "d"
+    # edge_or =  [("{:.2f}".format(o)) for (u,v,o) in g.edges.data('orientation')]  # get the attribute "orientation"
+    # edge_d_or = [d+", "+o for d,o in zip(edge_d,edge_or)]
+    # edge_lab = dict(zip(g.edges(),edge_d_or))   # create a dictionary that can be used to plot labels
     # print(f'edge_lab{edge_lab}')
     # print('edge_lab '+str(edge_lab))
     bbox_options = {"boxstyle":'round', "ec":(1.0, 1.0, 1.0), "fc":(1.0, 1.0, 1.0), "alpha": 0.7}
@@ -615,8 +635,8 @@ def analyse_png(png_file: str, part_to_analyse: str, all_angles: list) -> dict:
     
     # Apply median filter to smooth the edges
     im = im.filter(ImageFilter.ModeFilter(size=7)) # https://stackoverflow.com/questions/62078016/smooth-the-edges-of-binary-images-face-using-python-and-open-cv 
-    # out_path = png_file.replace('.png', '_median.png')
-    # im.save(out_path)
+    out_path = png_file.replace('.png', '_median.png')
+    im.save(out_path)
     # im.show()   DO NOT DO im.show() ON BOLT/OFFICE COMPUTER OR IT WILL OPEN FIREFOX AND CRASH EVERYTHING
 
 
