@@ -324,6 +324,17 @@ def connect_graph(skel: np.ndarray, min_distance: int) -> nx.MultiGraph:
 
     """
     nodes = zhang_suen_node_detection(skel)  # original
+    # ANGLE_THRESHOLD = 175
+
+    # def calculate_angle(edge1: Path, edge2: Path) -> float:
+    #     """Calculate the angle between two edges in degrees."""
+    #     vector1 = np.array(edge1.path[-1]) - np.array(edge1.path[0])
+    #     vector2 = np.array(edge2.path[0]) - np.array(edge2.path[-1])
+    #     dot_product = np.dot(vector1, vector2)
+    #     norm_product = np.linalg.norm(vector1) * np.linalg.norm(vector2)
+    #     angle_rad = np.arccos(dot_product / norm_product)
+    #     angle_deg = np.degrees(angle_rad)
+    #     return angle_deg
 
     # the following lines are to save the graph before the edits in the while loop
     # edges = find_paths(skel, nodes, min_distance)
@@ -363,15 +374,48 @@ def connect_graph(skel: np.ndarray, min_distance: int) -> nx.MultiGraph:
                 print(f'Merged {n1} and {n2}, d={d}')
                 any_changed = True
                 break
+        # for node in nodes:
+        #     connected_edges = [edge for edge in edges if edge.start == node or edge.stop == node]
+
+        #     for i in range(len(connected_edges)):
+        #         edge1 = connected_edges[i]
+        #         for j in range(i+1, len(connected_edges)):
+        #             edge2 = connected_edges[j]
+                    
+        #             # Check if the start of edge1 is the same as the stop of edge2 or vice versa
+        #             if edge1.start == edge2.stop or edge1.stop == edge2.start:
+        #                 angle = calculate_angle(connected_edges[i], connected_edges[j])
+        #                 if angle > ANGLE_THRESHOLD:
+        #                     # Merge the nodes at the ends of these edges
+        #                     n1 = connected_edges[i].stop if connected_edges[i].start == node else connected_edges[i].start
+        #                     n2 = connected_edges[j].stop if connected_edges[j].start == node else connected_edges[j].start
+        #                     nodes = merge_nodes(nodes, edges, n1, n2)
+        #                     edges = find_paths(skel, nodes, min_distance)
+        #                     print(f'Merged {n1} and {n2} due to angle {angle}')
+        #                     any_changed = True
+        #                     break                        
 
     # All good!
     return make_graph(nodes, edges)
 
 
-def simplify_paths(g: nx.Graph, tolerance=1) -> nx.Graph:
+def simplify_paths(g: nx.Graph, tolerance=5) -> nx.Graph:
     for n1, n2, k in g.edges(keys=True):
         g[n1][n2][k]['path'] = shapely.geometry.LineString(g[n1][n2][k]['path']).simplify(tolerance)
     return g
+
+def remove_straight_angles():
+    """ remove a node with connectivity = 2 if the edges connected to that node are almost parallel"""
+    def calculate_angle(edge1: Path, edge2: Path) -> float:
+            """Calculate the angle between two edges in degrees."""
+            vector1 = np.array(edge1.path[-1]) - np.array(edge1.path[0])
+            vector2 = np.array(edge2.path[0]) - np.array(edge2.path[-1])
+            dot_product = np.dot(vector1, vector2)
+            norm_product = np.linalg.norm(vector1) * np.linalg.norm(vector2)
+            angle_rad = np.arccos(dot_product / norm_product)
+            angle_deg = np.degrees(angle_rad)
+            return angle_deg
+    changed = True
 
 
 def extract_network(px: np.ndarray, im: Image, min_distance=7) -> nx.Graph:  # was 12
@@ -393,6 +437,28 @@ def extract_network(px: np.ndarray, im: Image, min_distance=7) -> nx.Graph:  # w
             to_remove.append((u, v, key))
     g.remove_edges_from(to_remove)
 
+
+    # here: check for connectivity = 2 angle
+    g = orientation_calc(g)
+    orient = [o for (u,v,o) in g.edges.data('orientation')]  
+    print(f'orient: {orient}')
+    
+    for edge in g.edges:
+        print(f'edge: {edge}, ')
+    def find_connected_edges(g):
+        edges = list(g.edges)
+        connected_edges = []
+        for i, edge1 in enumerate(edges):
+            for edge2 in edges[i+1:]:
+                # Check if they share a node
+                if edge1[0] == edge2[0] or edge1[0] == edge2[1] or edge1[1] == edge2[0] or edge1[1] == edge2[1]:
+                    connected_edges.append((edge1, edge2))
+        return connected_edges
+
+    connected_edges = find_connected_edges(g)
+
+    for pair in connected_edges:
+        print(f"Edge: {pair[0]} is connected to Edge: {pair[1]}")
     return g
 
 
@@ -670,7 +736,6 @@ def analyse_png(png_file: str, part_to_analyse: str, all_angles: list) -> dict:
 
     # do some statistics
     branch_info = topo_analysis(g,timestep_number)
-    g = orientation_calc(g)  
     # print(g.edges(data=True))
 
     # viz grid with networkx's plot
@@ -711,7 +776,7 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
     out_paths = []
     all_angles = []
     # for f,filename in enumerate(sorted(glob.glob("ldo_*.png"))):
-    for f,filename in enumerate(sorted(glob.glob("py_bb_*.png"))):
+    for f,filename in enumerate(sorted(glob.glob("py_bb_*[0-9].png"))):
     # for f,filename in enumerate(sorted(glob.glob("Long_drawn_OpeningInvert*.png"))):
         """ Get the file name, run 'analyse_png', get the info on the branches,
         save it into a csv   """
