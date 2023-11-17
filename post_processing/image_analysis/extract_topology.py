@@ -468,6 +468,7 @@ def draw_nx_graph(im: Image, g: nx.Graph) -> None:
     # fig, ax = plt.subplots()
     # print(list(g.degree)[0])
     all_degrees = dict(nx.degree(g)).values()
+    print(f'g.nodes() {g.nodes()}')
     # degrees = [x for x in list(g.degree)]
     lab = dict(zip(g.nodes(), all_degrees))
     pos = {point: point for point in g.nodes()}  # save nodes in a format that can be used as position when plotting
