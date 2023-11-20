@@ -357,11 +357,11 @@ def connect_graph(skel: np.ndarray, min_distance: int) -> nx.MultiGraph:
         any_changed = False
         
         # make graph and save it
-        gm = make_graph(nodes, edges)
+        # gm = make_graph(nodes, edges)
 
-        ax = draw_nx_graph(im, gm)
-        plt.savefig("merged_"+str(counter).zfill(3)+".png",dpi=200)
-        plt.clf()
+        # ax = draw_nx_graph(im, gm)
+        # plt.savefig("merged_"+str(counter).zfill(3)+".png",dpi=200)
+        # plt.clf()
         counter+=1
 
         for edge in edges:
@@ -404,20 +404,6 @@ def simplify_paths(g: nx.Graph, tolerance=5) -> nx.Graph:
         g[n1][n2][k]['path'] = shapely.geometry.LineString(g[n1][n2][k]['path']).simplify(tolerance)
     return g
 
-def remove_straight_angles():
-    """ remove a node with connectivity = 2 if the edges connected to that node are almost parallel"""
-    def calculate_angle(edge1: Path, edge2: Path) -> float:
-            """Calculate the angle between two edges in degrees."""
-            vector1 = np.array(edge1.path[-1]) - np.array(edge1.path[0])
-            vector2 = np.array(edge2.path[0]) - np.array(edge2.path[-1])
-            dot_product = np.dot(vector1, vector2)
-            norm_product = np.linalg.norm(vector1) * np.linalg.norm(vector2)
-            angle_rad = np.arccos(dot_product / norm_product)
-            angle_deg = np.degrees(angle_rad)
-            return angle_deg
-    changed = True
-
-
 def extract_network(px: np.ndarray, im: Image, min_distance=7) -> nx.Graph:  # was 12
     skel = morphology.thin(px)
     print(f'Skeleton px={skel.sum()}')
@@ -437,28 +423,66 @@ def extract_network(px: np.ndarray, im: Image, min_distance=7) -> nx.Graph:  # w
             to_remove.append((u, v, key))
     g.remove_edges_from(to_remove)
 
-
-    # here: check for connectivity = 2 angle
-    g = orientation_calc(g)
-    orient = [o for (u,v,o) in g.edges.data('orientation')]  
-    print(f'orient: {orient}')
+    def angle_with_x_axis(p1, p2):
+        # Unpack the points
+        x1, y1 = p1
+        x2, y2 = p2
     
-    for edge in g.edges:
-        print(f'edge: {edge}, ')
-    def find_connected_edges(g):
-        edges = list(g.edges)
-        connected_edges = []
-        for i, edge1 in enumerate(edges):
-            for edge2 in edges[i+1:]:
-                # Check if they share a node
-                if edge1[0] == edge2[0] or edge1[0] == edge2[1] or edge1[1] == edge2[0] or edge1[1] == edge2[1]:
-                    connected_edges.append((edge1, edge2))
-        return connected_edges
+        # Calculate the slope
+        angle = math.atan( abs(y1-y2)/abs(x1-x2) ) * 180 / math.pi  # angle in degrees.
+        # angle = math.atan( -(y1-y2)/(x1-x2) ) * 180 / math.pi  # angle in degrees.
+        print(f'p1,p2 {p1,p2}')
+        print(f'angle: {angle}')
+        return angle
+    def remove_nodes_if_straight_edges(g: nx.Graph, angle_threshold: float):
+        changed = True
+        while changed == True:
+            changed = False
+            g=orientation_calc(g)
+            for node in g.nodes():
+                print(f'\nnode {node}')
 
-    connected_edges = find_connected_edges(g)
+                if g.degree(node) != 2:
+                    # print(f'degree: {g.degree(node)}')
+                    continue
+                pos_current = node# g.nodes[node]['pos']        
+                print(f'my node: {pos_current}, type: {type(node)}')
+                i = 0
+                for neigh in g.neighbors(node):
+                    if i == 0:
+                        pos_left =neigh
+                        i+=1
+                    elif i == 1:
+                        pos_right = neigh
+                
+                print(pos_current)
+                print(pos_left)
+                print(pos_right)
 
-    for pair in connected_edges:
-        print(f"Edge: {pair[0]} is connected to Edge: {pair[1]}")
+                angle_parent = angle_with_x_axis(pos_left, pos_right)
+
+                angle_left = angle_with_x_axis(pos_current, pos_left)
+                angle_right = angle_with_x_axis(pos_current, pos_right)
+
+                # angle_threshold = 10
+                if abs(angle_parent - angle_left) <= angle_threshold and abs(angle_parent - angle_right) <= angle_threshold:
+                    print(f'node to be removed: {pos_current}, angle_parent = {angle_parent}')
+                    g.remove_node(node)
+                    g.remove_edges_from([(pos_current,pos_left),(pos_current,pos_right)])
+                    print("done")
+                    g.add_edge(pos_left,pos_right)
+                    print(f'connecting {pos_left,pos_right}')
+                    changed = True
+                    break
+                else:
+
+                    print(f'keeping {pos_current}')
+    remove_nodes_if_straight_edges(g,10)
+    remove_nodes_if_straight_edges(g,20)
+    ax = draw_nx_graph(im, g)
+    plt.savefig("graph.png",dpi=200)
+    plt.clf()
+
     return g
 
 
@@ -468,9 +492,14 @@ def draw_nx_graph(im: Image, g: nx.Graph) -> None:
     # fig, ax = plt.subplots()
     # print(list(g.degree)[0])
     all_degrees = dict(nx.degree(g)).values()
-    print(f'g.nodes() {g.nodes()}')
+    all_degrees_list = list(all_degrees)
+    all_degrees_coord = list(zip(all_degrees_list,g.nodes()))
+    # print(f'all_degrees: {all_degrees}')
+    # print(f'all_degrees_coord: {all_degrees_coord}')
+    # print(f'g.nodes() {g.nodes()}')
     # degrees = [x for x in list(g.degree)]
-    lab = dict(zip(g.nodes(), all_degrees))
+    # lab = dict(zip(g.nodes(), all_degrees))
+    lab = dict(zip(g.nodes(), all_degrees_coord))
     pos = {point: point for point in g.nodes()}  # save nodes in a format that can be used as position when plotting
     ax = nx.draw(g,pos=pos,node_size=5,edge_color='g')
     # nx.draw_networkx_labels(g,pos=pos,labels=degrees,ax=ax)
@@ -481,7 +510,7 @@ def draw_nx_graph(im: Image, g: nx.Graph) -> None:
 
     for k, v in pos.items():
         pos_higher[k] = (v[0]+x_off, v[1])
-    nx.draw_networkx_labels(g,pos=pos_higher,ax=ax,labels=lab,font_weight='bold',font_color='r',font_size=3)  # degrees only
+    nx.draw_networkx_labels(g,pos=pos_higher,ax=ax,labels=lab,font_weight='bold',font_color='r',font_size=5)  # degrees only
     
     #edge labels
     # edge_d = [("{:.2f}".format(d)) for (u,v,d) in g.edges.data('d')]  # distance values are stored under the attribute "d"
