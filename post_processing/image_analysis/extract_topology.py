@@ -310,12 +310,19 @@ def make_graph(nodes: List[Tuple[int, int]], edges: List[Path]) -> nx.MultiGraph
         g.add_edge(edge.start, edge.stop, path=edge.path, d=len(edge.path) - 1)
     return g
 
-def make_graph_no_path(nodes: List[Tuple[int, int]], edges: List[Path]) -> nx.MultiGraph:
+def make_graph_no_path(nodes: List[Tuple[int, int]], edges: List) -> nx.MultiGraph:
     """ build an nx graph, but without the extra properties of path and length (d)"""
+    def get_edge_length(edge):
+        x1 = edge[0][0]; y1 = edge[0][1]; x2 = edge[1][0]; y2 = edge[1][1]
+        return np.sqrt((x2-x1)**2 + (y2-y1)**2)
+
+    print(f'edges in make g no p: {edges}')
     g = nx.MultiGraph()
     g.add_nodes_from(nodes)
     for edge in edges:
-        g.add_edge(edge[0], edge[1])
+        print(f'edge[0],edge[1]: {edge[0],edge[1]}')
+        length = get_edge_length(edge)
+        g.add_edge(edge[0], edge[1], d=length)
     return g
 
 
@@ -393,8 +400,8 @@ def connect_graph(skel: np.ndarray, min_distance: int) -> nx.MultiGraph:
         # Calculate the slope
         angle = math.atan( abs(y1-y2)/abs(x1-x2) ) * 180 / math.pi  # angle in degrees.
         # angle = math.atan( -(y1-y2)/(x1-x2) ) * 180 / math.pi  # angle in degrees.
-        print(f'p1,p2 {p1,p2}')
-        print(f'angle: {angle}')
+        # print(f'p1,p2 {p1,p2}')
+        # print(f'angle: {angle}')
         return angle
     
     def remove_nodes_if_straight_edges(g: nx.Graph, angle_threshold: float):
@@ -446,17 +453,20 @@ def connect_graph(skel: np.ndarray, min_distance: int) -> nx.MultiGraph:
     g = remove_nodes_if_straight_edges(g,5)  # do the most similar first
     print(f'done with removing nodes, angle diff = 5, {g}')
     g = remove_nodes_if_straight_edges(g,10)
+    print(f'done with removing nodes, angle diff = 10, {g}')
     g = remove_nodes_if_straight_edges(g,20)
     print(f'done with removing nodes, {g}')
     nodes = g.nodes()
-    edges = g.edges()
+    # edges = g.edges()
+    edges = find_paths(skel, nodes, min_distance)
+
     # g = make_graph(g.nodes(),g.edges())
     ax = draw_nx_graph(im, g)
     plt.savefig("graph.png",dpi=200)
     plt.clf()                  
 
     # All good!
-    return make_graph(nodes, edges)
+    return make_graph(nodes, edges)  # the new version of g does not have 'path' as a property
 
 
 def simplify_paths(g: nx.Graph, tolerance=5) -> nx.Graph:
@@ -473,8 +483,8 @@ def extract_network(px: np.ndarray, im: Image, min_distance=7) -> nx.Graph:  # w
     # plt.clf()
 
     # simplify:
-    g = simplify_paths(g)
-    
+    # g = simplify_paths(g)  # do I need this?
+    g = orientation_calc(g)
     to_remove = []  # edges that need to be removed because they are duplicates
     for u, v, key in g.edges(keys=True):
         if key > 0:
