@@ -310,6 +310,14 @@ def make_graph(nodes: List[Tuple[int, int]], edges: List[Path]) -> nx.MultiGraph
         g.add_edge(edge.start, edge.stop, path=edge.path, d=len(edge.path) - 1)
     return g
 
+def make_graph_no_path(nodes: List[Tuple[int, int]], edges: List[Path]) -> nx.MultiGraph:
+    """ build an nx graph, but without the extra properties of path and length (d)"""
+    g = nx.MultiGraph()
+    g.add_nodes_from(nodes)
+    for edge in edges:
+        g.add_edge(edge[0], edge[1])
+    return g
+
 
 def connect_graph(skel: np.ndarray, min_distance: int) -> nx.MultiGraph:
     """Iteratively produce a graph, merging nodes until none are < min_distance apart.
@@ -370,30 +378,82 @@ def connect_graph(skel: np.ndarray, min_distance: int) -> nx.MultiGraph:
                 n1 = edge.start
                 n2 = edge.stop
                 nodes = merge_nodes(nodes, edges, n1, n2)
+                # print(f'nodes after merge nodes: {nodes}')
                 edges = find_paths(skel, nodes, min_distance)
+                # print(f'edges after find_paths: {edges}')
                 print(f'Merged {n1} and {n2}, d={d}')
                 any_changed = True
                 break
-        # for node in nodes:
-        #     connected_edges = [edge for edge in edges if edge.start == node or edge.stop == node]
 
-        #     for i in range(len(connected_edges)):
-        #         edge1 = connected_edges[i]
-        #         for j in range(i+1, len(connected_edges)):
-        #             edge2 = connected_edges[j]
-                    
-        #             # Check if the start of edge1 is the same as the stop of edge2 or vice versa
-        #             if edge1.start == edge2.stop or edge1.stop == edge2.start:
-        #                 angle = calculate_angle(connected_edges[i], connected_edges[j])
-        #                 if angle > ANGLE_THRESHOLD:
-        #                     # Merge the nodes at the ends of these edges
-        #                     n1 = connected_edges[i].stop if connected_edges[i].start == node else connected_edges[i].start
-        #                     n2 = connected_edges[j].stop if connected_edges[j].start == node else connected_edges[j].start
-        #                     nodes = merge_nodes(nodes, edges, n1, n2)
-        #                     edges = find_paths(skel, nodes, min_distance)
-        #                     print(f'Merged {n1} and {n2} due to angle {angle}')
-        #                     any_changed = True
-        #                     break                        
+    def angle_with_x_axis(p1, p2):
+        # Unpack the points
+        x1, y1 = p1
+        x2, y2 = p2
+    
+        # Calculate the slope
+        angle = math.atan( abs(y1-y2)/abs(x1-x2) ) * 180 / math.pi  # angle in degrees.
+        # angle = math.atan( -(y1-y2)/(x1-x2) ) * 180 / math.pi  # angle in degrees.
+        print(f'p1,p2 {p1,p2}')
+        print(f'angle: {angle}')
+        return angle
+    
+    def remove_nodes_if_straight_edges(g: nx.Graph, angle_threshold: float):
+        changed = True
+        while changed == True:
+            changed = False
+            g=orientation_calc(g)
+            for node in g.nodes():
+                # print(f'\nnode {node}')
+
+                if g.degree(node) != 2:
+                    # print(f'degree: {g.degree(node)}')
+                    continue
+                pos_current = node# g.nodes[node]['pos']        
+                # print(f'my node: {pos_current}, type: {type(node)}')
+                i = 0
+                for neigh in g.neighbors(node):
+                    if i == 0:
+                        pos_left =neigh
+                        i+=1
+                    elif i == 1:
+                        pos_right = neigh
+                
+                # print(pos_current)
+                # print(pos_left)
+                # print(pos_right)
+
+                angle_parent = angle_with_x_axis(pos_left, pos_right)
+
+                angle_left = angle_with_x_axis(pos_current, pos_left)
+                angle_right = angle_with_x_axis(pos_current, pos_right)
+
+                # angle_threshold = 10
+                if abs(angle_parent - angle_left) <= angle_threshold and abs(angle_parent - angle_right) <= angle_threshold:
+                    # print(f'node to be removed: {pos_current}, angle_parent = {angle_parent}')
+                    g.remove_node(node)
+                    g.remove_edges_from([(pos_current,pos_left),(pos_current,pos_right)])
+                    # print("done")
+                    g.add_edge(pos_left,pos_right)
+                    print(f'connecting {pos_left,pos_right}')
+                    changed = True
+                    break
+                else:
+
+                    print(f'keeping {pos_current}')
+        return g
+    # make a graph from the current node and edge lists
+    g = make_graph(nodes,edges)
+    g = remove_nodes_if_straight_edges(g,5)  # do the most similar first
+    print(f'done with removing nodes, angle diff = 5, {g}')
+    g = remove_nodes_if_straight_edges(g,10)
+    g = remove_nodes_if_straight_edges(g,20)
+    print(f'done with removing nodes, {g}')
+    nodes = g.nodes()
+    edges = g.edges()
+    # g = make_graph(g.nodes(),g.edges())
+    ax = draw_nx_graph(im, g)
+    plt.savefig("graph.png",dpi=200)
+    plt.clf()                  
 
     # All good!
     return make_graph(nodes, edges)
@@ -423,65 +483,6 @@ def extract_network(px: np.ndarray, im: Image, min_distance=7) -> nx.Graph:  # w
             to_remove.append((u, v, key))
     g.remove_edges_from(to_remove)
 
-    def angle_with_x_axis(p1, p2):
-        # Unpack the points
-        x1, y1 = p1
-        x2, y2 = p2
-    
-        # Calculate the slope
-        angle = math.atan( abs(y1-y2)/abs(x1-x2) ) * 180 / math.pi  # angle in degrees.
-        # angle = math.atan( -(y1-y2)/(x1-x2) ) * 180 / math.pi  # angle in degrees.
-        print(f'p1,p2 {p1,p2}')
-        print(f'angle: {angle}')
-        return angle
-    def remove_nodes_if_straight_edges(g: nx.Graph, angle_threshold: float):
-        changed = True
-        while changed == True:
-            changed = False
-            g=orientation_calc(g)
-            for node in g.nodes():
-                print(f'\nnode {node}')
-
-                if g.degree(node) != 2:
-                    # print(f'degree: {g.degree(node)}')
-                    continue
-                pos_current = node# g.nodes[node]['pos']        
-                print(f'my node: {pos_current}, type: {type(node)}')
-                i = 0
-                for neigh in g.neighbors(node):
-                    if i == 0:
-                        pos_left =neigh
-                        i+=1
-                    elif i == 1:
-                        pos_right = neigh
-                
-                print(pos_current)
-                print(pos_left)
-                print(pos_right)
-
-                angle_parent = angle_with_x_axis(pos_left, pos_right)
-
-                angle_left = angle_with_x_axis(pos_current, pos_left)
-                angle_right = angle_with_x_axis(pos_current, pos_right)
-
-                # angle_threshold = 10
-                if abs(angle_parent - angle_left) <= angle_threshold and abs(angle_parent - angle_right) <= angle_threshold:
-                    print(f'node to be removed: {pos_current}, angle_parent = {angle_parent}')
-                    g.remove_node(node)
-                    g.remove_edges_from([(pos_current,pos_left),(pos_current,pos_right)])
-                    print("done")
-                    g.add_edge(pos_left,pos_right)
-                    print(f'connecting {pos_left,pos_right}')
-                    changed = True
-                    break
-                else:
-
-                    print(f'keeping {pos_current}')
-    remove_nodes_if_straight_edges(g,10)
-    remove_nodes_if_straight_edges(g,20)
-    ax = draw_nx_graph(im, g)
-    plt.savefig("graph.png",dpi=200)
-    plt.clf()
 
     return g
 
@@ -624,7 +625,7 @@ def topo_analysis(g: nx.Graph,tstep_number: float) -> dict:
     """
 
     edge_lengths = [d for (u,v,d) in g.edges.data('d')]  # distance values are stored under the attribute "d"
-    # print(f'branch lengths: {edge_lengths}')
+    print(f'branch lengths: {edge_lengths}')
 
     input_tstep = get_timestep()
 
