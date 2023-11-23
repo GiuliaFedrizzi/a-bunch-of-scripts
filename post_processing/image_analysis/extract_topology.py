@@ -356,7 +356,7 @@ def connect_graph(skel: np.ndarray, min_distance: int) -> nx.MultiGraph:
     # g = make_graph(nodes, edges)
 
     # plot
-    im = Image.open('py_bb_crop_008000_median.png') # open the image saved earlier
+    # im = Image.open('py_bb_crop_008000_median.png') # open the image saved earlier
     # ax = draw_nx_graph(im,g)
     # plt.savefig('g01zhang')
     # plt.clf()
@@ -398,7 +398,10 @@ def connect_graph(skel: np.ndarray, min_distance: int) -> nx.MultiGraph:
         x2, y2 = p2
     
         # Calculate the slope
-        angle = math.atan( abs(y1-y2)/abs(x1-x2) ) * 180 / math.pi  # angle in degrees.
+        if (x1-x2) != 0:  # not horizontal 
+            angle = math.atan( abs(y1-y2)/abs(x1-x2) ) * 180 / math.pi  # angle in degrees.
+        else:
+            angle = 0
         # angle = math.atan( -(y1-y2)/(x1-x2) ) * 180 / math.pi  # angle in degrees.
         # print(f'p1,p2 {p1,p2}')
         # print(f'angle: {angle}')
@@ -454,16 +457,16 @@ def connect_graph(skel: np.ndarray, min_distance: int) -> nx.MultiGraph:
     print(f'done with removing nodes, angle diff = 5, {g}')
     g = remove_nodes_if_straight_edges(g,10)
     print(f'done with removing nodes, angle diff = 10, {g}')
-    g = remove_nodes_if_straight_edges(g,20)
-    print(f'done with removing nodes, {g}')
+    # g = remove_nodes_if_straight_edges(g,20)
+    # print(f'done with removing nodes, {g}')
     nodes = g.nodes()
     # edges = g.edges()
     edges = find_paths(skel, nodes, min_distance)
 
     # g = make_graph(g.nodes(),g.edges())
-    ax = draw_nx_graph(im, g)
-    plt.savefig("graph.png",dpi=200)
-    plt.clf()                  
+    # ax = draw_nx_graph(im, g)
+    # plt.savefig("graph.png",dpi=200)
+    # plt.clf()                  
 
     # All good!
     return make_graph(nodes, edges)  # the new version of g does not have 'path' as a property
@@ -521,7 +524,7 @@ def draw_nx_graph(im: Image, g: nx.Graph) -> None:
 
     for k, v in pos.items():
         pos_higher[k] = (v[0]+x_off, v[1])
-    nx.draw_networkx_labels(g,pos=pos_higher,ax=ax,labels=lab,font_weight='bold',font_color='r',font_size=5)  # degrees only
+    nx.draw_networkx_labels(g,pos=pos_higher,ax=ax,labels=lab,font_weight='bold',font_color='r',font_size=4)  # degrees only
     
     #edge labels
     # edge_d = [("{:.2f}".format(d)) for (u,v,d) in g.edges.data('d')]  # distance values are stored under the attribute "d"
@@ -781,7 +784,7 @@ def analyse_png(png_file: str, part_to_analyse: str, all_angles: list) -> dict:
 
     # viz grid with networkx's plot
     ax = draw_nx_graph(im, g)
-    plt.savefig(out_path+".grid.png",dpi=200)
+    plt.savefig(out_path+".grid.png",dpi=300)
     plt.clf()
     # plt.show()
 
