@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from useful_functions import getFirstBrokenBond
 
 os.chdir('/nobackup/scgf/myExperiments/threeAreas/prod/')
-dir_list = ['p26','p27']
+dir_list = ['p52','p53','p50']
 data = {}
 print("\n")
 for p_dir in dir_list:

@@ -44,7 +44,7 @@ from pathlib import Path
 # import functions from external file
 from useful_functions import * 
 
-var_to_plot = "Sigma_1"
+var_to_plot = "Actual Movement"
 # options: Pressure, Mean Stress, Actual Movement, Gravity, Porosity, Sigma_1, Sigma_2, Youngs Modulus
 #         F_P_x, F_P_y, pf_grad_x, pf_grad_y, Original Movement, Movement in Gravity, Smooth function, area_par_fluid
 #         gauss_scaling_par, gauss_scaling_par_sum, gauss_scaling_par_n_tot, xy_melt_point
@@ -52,17 +52,19 @@ var_to_plot = "Sigma_1"
 # dir_labels = ['400','200']  # res400.elle, res200.elle
 # dir_labels = ['00200','00400','00600','00800']#,'01000']
 # dir_labels = ['02000','04000','06000']#,'08000']
-dir_labels = ['00200','00400','00600','00800','01000'] # 
+# dir_labels = ['00200','00400','00600','00800','01000'] # 
 # dir_labels = ['02000','04000','06000','08000','10000'] 
 # dir_labels = ['00200', '00400','00600','00800','01000','02000','04000','06000']#,'08000','10000'] 
 # dir_labels = ['01']#,'02']#,'03','04','05','06','07','08','09'] 
 # dir_labels = ['op03/vis1e1_mR_01','op07/vis1e1_mR_01']
 # dir_labels = ['p39/visc_4_1e4/vis1e4_mR_09','p38/visc_4_1e4/vis1e4_mR_09','p37/visc_4_1e4/vis1e4_mR_09','p35/visc_4_1e4/vis1e4_mR_09','p36/visc_4_1e4/vis1e4_mR_09']
-# dir_labels = ['p41/visc_1_1e1/vis1e1_mR_01','p42/visc_1_1e1/vis1e1_mR_01','p43/visc_1_1e1/vis1e1_mR_01']
+# dir_labels = ['p52/visc_1_1e1/vis1e1_mR_01','p54/visc_1_1e1/vis1e1_mR_01','p55/visc_1_1e1/vis1e1_mR_01']#,'p49/visc_1_1e1/vis1e1_mR_01']
+# dir_labels = ['rt0.00008','rt0.00009','rt0.0001','rt0.00013','rt0.00015','rt0.0002','rt0.00025','rt0.0003','rt0.0005']#,'p49/visc_1_1e1/vis1e1_mR_01']
+dir_labels = ['rt0.00008','rt0.00009','rt0.0001','rt0.00013','rt0.00015']#,'p49/visc_1_1e1/vis1e1_mR_01']
 # dir_labels = ['04','05','06'] # '02','03','04','05','06'
 # dir_labels = ['gx06/gx_02','gx08/gx_02'] 
 
-# my_labels = ['rel thresh 0.001','rel thresh 0.01','rel thresh 0.1'] # leave empty for default labels (= dir labels)
+# my_labels = ['p52, 0.001','p54, 0.0005','p55, 0.0001']#,'p49, 0.005'] # leave empty for default labels (= dir labels)
 my_labels = [] # leave empty for default labels (= dir labels)
 
 resolution = 200
@@ -80,17 +82,18 @@ for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/wd_viscTest/vis_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj190/size'+str(i)) 
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
-    dir_list.append('/nobackup/scgf/myExperiments/smooth/sm94/size'+str(i))  
+    # dir_list.append('/nobackup/scgf/myExperiments/smooth/sm94/size'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/timestep/ts02/visc_1_1e1/vis1e1_tstep_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/optimise/'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/'+str(i))  
+    dir_list.append('/nobackup/scgf/myExperiments/relax_threshold/rt03/'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/gravity_x/'+str(i))  
     
 print(dir_list)
 
-f1=0  # first file to plot. They account for "my_experiment-0003.csv" as the first file in dir :::  -1  =  0
-f2=0  # second file. if f2 = 5 -> my_experiment00500.csv
-step=1
+f1=-1  # first file to plot. They account for "my_experiment-0003.csv" as the first file in dir :::  -1  =  0
+f2=3  # second file. if f2 = 5 -> my_experiment00500.csv
+step=4
 
 df_x = pd.DataFrame()
 df_y = pd.DataFrame()
