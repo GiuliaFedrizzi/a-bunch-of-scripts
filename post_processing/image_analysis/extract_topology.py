@@ -365,32 +365,33 @@ def connect_graph(skel: np.ndarray, min_distance: int) -> nx.MultiGraph:
     nodes = add_dense_nodes(nodes, dense_nodes)  # original
     edges = find_paths(skel, nodes, min_distance)  # original
 
-    
-    counter = 0
-    any_changed = True
-    while any_changed:
-        any_changed = False
-        
-        # make graph and save it
-        # gm = make_graph(nodes, edges)
+    def merge_loop(nodes,edges,skel,min_distance):
+        counter = 0
+        any_changed = True
+        while any_changed:
+            any_changed = False
+            
+            # make graph and save it
+            # gm = make_graph(nodes, edges)
 
-        # ax = draw_nx_graph(im, gm)
-        # plt.savefig("merged_"+str(counter).zfill(3)+".png",dpi=200)
-        # plt.clf()
-        counter+=1
+            # ax = draw_nx_graph(im, gm)
+            # plt.savefig("merged_"+str(counter).zfill(3)+".png",dpi=200)
+            # plt.clf()
+            counter+=1
 
-        for edge in edges:
-            d = len(edge.path) - 1
-            if d < min_distance:  # if they are too close to each other: merge them
-                n1 = edge.start
-                n2 = edge.stop
-                nodes = merge_nodes(nodes, edges, n1, n2)
-                # print(f'nodes after merge nodes: {nodes}')
-                edges = find_paths(skel, nodes, min_distance)
-                # print(f'edges after find_paths: {edges}')
-                print(f'Merged {n1} and {n2}, d={d}')
-                any_changed = True
-                break
+            for edge in edges:
+                d = len(edge.path) - 1
+                if d < min_distance:  # if they are too close to each other: merge them
+                    n1 = edge.start
+                    n2 = edge.stop
+                    nodes = merge_nodes(nodes, edges, n1, n2)
+                    # print(f'nodes after merge nodes: {nodes}')
+                    edges = find_paths(skel, nodes, min_distance)
+                    # print(f'edges after find_paths: {edges}')
+                    # print(f'Merged {n1} and {n2}, d={d}')
+                    any_changed = True
+                    break
+        return nodes, edges
 
     def angle_with_x_axis(p1, p2):
         # Unpack the points
@@ -451,6 +452,8 @@ def connect_graph(skel: np.ndarray, min_distance: int) -> nx.MultiGraph:
 
                     print(f'keeping {pos_current}')
         return g
+    
+    nodes,edges = merge_loop(nodes,edges,skel,min_distance)
     # make a graph from the current node and edge lists
     g = make_graph(nodes,edges)
     g = remove_nodes_if_straight_edges(g,5)  # do the most similar first
@@ -463,6 +466,10 @@ def connect_graph(skel: np.ndarray, min_distance: int) -> nx.MultiGraph:
     # edges = g.edges()
     edges = find_paths(skel, nodes, min_distance)
 
+    nodes,edges = merge_loop(nodes,edges,skel,min_distance=15)
+
+    # g = make_graph(nodes,edges)
+    # g = remove_nodes_if_straight_edges(g,5)  # do the most similar first
     # g = make_graph(g.nodes(),g.edges())
     # ax = draw_nx_graph(im, g)
     # plt.savefig("graph.png",dpi=200)
