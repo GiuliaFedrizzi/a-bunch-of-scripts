@@ -310,6 +310,21 @@ def make_graph(nodes: List[Tuple[int, int]], edges: List[Path]) -> nx.MultiGraph
         g.add_edge(edge.start, edge.stop, path=edge.path, d=len(edge.path) - 1)
     return g
 
+def make_graph_no_path(nodes: List[Tuple[int, int]], edges: List) -> nx.MultiGraph:
+    """ build an nx graph, but without the extra properties of path and length (d)"""
+    def get_edge_length(edge):
+        x1 = edge[0][0]; y1 = edge[0][1]; x2 = edge[1][0]; y2 = edge[1][1]
+        return np.sqrt((x2-x1)**2 + (y2-y1)**2)
+
+    print(f'edges in make g no p: {edges}')
+    g = nx.MultiGraph()
+    g.add_nodes_from(nodes)
+    for edge in edges:
+        print(f'edge[0],edge[1]: {edge[0],edge[1]}')
+        length = get_edge_length(edge)
+        g.add_edge(edge[0], edge[1], d=length)
+    return g
+
 
 def connect_graph(skel: np.ndarray, min_distance: int) -> nx.MultiGraph:
     """Iteratively produce a graph, merging nodes until none are < min_distance apart.
@@ -341,7 +356,7 @@ def connect_graph(skel: np.ndarray, min_distance: int) -> nx.MultiGraph:
     # g = make_graph(nodes, edges)
 
     # plot
-    im = Image.open('py_bb_crop_008000_median.png') # open the image saved earlier
+    # im = Image.open('py_bb_crop_008000_median.png') # open the image saved earlier
     # ax = draw_nx_graph(im,g)
     # plt.savefig('g01zhang')
     # plt.clf()
@@ -350,73 +365,124 @@ def connect_graph(skel: np.ndarray, min_distance: int) -> nx.MultiGraph:
     nodes = add_dense_nodes(nodes, dense_nodes)  # original
     edges = find_paths(skel, nodes, min_distance)  # original
 
+    def merge_loop(nodes,edges,skel,min_distance):
+        counter = 0
+        any_changed = True
+        while any_changed:
+            any_changed = False
+            
+            # make graph and save it
+            # gm = make_graph(nodes, edges)
+
+            # ax = draw_nx_graph(im, gm)
+            # plt.savefig("merged_"+str(counter).zfill(3)+".png",dpi=200)
+            # plt.clf()
+            counter+=1
+
+            for edge in edges:
+                d = len(edge.path) - 1
+                if d < min_distance:  # if they are too close to each other: merge them
+                    n1 = edge.start
+                    n2 = edge.stop
+                    nodes = merge_nodes(nodes, edges, n1, n2)
+                    # print(f'nodes after merge nodes: {nodes}')
+                    edges = find_paths(skel, nodes, min_distance)
+                    # print(f'edges after find_paths: {edges}')
+                    # print(f'Merged {n1} and {n2}, d={d}')
+                    any_changed = True
+                    break
+        return nodes, edges
+
+    def angle_with_x_axis(p1, p2):
+        # Unpack the points
+        x1, y1 = p1
+        x2, y2 = p2
     
-    counter = 0
-    any_changed = True
-    while any_changed:
-        any_changed = False
-        
-        # make graph and save it
-        gm = make_graph(nodes, edges)
+        # Calculate the slope
+        if (x1-x2) != 0:  # not horizontal 
+            angle = math.atan( abs(y1-y2)/abs(x1-x2) ) * 180 / math.pi  # angle in degrees.
+        else:
+            angle = 0
+        # angle = math.atan( -(y1-y2)/(x1-x2) ) * 180 / math.pi  # angle in degrees.
+        # print(f'p1,p2 {p1,p2}')
+        # print(f'angle: {angle}')
+        return angle
+    
+    def remove_nodes_if_straight_edges(g: nx.Graph, angle_threshold: float):
+        changed = True
+        while changed == True:
+            changed = False
+            g=orientation_calc(g)
+            for node in g.nodes():
+                # print(f'\nnode {node}')
 
-        ax = draw_nx_graph(im, gm)
-        plt.savefig("merged_"+str(counter).zfill(3)+".png",dpi=200)
-        plt.clf()
-        counter+=1
+                if g.degree(node) != 2:
+                    # print(f'degree: {g.degree(node)}')
+                    continue
+                pos_current = node# g.nodes[node]['pos']        
+                # print(f'my node: {pos_current}, type: {type(node)}')
+                i = 0
+                for neigh in g.neighbors(node):
+                    if i == 0:
+                        pos_left =neigh
+                        i+=1
+                    elif i == 1:
+                        pos_right = neigh
+                
+                # print(pos_current)
+                # print(pos_left)
+                # print(pos_right)
 
-        for edge in edges:
-            d = len(edge.path) - 1
-            if d < min_distance:  # if they are too close to each other: merge them
-                n1 = edge.start
-                n2 = edge.stop
-                nodes = merge_nodes(nodes, edges, n1, n2)
-                edges = find_paths(skel, nodes, min_distance)
-                print(f'Merged {n1} and {n2}, d={d}')
-                any_changed = True
-                break
-        # for node in nodes:
-        #     connected_edges = [edge for edge in edges if edge.start == node or edge.stop == node]
+                angle_parent = angle_with_x_axis(pos_left, pos_right)
 
-        #     for i in range(len(connected_edges)):
-        #         edge1 = connected_edges[i]
-        #         for j in range(i+1, len(connected_edges)):
-        #             edge2 = connected_edges[j]
-                    
-        #             # Check if the start of edge1 is the same as the stop of edge2 or vice versa
-        #             if edge1.start == edge2.stop or edge1.stop == edge2.start:
-        #                 angle = calculate_angle(connected_edges[i], connected_edges[j])
-        #                 if angle > ANGLE_THRESHOLD:
-        #                     # Merge the nodes at the ends of these edges
-        #                     n1 = connected_edges[i].stop if connected_edges[i].start == node else connected_edges[i].start
-        #                     n2 = connected_edges[j].stop if connected_edges[j].start == node else connected_edges[j].start
-        #                     nodes = merge_nodes(nodes, edges, n1, n2)
-        #                     edges = find_paths(skel, nodes, min_distance)
-        #                     print(f'Merged {n1} and {n2} due to angle {angle}')
-        #                     any_changed = True
-        #                     break                        
+                angle_left = angle_with_x_axis(pos_current, pos_left)
+                angle_right = angle_with_x_axis(pos_current, pos_right)
+
+                # angle_threshold = 10
+                if abs(angle_parent - angle_left) <= angle_threshold and abs(angle_parent - angle_right) <= angle_threshold:
+                    # print(f'node to be removed: {pos_current}, angle_parent = {angle_parent}')
+                    g.remove_node(node)
+                    g.remove_edges_from([(pos_current,pos_left),(pos_current,pos_right)])
+                    # print("done")
+                    g.add_edge(pos_left,pos_right)
+                    print(f'connecting {pos_left,pos_right}')
+                    changed = True
+                    break
+                else:
+
+                    print(f'keeping {pos_current}')
+        return g
+    
+    nodes,edges = merge_loop(nodes,edges,skel,min_distance)
+    # make a graph from the current node and edge lists
+    g = make_graph(nodes,edges)
+    g = remove_nodes_if_straight_edges(g,5)  # do the most similar first
+    print(f'done with removing nodes, angle diff = 5, {g}')
+    g = remove_nodes_if_straight_edges(g,10)
+    print(f'done with removing nodes, angle diff = 10, {g}')
+    # g = remove_nodes_if_straight_edges(g,20)
+    # print(f'done with removing nodes, {g}')
+    nodes = g.nodes()
+    # edges = g.edges()
+    edges = find_paths(skel, nodes, min_distance)
+
+    nodes,edges = merge_loop(nodes,edges,skel,min_distance=15)
+
+    # g = make_graph(nodes,edges)
+    # g = remove_nodes_if_straight_edges(g,5)  # do the most similar first
+    # g = make_graph(g.nodes(),g.edges())
+    # ax = draw_nx_graph(im, g)
+    # plt.savefig("graph.png",dpi=200)
+    # plt.clf()                  
 
     # All good!
-    return make_graph(nodes, edges)
+    return make_graph(nodes, edges)  # the new version of g does not have 'path' as a property
 
 
 def simplify_paths(g: nx.Graph, tolerance=5) -> nx.Graph:
     for n1, n2, k in g.edges(keys=True):
         g[n1][n2][k]['path'] = shapely.geometry.LineString(g[n1][n2][k]['path']).simplify(tolerance)
     return g
-
-def remove_straight_angles():
-    """ remove a node with connectivity = 2 if the edges connected to that node are almost parallel"""
-    def calculate_angle(edge1: Path, edge2: Path) -> float:
-            """Calculate the angle between two edges in degrees."""
-            vector1 = np.array(edge1.path[-1]) - np.array(edge1.path[0])
-            vector2 = np.array(edge2.path[0]) - np.array(edge2.path[-1])
-            dot_product = np.dot(vector1, vector2)
-            norm_product = np.linalg.norm(vector1) * np.linalg.norm(vector2)
-            angle_rad = np.arccos(dot_product / norm_product)
-            angle_deg = np.degrees(angle_rad)
-            return angle_deg
-    changed = True
-
 
 def extract_network(px: np.ndarray, im: Image, min_distance=7) -> nx.Graph:  # was 12
     skel = morphology.thin(px)
@@ -427,8 +493,8 @@ def extract_network(px: np.ndarray, im: Image, min_distance=7) -> nx.Graph:  # w
     # plt.clf()
 
     # simplify:
-    g = simplify_paths(g)
-    
+    # g = simplify_paths(g)  # do I need this?
+    g = orientation_calc(g)
     to_remove = []  # edges that need to be removed because they are duplicates
     for u, v, key in g.edges(keys=True):
         if key > 0:
@@ -438,27 +504,6 @@ def extract_network(px: np.ndarray, im: Image, min_distance=7) -> nx.Graph:  # w
     g.remove_edges_from(to_remove)
 
 
-    # here: check for connectivity = 2 angle
-    g = orientation_calc(g)
-    orient = [o for (u,v,o) in g.edges.data('orientation')]  
-    print(f'orient: {orient}')
-    
-    for edge in g.edges:
-        print(f'edge: {edge}, ')
-    def find_connected_edges(g):
-        edges = list(g.edges)
-        connected_edges = []
-        for i, edge1 in enumerate(edges):
-            for edge2 in edges[i+1:]:
-                # Check if they share a node
-                if edge1[0] == edge2[0] or edge1[0] == edge2[1] or edge1[1] == edge2[0] or edge1[1] == edge2[1]:
-                    connected_edges.append((edge1, edge2))
-        return connected_edges
-
-    connected_edges = find_connected_edges(g)
-
-    for pair in connected_edges:
-        print(f"Edge: {pair[0]} is connected to Edge: {pair[1]}")
     return g
 
 
@@ -468,9 +513,14 @@ def draw_nx_graph(im: Image, g: nx.Graph) -> None:
     # fig, ax = plt.subplots()
     # print(list(g.degree)[0])
     all_degrees = dict(nx.degree(g)).values()
-    print(f'g.nodes() {g.nodes()}')
+    all_degrees_list = list(all_degrees)
+    all_degrees_coord = list(zip(all_degrees_list,g.nodes()))
+    # print(f'all_degrees: {all_degrees}')
+    # print(f'all_degrees_coord: {all_degrees_coord}')
+    # print(f'g.nodes() {g.nodes()}')
     # degrees = [x for x in list(g.degree)]
-    lab = dict(zip(g.nodes(), all_degrees))
+    # lab = dict(zip(g.nodes(), all_degrees))
+    lab = dict(zip(g.nodes(), all_degrees_coord))
     pos = {point: point for point in g.nodes()}  # save nodes in a format that can be used as position when plotting
     ax = nx.draw(g,pos=pos,node_size=5,edge_color='g')
     # nx.draw_networkx_labels(g,pos=pos,labels=degrees,ax=ax)
@@ -481,7 +531,7 @@ def draw_nx_graph(im: Image, g: nx.Graph) -> None:
 
     for k, v in pos.items():
         pos_higher[k] = (v[0]+x_off, v[1])
-    nx.draw_networkx_labels(g,pos=pos_higher,ax=ax,labels=lab,font_weight='bold',font_color='r',font_size=3)  # degrees only
+    nx.draw_networkx_labels(g,pos=pos_higher,ax=ax,labels=lab,font_weight='bold',font_color='r',font_size=4)  # degrees only
     
     #edge labels
     # edge_d = [("{:.2f}".format(d)) for (u,v,d) in g.edges.data('d')]  # distance values are stored under the attribute "d"
@@ -595,7 +645,7 @@ def topo_analysis(g: nx.Graph,tstep_number: float) -> dict:
     """
 
     edge_lengths = [d for (u,v,d) in g.edges.data('d')]  # distance values are stored under the attribute "d"
-    # print(f'branch lengths: {edge_lengths}')
+    print(f'branch lengths: {edge_lengths}')
 
     input_tstep = get_timestep()
 
@@ -741,7 +791,7 @@ def analyse_png(png_file: str, part_to_analyse: str, all_angles: list) -> dict:
 
     # viz grid with networkx's plot
     ax = draw_nx_graph(im, g)
-    plt.savefig(out_path+".grid.png",dpi=200)
+    plt.savefig(out_path+".grid.png",dpi=300)
     plt.clf()
     # plt.show()
 
