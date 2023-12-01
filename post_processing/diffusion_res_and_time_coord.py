@@ -87,8 +87,8 @@ for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/timestep/ts02/visc_1_1e1/vis1e1_tstep_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/optimise/'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/'+str(i))  
-    # dir_list.append('/nobackup/scgf/myExperiments/relax_threshold/rt12/size02000/'+str(i))  
-    dir_list.append('/nobackup/scgf/myExperiments/relax_threshold/rtp66/'+str(i))  
+    dir_list.append('/nobackup/scgf/myExperiments/relax_threshold/rt13/size02000/'+str(i))  
+    # dir_list.append('/nobackup/scgf/myExperiments/relax_threshold/rtp66/'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/relax_threshold/rt10/size'+str(i)+'/rt0.005/')
     # dir_list.append('/nobackup/scgf/myExperiments/gravity_x/'+str(i))  
     
@@ -206,7 +206,7 @@ for dirnum,dir in enumerate(dir_list):
         x_array = myExp.iloc[(max_id-offset):(max_id-offset)+resolution:1,myExp.columns.get_loc('x coord')] 
         y_array = myExp.iloc[offset::resolution,myExp.columns.get_loc('y coord')] # first: the point with coorinate = offset. Then every point above it (with a period of 'resolution') 
 
-        real_radius = myExp["real_radius"][0]
+        real_radius = getParameterFromInput('input.txt','Scale')/resolution  # real_radius is scale/res
         print(f'real radius: {real_radius}')
 
         # for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[f1+1:f2+2:(f2-f1)]): #[beg:end:step]  set which timesteps (based on FILE NUMBER) to plot. first and second file are defined at the beginning
