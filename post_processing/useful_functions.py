@@ -22,6 +22,21 @@ def getDepth(inputFile):
                 depth = line.split(" ")[1]  # split before and after space, take the second word (value of timestep)
                 return depth 
 
+def getParameterFromInput(inputFile,keyword):
+    try:
+        with open(inputFile, 'r') as file:
+            for line in file:
+                if line.startswith(keyword):
+                    # Split the line into words and return the word after the keyword
+                    parts = line.split()
+                    if len(parts) > 1:
+                        return float(parts[1])  # Convert the string to a float
+    except FileNotFoundError:
+        return "File not found."
+    except ValueError:
+        return "Invalid number format."
+
+
 def getParameterFromLatte(inputFile,word_to_find):
     """ Function that finds the next string after the specified word (word_to_find) in inputFile.
         Output will be a string, might need converting

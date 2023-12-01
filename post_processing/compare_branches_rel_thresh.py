@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
+from useful_functions import getParameterFromInput
 
 def plot_data(root_dirs, visc, vis, row_index,custom_labels):
     # Create a figure for plotting
@@ -22,6 +23,7 @@ def plot_data(root_dirs, visc, vis, row_index,custom_labels):
                 print(f'root_dir {root_dir}')
                 # Construct the path to the csv file
                 csv_file = os.path.join(root_dir, visc, vis, "py_branch_info.csv")
+                print(f'csv_file {csv_file}')
                 if os.path.exists(csv_file):
                     # Read the csv file
                     df = pd.read_csv(csv_file, sep=',')
@@ -31,32 +33,45 @@ def plot_data(root_dirs, visc, vis, row_index,custom_labels):
                         y.append(df.loc[row_index, metric])
                     else:
                         # Skip if row_index is out of range
+                        print(f'Out of range')
                         continue
                 else:
                     # Skip if the file is not found
+                    print(f'-----file not found')
                     continue
 
             # Plot the data
             axs[i].plot(x, y, marker='o', label=vis)
 
         axs[i].set_title(metric)
-        axs[i].set_xlabel('p* Directory')
+        axs[i].set_xlabel('rel thresh')
         axs[i].set_ylabel(metric)
-        axs[i].legend()
+        # axs[i].legend()
         axs[i].tick_params(axis='x', labelsize=5)
 
-    plt.tight_layout()
+    # plt.tight_layout()
+    fig.suptitle(visc+"/"+vis, fontsize=16)
     plt.show()
 
-# Example usage
-root_dirs =     ['p52',    'p53',   'p50',    'p61',     'p62',    'p56',       'p63']#, 'p50']  # Add your p* directories here
-custom_labels = ['0.001', '0.0015','0.002','0.001, 2','0.001, 4','0.001, 10','0.001, 20']    # Custom labels
+
+# root_dirs =     ['p52',    'p53',   'p50',    'p61',     'p62',    'p56',       'p63']#, 'p50']  # Add your p* directories here
+# custom_labels = ['0.001', '0.0015','0.002','0.001, 2','0.001, 4','0.001, 10','0.001, 20']    # Custom labels
+root_dirs =     ['p64',    'p65',   'p66']#,    'p61',     'p62',    'p56',       'p63']#, 'p50']  # Add your p* directories here
+visc = 'visc_1_1e1'
+vis_dirs = ['vis1e1_mR_05']#, 'vis1e1_mR_09']  # Add your selected vis* subdirectories here
+row_index = 5  # Specify the row index here
+
+
+custom_labels = []
+for d in root_dirs:
+    custom_labels.append(getParameterFromInput(d+"/"+visc+"/baseFiles/input.txt","rel_thresh"))   # extract the value for relaxation threshold
+print(f'rel_thresh {custom_labels}')
+
+# custom_labels = ['0.001', '0.0015','0.002']#,'0.001, 2','0.001, 4','0.001, 10','0.001, 20']    # Custom labels
 
 if len(root_dirs) != len(custom_labels):
     custom_labels = root_dirs
 
-visc = 'visc_1_1e1'
-vis_dirs = ['vis1e1_mR_09']#, 'vis1e1_mR_09']  # Add your selected vis* subdirectories here
-row_index = 20  # Specify the row index here
+
 
 plot_data(root_dirs, visc, vis_dirs, row_index, custom_labels)
