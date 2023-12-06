@@ -20,6 +20,8 @@ def plot_data(root_dirs, visc, vis, row_index,custom_labels):
             x = []
             y = []
             for root_dir in root_dirs:
+                # define temporary row index (timestep)
+                temp_row_index = row_index
                 print(f'root_dir {root_dir}')
                 # Construct the path to the csv file
                 csv_file = os.path.join(root_dir, visc, vis, "py_branch_info.csv")
@@ -28,9 +30,13 @@ def plot_data(root_dirs, visc, vis, row_index,custom_labels):
                     # Read the csv file
                     df = pd.read_csv(csv_file, sep=',')
                     print(f'df: {df}')
-                    if row_index < len(df):
+                    if os.getcwd() == '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt01':
+                        if root_dir == 'rt0.004' or root_dir == 'rt0.006' or root_dir == 'rt0.008':
+                            temp_row_index *= 10
+                            print(f'row_index {temp_row_index}')
+                    if temp_row_index < len(df):
                         x.append(label_mapping[root_dir])
-                        y.append(df.loc[row_index, metric])
+                        y.append(df.loc[temp_row_index, metric])
                     else:
                         # Skip if row_index is out of range
                         print(f'Out of range')
@@ -56,9 +62,9 @@ def plot_data(root_dirs, visc, vis, row_index,custom_labels):
 
 # root_dirs =     ['p52',    'p53',   'p50',    'p61',     'p62',    'p56',       'p63']#, 'p50']  # Add your p* directories here
 # custom_labels = ['0.001', '0.0015','0.002','0.001, 2','0.001, 4','0.001, 10','0.001, 20']    # Custom labels
-root_dirs =     ['p64',    'p65',   'p66']#,    'p61',     'p62',    'p56',       'p63']#, 'p50']  # Add your p* directories here
+root_dirs =     ['rt0.0001',    'rt0.0002',   'rt0.0006','rt0.001','rt0.002','rt0.004','rt0.006','rt0.008']#,    'p61',     'p62',    'p56',       'p63']#, 'p50']  # Add your p* directories here
 visc = 'visc_1_1e1'
-vis_dirs = ['vis1e1_mR_05']#, 'vis1e1_mR_09']  # Add your selected vis* subdirectories here
+vis_dirs = ['vis1e1_mR_01']#, 'vis1e1_mR_09']  # Add your selected vis* subdirectories here
 row_index = 5  # Specify the row index here
 
 

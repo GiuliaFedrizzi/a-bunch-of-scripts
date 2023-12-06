@@ -751,9 +751,9 @@ def analyse_png(png_file: str, part_to_analyse: str, all_angles: list) -> dict:
         im = im.crop((left, top, right, bottom))
     
     # Apply median filter to smooth the edges
-    im = im.filter(ImageFilter.ModeFilter(size=7)) # https://stackoverflow.com/questions/62078016/smooth-the-edges-of-binary-images-face-using-python-and-open-cv 
-    out_path = png_file.replace('.png', '_median.png')
-    im.save(out_path)
+    # im = im.filter(ImageFilter.ModeFilter(size=7)) # https://stackoverflow.com/questions/62078016/smooth-the-edges-of-binary-images-face-using-python-and-open-cv 
+    # out_path = png_file.replace('.png', '_median.png')
+    # im.save(out_path)
     # im.show()   DO NOT DO im.show() ON BOLT/OFFICE COMPUTER OR IT WILL OPEN FIREFOX AND CRASH EVERYTHING
 
 
@@ -826,8 +826,12 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
     rose_hist_list = [] # empty list to temporarily save all the values to build the rose diagram. Will be normalised by the maximum length.
     out_paths = []
     all_angles = []
+    string_in_name = "py_bb_*[0-9].png"
+    curr_path = os.getcwd()
+    if "field_im" in curr_path:
+        string_in_name = "Long_drawn_OpeningInvert.png"
     # for f,filename in enumerate(sorted(glob.glob("ldo_*.png"))):
-    for f,filename in enumerate(sorted(glob.glob("py_bb_*[0-9].png"))):
+    for f,filename in enumerate(sorted(glob.glob(string_in_name))):
     # for f,filename in enumerate(sorted(glob.glob("Long_drawn_OpeningInvert*.png"))):
         """ Get the file name, run 'analyse_png', get the info on the branches,
         save it into a csv   """
