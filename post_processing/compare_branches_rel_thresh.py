@@ -56,16 +56,16 @@ def plot_data(root_dirs, visc, vis, row_index,custom_labels):
         axs[i].tick_params(axis='x', labelsize=5)
 
     # plt.tight_layout()
-    fig.suptitle(visc+"/"+vis, fontsize=16)
+    fig.suptitle(visc+"/"+vis+", tstep = "+str(temp_row_index), fontsize=16)
     plt.show()
 
 
 # root_dirs =     ['p52',    'p53',   'p50',    'p61',     'p62',    'p56',       'p63']#, 'p50']  # Add your p* directories here
 # custom_labels = ['0.001', '0.0015','0.002','0.001, 2','0.001, 4','0.001, 10','0.001, 20']    # Custom labels
 root_dirs =     ['rt0.0001',    'rt0.0002',   'rt0.0006','rt0.001','rt0.002','rt0.004','rt0.006','rt0.008']#,    'p61',     'p62',    'p56',       'p63']#, 'p50']  # Add your p* directories here
-visc = 'visc_1_1e1'
-vis_dirs = ['vis1e1_mR_01']#, 'vis1e1_mR_09']  # Add your selected vis* subdirectories here
-row_index = 5  # Specify the row index here
+visc = 'visc_4_1e4'
+vis_dirs = ['vis1e4_mR_09']#, 'vis1e1_mR_09']  # Add your selected vis* subdirectories here
+row_index = 4  # Specify the row index here
 
 
 custom_labels = []

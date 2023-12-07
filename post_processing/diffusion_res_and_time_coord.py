@@ -58,9 +58,8 @@ var_to_plot = "Sigma_1"
 # dir_labels = ['p39/visc_4_1e4/vis1e4_mR_09','p38/visc_4_1e4/vis1e4_mR_09','p37/visc_4_1e4/vis1e4_mR_09','p35/visc_4_1e4/vis1e4_mR_09','p36/visc_4_1e4/vis1e4_mR_09']
 # dir_labels = ['p52/visc_1_1e1/vis1e1_mR_01','p54/visc_1_1e1/vis1e1_mR_01','p55/visc_1_1e1/vis1e1_mR_01']#,'p49/visc_1_1e1/vis1e1_mR_01']
 # dir_labels = ['rt0.00008','rt0.00009','rt0.0001','rt0.00013','rt0.00015','rt0.0002','rt0.00025','rt0.0003','rt0.0005']#,'p49/visc_1_1e1/vis1e1_mR_01']
-# dir_labels = ['rt0.001','rt0.002','rt0.003','rt0.004','rt0.005','rt0.009']
-# dir_labels = ['rt0.0001','rt0.0005','rt0.0009']
-dir_labels = ['rt0.00001','rt0.00005','rt0.00009']
+dir_labels = ['rt0.004','rt0.006','rt0.008']
+# dir_labels = ['rt0.001','rt0.002','rt0.004','rt0.006','rt0.008']
 # dir_labels = ['rt0.0000001','rt0.0000005','rt0.0000009']
 # dir_labels = ['04','05','06'] # '02','03','04','05','06'
 # dir_labels = ['gx06/gx_02','gx08/gx_02'] 
@@ -87,10 +86,12 @@ for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/timestep/ts02/visc_1_1e1/vis1e1_tstep_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/optimise/'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/'+str(i))  
-    dir_list.append('/nobackup/scgf/myExperiments/relax_threshold/rt13/size02000/'+str(i))  
+    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt04/'+str(i)+'/visc_1_1e1/vis1e1_mR_01')  
+    # dir_list.append('/nobackup/scgf/myExperiments/relax_threshold/rt13/size02000/'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/relax_threshold/rtp66/'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/relax_threshold/rt10/size'+str(i)+'/rt0.005/')
     # dir_list.append('/nobackup/scgf/myExperiments/gravity_x/'+str(i))  
+    dir_list.append('/nobackup/scgf/myExperiments/gravity_x/gx09/'+str(i)+'/gx_02/')  
     
 print(dir_list)
 
