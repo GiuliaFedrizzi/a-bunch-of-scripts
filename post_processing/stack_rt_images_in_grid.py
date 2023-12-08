@@ -15,7 +15,9 @@ import glob
 rt_dirs = sorted((glob.glob("rt0.*"))) 
 # print(rt_dirs)
 
-for t in range(30,100,10):
+tsteps = list(range(1, 31, 1)) + list(range(30, 151, 5))
+
+for t in tsteps:
     timestep = "t"+str(t).zfill(3)
     print(timestep)
 
@@ -35,7 +37,10 @@ for t in range(30,100,10):
             img_cropped = img.crop((0, crop_top, width, crop_bottom))
             # Add directory name in the top right corner
             draw = ImageDraw.Draw(img_cropped)
-            font = ImageFont.truetype("/Library/Fonts/Arial Unicode.ttf", size=80)
+            # font = ImageFont.truetype("/Library/Fonts/Arial Unicode.ttf", size=80)
+            font = ImageFont.truetype("/usr/share/fonts/dejavu/DejaVuSans.ttf", size=80)
+            
+            
             # font = ImageFont.load_default()  # or specify a custom font
             # text_color = (0, 255, 0)  # Green color
             text_color = (0, 0, 0)  
