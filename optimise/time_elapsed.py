@@ -10,25 +10,25 @@ def extract_milliseconds_from_file(data_to_plot,file_path,function_to_track):
     pattern = r"Time taken by "+function_to_track+": (\d+) milliseconds" 
     # print(pattern)
     # List to hold extracted millisecond values
-    millisecond_values = []
+    minutes_values = []
 
     # Read the file and extract values
     with open(file_path, 'r') as file:
         line_count = 0
         for line in file:
-            if line_count >= 5000:
+            if line_count >= 1000:
                 print("stop")
                 break
             match = re.search(pattern, line)
             
             if match:
-                millisecond_values.append(int(match.group(1)))
+                minutes_values.append(int(match.group(1))/1000/60) # from milliseconds to s to min
                 line_count+=1
                 # print(f'line_count {line_count}')
                 # Store the data and label in a dictionary
                 data_dict = {
                     'label': file_path,
-                    'data': millisecond_values
+                    'data': minutes_values
                 }
 
         # Append the dictionary to the list
@@ -46,7 +46,7 @@ for n in ns:
     print("dir is "+n)
     # paths to files:
 
-    file_path = n+'/vis1e1_mR_0undefined/latte.log'
+    file_path = n+'/vis1e1_mR01/latte.log'
     if not os.path.exists(file_path):
         break
 
@@ -64,10 +64,12 @@ for data_dict in data_cumul:
 
 # for data in data_to_plot:
 for data in data_cumul:
-    plt.plot(data['data']/1000, alpha=0.5, label=data['label'])
+    # data = [x / 1000 for x in data]
+    plt.plot(data['data'], alpha=0.5, label=data['label'])
 
 plt.xlabel('Timestep')
-plt.ylabel('Seconds')
+plt.ylabel('Minutes')
 plt.title('Time taken by '+function_to_track)
+plt.grid(True)
 plt.legend()
 plt.show()

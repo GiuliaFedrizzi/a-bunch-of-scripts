@@ -9,10 +9,14 @@ def get_creation_time(file_path):
     return datetime.datetime.fromtimestamp(timestamp)
 
 fig, ax = plt.subplots(2, 2, figsize=(9, 6))
-ax = ax.flatten()
+
+# Adding subplots
+ax1 = plt.subplot2grid((2, 2), (0, 0), rowspan=2)
+ax2 = plt.subplot2grid((2, 2), (0, 1))
+ax3 = plt.subplot2grid((2, 2), (1, 1))
 
 prt_dirs = ['prt06','prt07']
-second_part_of_path = 'rt0.001/visc_4_1e4/vis1e4_mR_01'
+second_part_of_path = 'rt0.002/visc_1_1e1/vis1e1_mR_01'
 time_diffs_all = []
 
 for i,prt_dir in enumerate(prt_dirs):
@@ -30,38 +34,35 @@ for i,prt_dir in enumerate(prt_dirs):
     time_diffs_all.append(time_diffs)
 
     # Plotting
-    ax[0].plot(time_diffs, marker='o',label=prt_dir)
-ax[0].set_title("Time Elapsed Between Consecutive Files")
-ax[0].set_xlabel("File Index")
-ax[0].legend()
-ax[0].set_ylabel("Time Elapsed (minutes), cumulative")
-ax[0].grid(True)
-# plt.show()
+    ax1.plot(time_diffs, marker='o',label=prt_dir)
+ax1.set_title("Time Elapsed Between Consecutive Files")
+ax1.set_xlabel("File Index")
+ax1.legend()
+ax1.set_ylabel("Time Elapsed (minutes), cumulative")
+ax1.grid(True)
 
 # print(f'time_diffs_all {(time_diffs_all[0]))}')
 
 improvement = [(a - b) for a, b in zip(time_diffs_all[0], time_diffs_all[1])]  # this works even if one list is longer (extra elements are ignored)
 
-# plt.figure(figsize=(10, 6))
 
-ax[1].plot(improvement, marker='o')
-ax[1].set_title("Time improvement")
-ax[1].set_xlabel("File Index")
-ax[1].set_ylabel("Improvement over time")
-ax[1].grid(True)
-# plt.show()
+ax2.plot(improvement, marker='o')
+ax2.set_title("Time improvement")
+ax2.set_xlabel("File Index")
+ax2.set_ylabel("Improvement over time")
+ax2.grid(True)
 
 
 improvement = [(a - b)/a for a, b in zip(time_diffs_all[0], time_diffs_all[1])]  # this works even if one list is longer (extra elements are ignored)
 
-# plt.figure(figsize=(10, 6))
 
-ax[2].plot(improvement, marker='o')
-ax[2].set_title("Time improvement ratio")
-ax[2].set_xlabel("File Index")
-ax[2].set_ylabel("Improvement/Original time")
-ax[2].grid(True)
+ax3.plot(improvement, marker='o')
+ax3.set_title("Time improvement ratio")
+ax3.set_xlabel("File Index")
+ax3.set_ylabel("Improvement/Original time")
+ax3.grid(True)
 
 fig.suptitle(second_part_of_path, fontsize=16)
 
+fig.tight_layout()
 plt.show()

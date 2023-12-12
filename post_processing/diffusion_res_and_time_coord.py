@@ -54,14 +54,14 @@ var_to_plot = "Sigma_1"
 # dir_labels = ['02000','04000','06000','08000','10000'] 
 # dir_labels = ['00200', '00400','00600','00800','01000','02000','04000','06000']#,'08000','10000'] 
 # dir_labels = ['01']#,'02']#,'03','04','05','06','07','08','09'] 
-dir_labels = ['op08/vis1e1_mR_01','op08a/vis1e1_mR_01','op09/vis1e1_mR_01','op09a/vis1e1_mR_01']
+# dir_labels = ['op10/vis1e1_mR_01','op08a/vis1e1_mR_01','op09/vis1e1_mR_01','op09a/vis1e1_mR_01']
 # dir_labels = ['p39/visc_4_1e4/vis1e4_mR_09','p38/visc_4_1e4/vis1e4_mR_09','p37/visc_4_1e4/vis1e4_mR_09','p35/visc_4_1e4/vis1e4_mR_09','p36/visc_4_1e4/vis1e4_mR_09']
 # dir_labels = ['p52/visc_1_1e1/vis1e1_mR_01','p54/visc_1_1e1/vis1e1_mR_01','p55/visc_1_1e1/vis1e1_mR_01']#,'p49/visc_1_1e1/vis1e1_mR_01']
 # dir_labels = ['rt0.00008','rt0.00009','rt0.0001','rt0.00013','rt0.00015','rt0.0002','rt0.00025','rt0.0003','rt0.0005']#,'p49/visc_1_1e1/vis1e1_mR_01']
 # dir_labels = ['rt0.0005','rt0.001','rt0.002','rt0.004']#,'rt0.006','rt0.008']
 # dir_labels = ['rt0.001','rt0.002','rt0.004','rt0.006','rt0.008']
 # dir_labels = ['rt0.0000001','rt0.0000005','rt0.0000009']
-# dir_labels = ['04','05','06'] # '02','03','04','05','06'
+dir_labels = ['02','03','04','08','10','16','20'] # '02','03','04','05','06'
 # dir_labels = ['gx06/gx_02','gx08/gx_02'] 
 
 # my_labels = ['p52, 0.001','p54, 0.0005','p55, 0.0001']#,'p49, 0.005'] # leave empty for default labels (= dir labels)
@@ -84,7 +84,7 @@ for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
     # dir_list.append('/nobackup/scgf/myExperiments/smooth/sm94/size'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/timestep/ts02/visc_1_1e1/vis1e1_tstep_'+str(i))  
-    dir_list.append('/nobackup/scgf/myExperiments/optimise/'+str(i))  
+    dir_list.append('/nobackup/scgf/myExperiments/optimise/op11/'+str(i)+'/vis1e1_mR01')  
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt06/'+str(i)+'/visc_1_1e1/vis1e1_mR_01')  
     # dir_list.append('/nobackup/scgf/myExperiments/relax_threshold/rt13/size02000/'+str(i))  
