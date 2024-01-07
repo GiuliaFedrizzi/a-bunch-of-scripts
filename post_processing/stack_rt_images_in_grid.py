@@ -15,7 +15,7 @@ import glob
 rt_dirs = sorted((glob.glob("rt0.*"))) 
 # print(rt_dirs)
 
-tsteps = list(range(1, 31, 1)) + list(range(30, 151, 5))
+tsteps = list(range(1, 30, 1)) + list(range(30, 201, 5))
 
 for t in tsteps:
     timestep = "t"+str(t).zfill(3)

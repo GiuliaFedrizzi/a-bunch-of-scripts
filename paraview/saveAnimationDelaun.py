@@ -62,8 +62,8 @@ numberOfInputCsvFiles = len(allInputCsvFiles)
 print("numberOfInputCsvFiles ",str(numberOfInputCsvFiles))
 print("len(allOutputPngFiles) ",str(len(allOutputPngFiles)))
 
-if numberOfInputCsvFiles > 301:
-    numberOfInputCsvFiles = 301   # if too many files, stop earlier
+if numberOfInputCsvFiles > 801:
+    numberOfInputCsvFiles = 801   # if too many files, stop earlier
 
 rangeForAnimation = [0,numberOfInputCsvFiles-1]# from 0 to n-1, because 0 is included (and the last number too)
 latestOutputPngFileNumber = 0

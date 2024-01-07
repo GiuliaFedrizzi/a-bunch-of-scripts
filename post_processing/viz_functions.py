@@ -225,3 +225,18 @@ def setup_array_const_strain(x_variable,melt_labels,t,target_mr_def_ratios,im_le
 
     return big_array  # the number of columns is the num of x variable times two (two images for each sim)
     
+
+def find_dirs(dir_type):
+    directories_list = []
+    # if dir_type == "def_rate":
+    # List to hold the names of directories
+
+    # Iterate over the items in the current directory
+    for item in os.listdir('.'):
+        # Check if the item is a directory and not one of the excluded names
+        if os.path.isdir(item) and item not in ["baseFiles", "images_in_grid", "branch_plots"]:
+            directories_list.append(item)
+    directories_list.sort()
+    # Printing the list (optional)
+    print("Directories found:", directories_list)
+    return directories_list
