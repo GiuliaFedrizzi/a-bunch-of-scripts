@@ -791,7 +791,7 @@ def analyse_png(png_file: str, part_to_analyse: str, all_angles: list) -> dict:
 
     # viz grid with networkx's plot
     ax = draw_nx_graph(im, g)
-    plt.savefig(out_path+".grid.png",dpi=300)
+    plt.savefig(out_path+".grid.png",dpi=150)
     plt.clf()
     # plt.show()
 

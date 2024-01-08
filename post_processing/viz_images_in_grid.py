@@ -29,7 +29,12 @@ melt_labels = [ '0.00'+i.split('mR_0')[1] for i in melt_labels]   # from full na
 os.chdir('..')
 # print(melt_labels)
 
-x_variable = [i.split('_')[2] for i in x_variable]  # take the third part of the string, the one that comes after _     -> from visc_1_1e1 to 1e1
+if variab == "viscosity":
+    x_variable = [i.split('_')[2] for i in x_variable]  # take the third part of the string, the one that comes after _     -> from visc_1_1e1 to 1e1
+elif variab == "def_rate":
+    x_variable = [i.split('def')[1] for i in x_variable]  # take the second part of the string, the one that comes after def     -> from pdef1e8 to 1e8
+
+    
 # print(x_variable)
 
 # if variab == "viscosity":
