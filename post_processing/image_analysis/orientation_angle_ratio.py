@@ -50,8 +50,6 @@ def count_peak_locations(histogram):
 
 import matplotlib.pyplot as plt
 
-# Reusing the provided rose_histogram data and the count_peak_locations function
-
 def find_peak_locations(histogram):
     # Identifying the peak_locations
     peak_locations = []
@@ -70,7 +68,7 @@ def find_peak_locations(histogram):
 
     # Extracting the top two peaks
     max_peak = peaks[0] if len(peaks) > 0 else (-1,-1)
-    second_max_peak = peaks[1] if len(peaks) > 1 else (-1,-1)  # impossible number that works as a flag saying "something is wrong"
+    second_max_peak = peaks[1] if len(peaks) > 1 else (-1,-1)  # impossible number that works as a flag for saying "something is wrong"
 
     print(f'max peak {max_peak}, second {second_max_peak}. Ratio: {max_peak[1]/second_max_peak[1]}')  # the first output is the index
     
@@ -111,17 +109,11 @@ def find_peak_locations(histogram):
 
         plt.show()
     # if len(peaks)>1:
-    return max_peak[0]*10, second_max_peak[0]*10, max_peak[1]/second_max_peak[1]   # the first value of max_peak identifies the nth bin in the histogram. Multiply by 10 to get the angle in degrees
+    return max_peak[0]*10, second_max_peak[0]*10, max_peak[1]/second_max_peak[1]   # the first value of max_peak identifies the nth bin in the histogram. Multiply it by 10 to get the angle in degrees
 
 
 x_variables = find_dirs(variab)
-
-os.chdir(x_variables[0])
-melt_labels = find_dirs(variab)
-melt_labels = [ '0.00'+i.split('mR_0')[1] for i in melt_labels]   # from full name of directory to 0.001, 0.002 etc
-os.chdir('..')
-# print(melt_labels)
-data = []
+orient_list = []
 
 
 for v in x_variables:
@@ -138,18 +130,14 @@ for v in x_variables:
         print(os.getcwd())
         df = pd.DataFrame(columns=['time_eq','viscosity','melt_rate', 'angle_between_peaks','ratio'])  # new dataframe with columns
         rose_histogram = get_rose_histogram()
-        # print(len(rose_histogram))
 
         if rose_histogram is not None and any(value != 0 for value in rose_histogram):  # check if any are not zero
 
-            # Counting peak_locations
-            # number_of_peak_locations = count_peak_locations(rose_histogram)
-            # print(number_of_peak_locations)
             max_peak_angle, second_max_peak_angle, ratio = find_peak_locations(rose_histogram)  # extract peaks from histogram
             print(max_peak_angle,second_max_peak_angle,ratio)
             print(abs(max_peak_angle-second_max_peak_angle),ratio)
             if max_peak_angle != -10 and second_max_peak_angle != -10:  # avoid the data with the flag "-1" (now it is -10 because it has been multipl by 10 to get the angle)
-                
+                # create dictionary with data from this specific simulation
                 orientation_data = {
                     'time_eq': real_timestep,
                     'viscosity': x_variable,
@@ -157,13 +145,11 @@ for v in x_variables:
                     'angle_between_peaks': abs(max_peak_angle-second_max_peak_angle),
                     'ratio': ratio
                 }
-                data.append(orientation_data)
-            else:
-                print("BAD!!!")
+                orient_list.append(orientation_data)
         os.chdir('..')
     os.chdir('..')
 
-# Create a dataframe from the list
-df = pd.DataFrame(data)
+# create a dataframe from the list
+df = pd.DataFrame(orient_list)
 
 print(df)
