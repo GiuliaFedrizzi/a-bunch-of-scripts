@@ -9,15 +9,16 @@ import sys
 import pandas as pd
 import json
 import glob
+import seaborn as sns
 
 sys.path.append("/home/home01/scgf/myscripts/post_processing")
 
 from viz_functions import find_dirs,find_variab
 
-real_timestep = 24000.0
+real_timestep = 144000.0
 variab = find_variab()
 
-def get_rose_histogram():
+def get_rose_histogram(norm_time):
     # Load the JSON data from the file
     with open('segments_angles.json', 'r') as file:
         data = json.load(file)
@@ -27,15 +28,15 @@ def get_rose_histogram():
 
     # Iterate through the data to find the matching timestep
     for entry in data:
-        if entry['timestep_n'] == real_timestep:
+        if entry['timestep_n'] == norm_time:
             rose_histogram = entry['rose_histogram']
             break
 
     # Check if we found the values and print them
-    if rose_histogram is not None:
-        print(f"Rose histogram values for timestep {real_timestep}: {rose_histogram}")
-    else:
-        print(f"No data found for timestep {real_timestep}")
+    # if rose_histogram is not None:
+    #     print(f"Rose histogram values for timestep {norm_time}: {rose_histogram}")
+    # else:
+    #     print(f"No data found for timestep {norm_time}")
     
     return rose_histogram
 
@@ -64,19 +65,19 @@ def find_peak_locations(histogram):
     
     # Sorting the peaks based on their values (second element of the tuple)
     peaks.sort(key=lambda x: x[1], reverse=True)
-    print(f' len(peaks): { len(peaks)}')
+    # print(f' len(peaks): { len(peaks)}')
 
     # Extracting the top two peaks
     max_peak = peaks[0] if len(peaks) > 0 else (-1,-1)
     second_max_peak = peaks[1] if len(peaks) > 1 else (-1,-1)  # impossible number that works as a flag for saying "something is wrong"
 
-    print(f'max peak {max_peak}, second {second_max_peak}. Ratio: {max_peak[1]/second_max_peak[1]}')  # the first output is the index
+    # print(f'max peak {max_peak}, second {second_max_peak}. Ratio: {max_peak[1]/second_max_peak[1]}')  # the first output is the index
     
     if False:  # in case I want to visualise the rose diagram
         fig = plt.figure(figsize=(8,8))
         ax = fig.add_subplot(111, projection='polar')
         
-        print(f'peak_locations: {peak_locations}')
+        # print(f'peak_locations: {peak_locations}')
         # print(f'histogram[peak_locations]: {[histogram[p] for p in peak_locations]}')
 
         hist_peak = np.zeros(len(histogram))
@@ -86,7 +87,7 @@ def find_peak_locations(histogram):
             hist_peak[p] = histogram[p]
 
         
-        print(f'hist_peak {hist_peak}')
+        # print(f'hist_peak {hist_peak}')
         
 
         # the height of each bar is the number of angles in that bin
@@ -108,13 +109,12 @@ def find_peak_locations(histogram):
         ax.set_rgrids(np.arange(1, max(histogram) + 1, 2), angle=0, weight= 'black')
 
         plt.show()
-    # if len(peaks)>1:
+    
     return max_peak[0]*10, second_max_peak[0]*10, max_peak[1]/second_max_peak[1]   # the first value of max_peak identifies the nth bin in the histogram. Multiply it by 10 to get the angle in degrees
 
 
 x_variables = find_dirs(variab)
 orient_list = []
-
 
 for v in x_variables:
     os.chdir(v) 
@@ -125,21 +125,24 @@ for v in x_variables:
             x_variable = v.split('_')[2]  # take the third part of the string, the one that comes after _     -> from visc_1_1e1 to 1e1
         elif variab == "def_rate":
             x_variable = v.split('def')[1]  # take the second part of the string, the one that comes after def     -> from pdef1e8 to 1e8
+        
         melt_rate_value = '0.00'+mr.split('mR_0')[1]  # from full name of directory to 0.001, 0.002 etc
+        norm_time = real_timestep/(float(mr.split('mR_0')[1]))  # normalise time according to how much melt waas created (so we have constant melt addition)
 
-        print(os.getcwd())
-        df = pd.DataFrame(columns=['time_eq','viscosity','melt_rate', 'angle_between_peaks','ratio'])  # new dataframe with columns
-        rose_histogram = get_rose_histogram()
+        df = pd.DataFrame(columns=['time_eq','norm_time','viscosity','melt_rate', 'angle_between_peaks','ratio'])  # new dataframe with columns
+        
+        rose_histogram = get_rose_histogram(norm_time)
 
         if rose_histogram is not None and any(value != 0 for value in rose_histogram):  # check if any are not zero
 
             max_peak_angle, second_max_peak_angle, ratio = find_peak_locations(rose_histogram)  # extract peaks from histogram
-            print(max_peak_angle,second_max_peak_angle,ratio)
-            print(abs(max_peak_angle-second_max_peak_angle),ratio)
+            # print(max_peak_angle,second_max_peak_angle,ratio)
+            # print(abs(max_peak_angle-second_max_peak_angle),ratio)
             if max_peak_angle != -10 and second_max_peak_angle != -10:  # avoid the data with the flag "-1" (now it is -10 because it has been multipl by 10 to get the angle)
                 # create dictionary with data from this specific simulation
                 orientation_data = {
                     'time_eq': real_timestep,
+                    'norm_time': norm_time,
                     'viscosity': x_variable,
                     'melt_rate': melt_rate_value,
                     'angle_between_peaks': abs(max_peak_angle-second_max_peak_angle),
@@ -153,3 +156,5 @@ for v in x_variables:
 df = pd.DataFrame(orient_list)
 
 print(df)
+
+
