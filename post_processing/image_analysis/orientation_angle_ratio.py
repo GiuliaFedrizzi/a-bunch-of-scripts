@@ -129,7 +129,7 @@ for v in x_variables:
         melt_rate_value = '0.00'+mr.split('mR_0')[1]  # from full name of directory to 0.001, 0.002 etc
         norm_time = real_timestep/(float(mr.split('mR_0')[1]))  # normalise time according to how much melt waas created (so we have constant melt addition)
 
-        df = pd.DataFrame(columns=['time_eq','norm_time','viscosity','melt_rate', 'angle_between_peaks','ratio'])  # new dataframe with columns
+        # df = pd.DataFrame(columns=['time_eq','norm_time','viscosity','melt_rate', 'angle_between_peaks','ratio'])  # new dataframe with columns
         
         rose_histogram = get_rose_histogram(norm_time)
 
@@ -143,10 +143,10 @@ for v in x_variables:
                 orientation_data = {
                     'time_eq': real_timestep,
                     'norm_time': norm_time,
-                    'viscosity': x_variable,
-                    'melt_rate': melt_rate_value,
+                    'Viscosity': x_variable,
+                    'Melt Rate': float(melt_rate_value),
                     'angle_between_peaks': abs(max_peak_angle-second_max_peak_angle),
-                    'ratio': ratio
+                    'Ratio between Orientation Peak Heights': ratio
                 }
                 orient_list.append(orientation_data)
         os.chdir('..')
@@ -157,4 +157,7 @@ df = pd.DataFrame(orient_list)
 
 print(df)
 
-
+plt.grid(True)
+sns.scatterplot(data=df,x="Viscosity",y="Ratio between Orientation Peak Heights",hue="Melt Rate",palette="copper_r") # cividis_r
+# plt.show()
+plt.savefig("branch_plots/orient_peaks_ratio_visc_t"+str(int(real_timestep/1000))+".png",dpi=200)
