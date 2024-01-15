@@ -22,8 +22,8 @@ filename = "my_experiment00006.csv"
 first_part_of_path = '/nobackup/scgf/myExperiments/threeAreas/prod/pb47/visc_1_1e1/'
 #  Pressure   Porosity
 dir = first_part_of_path+'vis1e1_mR_01'        # res200
-
-
+poro_colour = (161/255, 62/255, 22/255)
+press_colour = (0/255, 28/255, 148/255)
 
 def read_calculate_plot(filename, var_to_plot):
 
@@ -58,16 +58,21 @@ for v in vars_to_plot:
 
 # Plotting on ax1 and ax2
 x, y = all_data_h[vars_to_plot[0]]
-line1_h, = ax1.plot(x, y, label=f"{vars_to_plot[0]} (horizontal)")
+line1_h, = ax1.plot(x, y, label=f"{vars_to_plot[0]} (horizontal)",color=press_colour)
+ax1.set_ylim(bottom=5.885e7)
 
 x, y = all_data_v[vars_to_plot[0]]
-line1_v, = ax2.plot(y, x, label=vars_to_plot[0])
+line1_v, = ax2.plot(y, x, label=vars_to_plot[0],color=press_colour)
 
 # Set labels for ax1 and ax2
-ax1.set_ylabel(vars_to_plot[0])
+ax1.set_ylabel(vars_to_plot[0],color=press_colour)
 ax1.set_xlabel("x")
+ax1.tick_params(axis='y', colors=press_colour)
 ax2.set_ylabel("y")
-ax2.set_xlabel(vars_to_plot[0])
+ax2.set_xlabel(vars_to_plot[0], color=press_colour)
+ax2.tick_params(axis='x', colors=press_colour) 
+ax2.set_xlim(left=5.885e7)
+
 
 # Disable offsets
 ax1.get_xaxis().get_major_formatter().set_useOffset(False)
@@ -76,14 +81,18 @@ ax2.get_xaxis().get_major_formatter().set_useOffset(False)
 # Create twin axes and plot
 ax2a = ax2.twiny()
 x, y = all_data_v[vars_to_plot[1]]
-line2_v, = ax2a.plot(y, x, label=vars_to_plot[1], color='r')
-ax2a.set_xlabel(vars_to_plot[1], color='r')  # Setting color to match line color
+line2_v, = ax2a.plot(y, x, label=vars_to_plot[1], color=poro_colour)
+ax2a.set_xlabel(vars_to_plot[1], color=poro_colour)  # Setting color to match line color
+ax2a.tick_params(axis='x', colors=poro_colour) 
+ax2a.set_xlim(right=0.1997) # porosity lim
 
 ax1a = ax1.twinx()
 x, y = all_data_h[vars_to_plot[1]]
-line2_h, = ax1a.plot(x, y, label=f"{vars_to_plot[1]} (horizontal)", color='r')
-ax1a.set_ylabel(vars_to_plot[1], color='r')  # Setting color to match line color
+line2_h, = ax1a.plot(x, y, label=f"{vars_to_plot[1]} (horizontal)", color=poro_colour)
+ax1a.set_ylabel(vars_to_plot[1], color=poro_colour)  # Setting color to match line color
 ax1a.yaxis.tick_right()  # Ensure the y-axis label is on the right
+ax1a.set_ylim(top=0.1997)
+ax1a.tick_params(axis='y', colors=poro_colour)
 
 # Adjusting positions to avoid overlap
 ax1.yaxis.tick_left()
@@ -94,6 +103,6 @@ fig.legend([line1_v, line2_v],
            [vars_to_plot[0], vars_to_plot[1]],loc=(0.8, 0.8))
 
 plt.subplots_adjust(wspace=0.3)  # Adjust space between plots
-
-#plt.show()
-plt.savefig("poro_press_periodic.png",dpi=400)
+# plt.set_ylim(bottom=0)
+plt.show()
+# plt.savefig("poro_press_periodic.png",dpi=400)

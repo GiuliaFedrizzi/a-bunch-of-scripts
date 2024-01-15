@@ -15,7 +15,7 @@ sys.path.append("/home/home01/scgf/myscripts/post_processing")
 
 from viz_functions import find_dirs,find_variab
 
-real_timestep = 144000.0
+
 variab = find_variab()
 
 def get_rose_histogram(norm_time):
@@ -31,12 +31,6 @@ def get_rose_histogram(norm_time):
         if entry['timestep_n'] == norm_time:
             rose_histogram = entry['rose_histogram']
             break
-
-    # Check if we found the values and print them
-    # if rose_histogram is not None:
-    #     print(f"Rose histogram values for timestep {norm_time}: {rose_histogram}")
-    # else:
-    #     print(f"No data found for timestep {norm_time}")
     
     return rose_histogram
 
@@ -114,50 +108,62 @@ def find_peak_locations(histogram):
 
 
 x_variables = find_dirs(variab)
-orient_list = []
+for real_timestep in (80000, 96000, 100000, 120000, 130000, 144000):  # 120000, 144000
+    orient_list = []
 
-for v in x_variables:
-    os.chdir(v) 
-    for mr in sorted(glob.glob("vis*_mR_0*")):   # find directories that match this pattern
-        os.chdir(mr)
-        rose_histogram = []
-        if variab == "viscosity":
-            x_variable = v.split('_')[2]  # take the third part of the string, the one that comes after _     -> from visc_1_1e1 to 1e1
-        elif variab == "def_rate":
-            x_variable = v.split('def')[1]  # take the second part of the string, the one that comes after def     -> from pdef1e8 to 1e8
-        
-        melt_rate_value = '0.00'+mr.split('mR_0')[1]  # from full name of directory to 0.001, 0.002 etc
-        norm_time = real_timestep/(float(mr.split('mR_0')[1]))  # normalise time according to how much melt waas created (so we have constant melt addition)
+    for v in x_variables:
+        os.chdir(v) 
+        for mr in sorted(glob.glob("vis*_mR_0*")):   # find directories that match this pattern
+            os.chdir(mr)
+            rose_histogram = []
+            if variab == "viscosity":
+                x_variable = v.split('_')[2]  # take the third part of the string, the one that comes after _     -> from visc_1_1e1 to 1e1
+            elif variab == "def_rate":
+                x_variable = v.split('def')[1]  # take the second part of the string, the one that comes after def     -> from pdef1e8 to 1e8
+            
+            melt_rate_value = '0.00'+mr.split('mR_0')[1]  # from full name of directory to 0.001, 0.002 etc
+            norm_time = real_timestep/(float(mr.split('mR_0')[1]))  # normalise time according to how much melt waas created (so we have constant melt addition)
 
-        # df = pd.DataFrame(columns=['time_eq','norm_time','viscosity','melt_rate', 'angle_between_peaks','ratio'])  # new dataframe with columns
-        
-        rose_histogram = get_rose_histogram(norm_time)
+            # df = pd.DataFrame(columns=['time_eq','norm_time','viscosity','melt_rate', 'angle_between_peaks','ratio'])  # new dataframe with columns
+            
+            rose_histogram = get_rose_histogram(norm_time)
 
-        if rose_histogram is not None and any(value != 0 for value in rose_histogram):  # check if any are not zero
+            if rose_histogram is not None and any(value != 0 for value in rose_histogram):  # check if any are not zero
 
-            max_peak_angle, second_max_peak_angle, ratio = find_peak_locations(rose_histogram)  # extract peaks from histogram
-            # print(max_peak_angle,second_max_peak_angle,ratio)
-            # print(abs(max_peak_angle-second_max_peak_angle),ratio)
-            if max_peak_angle != -10 and second_max_peak_angle != -10:  # avoid the data with the flag "-1" (now it is -10 because it has been multipl by 10 to get the angle)
-                # create dictionary with data from this specific simulation
-                orientation_data = {
-                    'time_eq': real_timestep,
-                    'norm_time': norm_time,
-                    'Viscosity': x_variable,
-                    'Melt Rate': float(melt_rate_value),
-                    'angle_between_peaks': abs(max_peak_angle-second_max_peak_angle),
-                    'Ratio between Orientation Peak Heights': ratio
-                }
-                orient_list.append(orientation_data)
+                max_peak_angle, second_max_peak_angle, ratio = find_peak_locations(rose_histogram)  # extract peaks from histogram
+                # print(max_peak_angle,second_max_peak_angle,ratio)
+                # print(abs(max_peak_angle-second_max_peak_angle),ratio)
+                if max_peak_angle != -10 and second_max_peak_angle != -10:  # avoid the data with the flag "-1" (now it is -10 because it has been multipl by 10 to get the angle)
+                    # create dictionary with data from this specific simulation
+                    orientation_data = {
+                        'time_eq': real_timestep,
+                        'norm_time': norm_time,
+                        'Viscosity': x_variable,
+                        'Melt Rate': float(melt_rate_value),
+                        'angle_between_peaks': abs(max_peak_angle-second_max_peak_angle),
+                        'Ratio between Orientation Peak Heights': ratio
+                    }
+                    orient_list.append(orientation_data)
+            os.chdir('..')
         os.chdir('..')
-    os.chdir('..')
 
-# create a dataframe from the list
-df = pd.DataFrame(orient_list)
+    # create a dataframe from the list
+    df = pd.DataFrame(orient_list)
 
-print(df)
+    print(df)
 
-plt.grid(True)
-sns.scatterplot(data=df,x="Viscosity",y="Ratio between Orientation Peak Heights",hue="Melt Rate",palette="copper_r") # cividis_r
-# plt.show()
-plt.savefig("branch_plots/orient_peaks_ratio_visc_t"+str(int(real_timestep/1000))+".png",dpi=200)
+    plt.grid(True)
+    sns.lineplot(data=df,x="Viscosity",y="Ratio between Orientation Peak Heights",hue="Melt Rate",palette="copper_r") # cividis_r
+    # plt.show()
+    plt.title("t = "+str(int(real_timestep/1000)))
+    plt.ylim([0,6])
+    plt.savefig("branch_plots/orient_peaks_ratio_visc_t"+str(int(real_timestep/1000))+".png",dpi=200)
+    plt.close()
+
+    # melt rate
+    sns.lineplot(data=df,x="Melt Rate",y="Ratio between Orientation Peak Heights",hue="Viscosity",palette="copper_r") # cividis_r
+    plt.grid(True)
+    plt.ylim([0,6])
+    plt.title("t = "+str(int(real_timestep/1000)))
+    plt.savefig("branch_plots/orient_peaks_ratio_mRate_t"+str(int(real_timestep/1000))+".png",dpi=200)
+    plt.close()
