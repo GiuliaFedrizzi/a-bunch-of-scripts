@@ -48,16 +48,16 @@ if (sum(grepl("visc",dirs), na.rm=TRUE)>0){  # count how many times it finds "vi
 if (var_is_visc){
     if (two_subdirs){
         # x_variable <- c('1e1','5e1','1e2','5e2','1e3','5e3','1e4')  # the values of the x variable to plot (viscosity)
-        x_variable <- c('1e1','1e15','1e2','1e25','1e3','1e35','1e4')  # the values of the x variable to plot (viscosity)
-        # x_variable <- c('1e1','1e2','1e3','1e4')  # the values of the x variable to plot (viscosity)
+        # x_variable <- c('1e1','1e15','1e2','1e25','1e3','1e35','1e4')  # the values of the x variable to plot (viscosity)
+        x_variable <- c('1e1','1e25','1e4')  # the values of the x variable to plot (viscosity)
     } else {
         x_variable <- c('1e2')  # just one value
     }
 } else if (var_is_def) {
     x_variable <- c('1e8','2e8','3e8','4e8','5e8','6e8','7e8','8e8','9e8')#,'5e3','1e4')#,'2e4','4e4')  # the values of the x variable to plot (e.g. def rate)
 }
-melt_rate_list <- c('02','03','05','04','06','07','08','09')#,'1','2')
-# melt_rate_list <- c('02','04','06','08')#,'08')#,'09')#,'1','2')
+# melt_rate_list <- c('02','03','05','04','06','07','08','09')#,'1','2')
+melt_rate_list <- c('02','05','08')#,'08')#,'09')#,'1','2')
 
 # set some options automatically
 time = as.numeric(args[1])   # time for the 1st   (e.g. 60e6 = 60th file in mr_01). Don't use 6e7

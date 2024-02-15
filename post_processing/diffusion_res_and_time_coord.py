@@ -44,10 +44,11 @@ from pathlib import Path
 # import functions from external file
 from useful_functions import * 
 
-var_to_plot = "Pressure"
-# options: Pressure, Mean Stress, Actual Movement, Gravity, Porosity, Sigma_1, Sigma_2, Youngs Modulus
+var_to_plot = "Sigma_1"
+# options: Pressure, Mean Stress, Actual Movement, Gravity, Porosity, Sigma_1, Sigma_2, Youngs Modulus, Differential Stress
 #         F_P_x, F_P_y, pf_grad_x, pf_grad_y, Original Movement, Movement in Gravity, Smooth function, area_par_fluid
 #         gauss_scaling_par, gauss_scaling_par_sum, gauss_scaling_par_n_tot, xy_melt_point
+#         Youngs in Gravity, Poisson in Gravity, Youngs Modulus E, Youngs Modulus Par, Youngs Modulus Real, fg, poisson_ratio
 
 # dir_labels = ['400','200']  # res400.elle, res200.elle
 # dir_labels = ['00200','00400','00600','00800','01000'] # 
@@ -57,17 +58,14 @@ var_to_plot = "Pressure"
 # dir_labels = ['op10/vis1e1_mR_01','op08a/vis1e1_mR_01','op09/vis1e1_mR_01','op09a/vis1e1_mR_01']
 # dir_labels = ['p11/visc_1_1e1/vis1e1_mR_01']
 # dir_labels = ['p52/visc_1_1e1/vis1e1_mR_01','p54/visc_1_1e1/vis1e1_mR_01','p55/visc_1_1e1/vis1e1_mR_01']#,'p49/visc_1_1e1/vis1e1_mR_01']
-# dir_labels = ['rt0.00008','rt0.00009','rt0.0001','rt0.00013','rt0.00015','rt0.0002','rt0.00025','rt0.0003','rt0.0005']#,'p49/visc_1_1e1/vis1e1_mR_01']
-# dir_labels = ['rt0.002','rt0.004']#,'rt0.006']#,'rt0.006']#,'rt0.008']
-# dir_labels = ['rt0.0005','rt0.001','rt0.005','rt0.01']
-# dir_labels = ['rt0.0000001','rt0.0000005','rt0.0000009']
-# dir_labels = ['02','03','04','08','10','16','20'] # '02','03','04','05','06'
-# dir_labels = ['gx06/gx_02','gx08/gx_02'] 
 # dir_labels = ['rb0.006','rb0.01','rb0.03']
 # dir_labels = ['scale400/young1','scale400/young2','scale800/young1','scale800/young2','scale1000/young2']
-# dir_labels = ['scale400/young1','scale400/young2','scale800/young1','scale800/young2','scale1000/young2']
-# dir_labels = ['scale0100','scale0400']
-dir_labels = ['young1']
+# dir_labels = ['scale0400','scale0800','scale1000']
+# dir_labels = ['rb0.01','rb0.03']
+# dir_labels = ['young2']
+dir_labels = ['grad0.4']
+
+
 
 # my_labels = ['p52, 0.001','p54, 0.0005','p55, 0.0001']#,'p49, 0.005'] # leave empty for default labels (= dir labels)
 my_labels = [] # leave empty for default labels (= dir labels)
@@ -84,20 +82,16 @@ sizes = []
 ######  first complete relaxation  ---> Saving file: #####     
 
 for i in dir_labels:
-    # dir_list.append('/nobackup/scgf/myExperiments/wavedec2022/wd_viscTest/vis_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj190/size'+str(i)) 
-    # dir_list.append('/nobackup/scgf/myExperiments/gaussScaleFixFrac2/press_adjustGrav/press020_res200/press'+str(i))
-    # dir_list.append('/nobackup/scgf/myExperiments/smooth/sm94/size'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/timestep/ts02/visc_1_1e1/vis1e1_tstep_'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/optimise/op11/'+str(i)+'/vis1e1_mR01')  
-    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt16/'+str(i)+'/visc_1_1e1/vis1e1_mR_01')  
     # dir_list.append('/nobackup/scgf/myExperiments/relax_threshold/rt13/size02000/'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/relax_threshold/rtp66/'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/relax_threshold/rt10/size'+str(i)+'/rt0.005/')
     # dir_list.append('/nobackup/scgf/myExperiments/gravity_x/'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/gravity_x/gy11/'+str(i)+'/gx_02/')  
-    dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/background_stress/bs12/depth1000/'+str(i))
+    dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/background_stress/bs19/'+str(i)+'/scale400/young2/rb0.03')
     
 print(dir_list)
 
@@ -161,7 +155,7 @@ for dirnum,dir in enumerate(dir_list):
         # meltYmin = float(getParameterFromLatte("input.txt","meltYmin"))
         # ymax = meltYmin/(resolution/2)   #  WHAT IT SHOULD BE
         # ymax = meltYmin/(200/2)   # in real units (meters)
-        ymax = 0.96  # TEMPORARY, pb27
+        ymax = 0.99  # TEMPORARY, pb27
         # print(f'max y coord: {max(myExp["y coord"])}')
         print(f'ymax: {ymax}')
         xmax = 0.502    # 0.5 if point is in the middle

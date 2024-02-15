@@ -22,7 +22,7 @@ from useful_functions import *
 plot_figure = 1
 dir_label = 'young1'
 res = 200
-filename = "fluidgrid00000.csv"
+filename = "fluidgrid00200.csv"
 first_part_of_path = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/background_stress/bs14/depth1000/'  # remember the slash (/) at the end
 
 dir = first_part_of_path+str(dir_label)        # res200
