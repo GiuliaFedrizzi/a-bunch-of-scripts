@@ -63,7 +63,8 @@ var_to_plot = "Sigma_1"
 # dir_labels = ['scale0400','scale0800','scale1000']
 # dir_labels = ['rb0.01','rb0.03']
 # dir_labels = ['young2']
-dir_labels = ['grad0.4']
+# dir_labels = ['grad0.4']
+dir_labels = ['rt0.001','rt0.002','rt0.004','rt0.006','rt0.01','rt0.02','rt0.04']
 
 
 
@@ -91,13 +92,15 @@ for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/relax_threshold/rt10/size'+str(i)+'/rt0.005/')
     # dir_list.append('/nobackup/scgf/myExperiments/gravity_x/'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/gravity_x/gy11/'+str(i)+'/gx_02/')  
-    dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/background_stress/bs19/'+str(i)+'/scale400/young2/rb0.03')
+    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/background_stress/bs19/'+str(i)+'/scale400/young2/rb0.03')
+    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/thr/thr01/rt0.01/'+i)
+    dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/thr/thr01/'+i+'/pincr1e2')
     
 print(dir_list)
 
 f1=-1  # first file to plot. They account for "my_experiment-0003.csv" as the first file in dir :::  -1  =  0
-f2=0  # second file. if f2 = 5 -> my_experiment00500.csv
-step=1
+f2=21  # second file. if f2 = 5 -> my_experiment00500.csv
+step=19
 
 df_x = pd.DataFrame()
 df_y = pd.DataFrame()
@@ -155,13 +158,13 @@ for dirnum,dir in enumerate(dir_list):
         # meltYmin = float(getParameterFromLatte("input.txt","meltYmin"))
         # ymax = meltYmin/(resolution/2)   #  WHAT IT SHOULD BE
         # ymax = meltYmin/(200/2)   # in real units (meters)
-        ymax = 0.99  # TEMPORARY, pb27
+        ymax = 0.00644  # TEMPORARY, pb27
         # print(f'max y coord: {max(myExp["y coord"])}')
         print(f'ymax: {ymax}')
-        xmax = 0.502    # 0.5 if point is in the middle
+        xmax = 0.0025    # 0.5 if point is in the middle (or 0.502)
 
-        tolerance_y = dom_size*100/300*1e-4 #dom_size/300*1e-3  for 200,400,...,10000
-        tolerance_x = dom_size*100/300*1e-4 #dom_size/300*1e-3  for 200,400,...,10000
+        tolerance_y = dom_size*100/300*1e-5 #dom_size/300*1e-3  for 200,400,...,10000
+        tolerance_x = dom_size*100/200*1e-5 #dom_size/300*1e-3  for 200,400,...,10000
         matches_x = np.where(np.isclose(myExp["x coord"],xmax,atol=tolerance_x)==True)[0] # vertical
         print(f'x matches: {len(matches_x)}')
         matches_y = np.where(np.isclose(myExp["y coord"],ymax,atol=tolerance_y)==True)[0]

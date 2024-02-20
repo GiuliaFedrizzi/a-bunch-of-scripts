@@ -108,7 +108,8 @@ def find_peak_locations(histogram):
 
 
 x_variables = find_dirs(variab)
-for real_timestep in (80000, 96000, 100000, 120000, 130000, 144000):  # 120000, 144000
+for real_timestep in (8000, 12000, 13000, 14400):  # 120000, 144000
+    print(f'real timestep {real_timestep}')
     orient_list = []
 
     for v in x_variables:
@@ -146,7 +147,8 @@ for real_timestep in (80000, 96000, 100000, 120000, 130000, 144000):  # 120000, 
                     orient_list.append(orientation_data)
             os.chdir('..')
         os.chdir('..')
-
+    if not orient_list:  # if it couldn't find any 1st peak and 2nd peak
+        continue
     # create a dataframe from the list
     df = pd.DataFrame(orient_list)
 

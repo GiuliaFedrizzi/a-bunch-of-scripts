@@ -449,8 +449,8 @@ def connect_graph(skel: np.ndarray, min_distance: int) -> nx.MultiGraph:
                     changed = True
                     break
                 else:
-
-                    print(f'keeping {pos_current}')
+                    continue
+                    # print(f'keeping {pos_current}')
         return g
     
     nodes,edges = merge_loop(nodes,edges,skel,min_distance)
@@ -466,7 +466,7 @@ def connect_graph(skel: np.ndarray, min_distance: int) -> nx.MultiGraph:
     # edges = g.edges()
     edges = find_paths(skel, nodes, min_distance)
 
-    nodes,edges = merge_loop(nodes,edges,skel,min_distance=15)
+    nodes,edges = merge_loop(nodes,edges,skel,min_distance=10)  #  this min_distance adjusts the min length that should be kept. The higher, the more simplified the network
 
     # g = make_graph(nodes,edges)
     # g = remove_nodes_if_straight_edges(g,5)  # do the most similar first
@@ -519,8 +519,8 @@ def draw_nx_graph(im: Image, g: nx.Graph) -> None:
     # print(f'all_degrees_coord: {all_degrees_coord}')
     # print(f'g.nodes() {g.nodes()}')
     # degrees = [x for x in list(g.degree)]
-    # lab = dict(zip(g.nodes(), all_degrees))
-    lab = dict(zip(g.nodes(), all_degrees_coord))
+    lab = dict(zip(g.nodes(), all_degrees))  # degrees only
+    # lab = dict(zip(g.nodes(), all_degrees_coord))  # degrees and node coordinates
     pos = {point: point for point in g.nodes()}  # save nodes in a format that can be used as position when plotting
     ax = nx.draw(g,pos=pos,node_size=5,edge_color='g')
     # nx.draw_networkx_labels(g,pos=pos,labels=degrees,ax=ax)
@@ -531,7 +531,7 @@ def draw_nx_graph(im: Image, g: nx.Graph) -> None:
 
     for k, v in pos.items():
         pos_higher[k] = (v[0]+x_off, v[1])
-    nx.draw_networkx_labels(g,pos=pos_higher,ax=ax,labels=lab,font_weight='bold',font_color='r',font_size=4)  # degrees only
+    nx.draw_networkx_labels(g,pos=pos_higher,ax=ax,labels=lab,font_weight='bold',font_color='r',font_size=4)
     
     #edge labels
     # edge_d = [("{:.2f}".format(d)) for (u,v,d) in g.edges.data('d')]  # distance values are stored under the attribute "d"
@@ -661,7 +661,7 @@ def topo_analysis(g: nx.Graph,tstep_number: float) -> dict:
     n_5 = all_degrees.count(5) 
     n_0 = all_degrees.count(0) 
 
-    n_I = n_1 + n_0   # I nodes
+    n_I = n_1   # I nodes
     n_Y = n_2 + n_3   # Y nodes
     n_X = n_4 + n_5   # X nodes
 
@@ -676,9 +676,9 @@ def topo_analysis(g: nx.Graph,tstep_number: float) -> dict:
     n_of_branches = 0.5*(n_I+3*n_3+4*n_4+5*n_5) + n_2 + n_0
     # branches_to_line = n_of_branches / n_of_lines
     # print(f'branches/lines: {branches_to_line}')
-    branches_tot_length = sum(edge_lengths)
+    branches_tot_length = sum(edge_lengths)- n_0  # remove isolated edges (nodes with 0 connections)
     # print(f'branches tot length: {branches_tot_length}')
-    branch_info = {"time":tstep_number*input_tstep,"n_I":n_I,"n_2":n_2,"n_3":n_3,"n_4":n_4,"n_5":n_5,
+    branch_info = {"time":tstep_number*input_tstep,"n_0":n_0,"n_I":n_I,"n_2":n_2,"n_3":n_3,"n_4":n_4,"n_5":n_5,
                    "branches_tot_length":branches_tot_length} # dictionary with info that I just calculated
     return branch_info
 
@@ -724,7 +724,7 @@ def analyse_png(png_file: str, part_to_analyse: str, all_angles: list) -> dict:
 
         left = min(X)+5; top = min(Y)+7; right = max(X)-5; bottom = max(Y)-5 # auto from blue
         height = bottom - top
-        # print(left,top,right,bottom)
+        print(left,top,right,bottom)
 
     crop_im = 1
     # if part_to_analyse == 'w': # whole domain  - this is the default!
@@ -770,7 +770,7 @@ def analyse_png(png_file: str, part_to_analyse: str, all_angles: list) -> dict:
     if px.sum() == 0:  
         """ if no fractures, skip analysis and return a dictionary full of zeros """
         print("0 pixels, skipping")
-        branch_info = {"time":timestep_number*input_tstep,"n_I":0,"n_2":0,"n_3":0,"n_4":0,"n_5":0,
+        branch_info = {"time":timestep_number*input_tstep,"n_0":0,"n_I":0,"n_2":0,"n_3":0,"n_4":0,"n_5":0,
                 "branches_tot_length":0} # dictionary with all zeros: there are no fractures in this area
         return branch_info, np.zeros(36), "path", all_angles # sequences of zeros of the same length as the output of calculate_rose(). Placeholder for path
     g = extract_network(px,im)
@@ -781,7 +781,7 @@ def analyse_png(png_file: str, part_to_analyse: str, all_angles: list) -> dict:
     if len(g.edges()) == 0:
         """ if after extracting the network there are zero branches, skip analysis and return a dictionary full of zeros """
         print("0 edges, skipping")
-        branch_info = {"time":timestep_number*input_tstep,"n_I":0,"n_2":0,"n_3":0,"n_4":0,"n_5":0,
+        branch_info = {"time":timestep_number*input_tstep,"n_0":0,"n_I":0,"n_2":0,"n_3":0,"n_4":0,"n_5":0,
                 "branches_tot_length":0} # dictionary with all zeros: there are no fractures in this area
         return branch_info, np.zeros(36), "path", all_angles
 
@@ -830,6 +830,7 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
     curr_path = os.getcwd()
     if "field_im" in curr_path:
         string_in_name = "Long_drawn_OpeningInvert.png"
+    print(f'list of files {sorted(glob.glob(string_in_name))}')
     # for f,filename in enumerate(sorted(glob.glob("ldo_*.png"))):
     for f,filename in enumerate(sorted(glob.glob(string_in_name))):
     # for f,filename in enumerate(sorted(glob.glob("Long_drawn_OpeningInvert*.png"))):
@@ -877,5 +878,5 @@ else:
     part_to_analyse = sys.argv[1]
 assert (part_to_analyse == 'w' or part_to_analyse == 't' or part_to_analyse == 'b' or part_to_analyse == 'f'), "Error: specify w for whole domain, b for bottom (melt zone), t for top (through zone), f for full (or field) for field images"
 
-
+print(f'Part to analyse: {part_to_analyse}')
 file_loop(d,part_to_analyse)

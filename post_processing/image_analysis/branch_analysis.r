@@ -176,7 +176,7 @@ build_branch_df <- function(x,m,time) {
 
                 # df_m <- rbind(df_m,de,stringsAsFactors=FALSE)
             } else {
-            print(paste("no visc",x,", melt rate ",m," at time ",time,sep=""))            
+            print(paste("no visc",x,", melt rate ",m," at time ",time,", norm time ",norm_time,sep=""))            
             }
 
             } else {

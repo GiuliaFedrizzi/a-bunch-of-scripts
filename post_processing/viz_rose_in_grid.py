@@ -16,9 +16,9 @@ rose = True
 im_length = 1600
 im_height = 1600
 # times = range(30,185,10)  # (start, end, step)
-times = range(5,50,5)  # (start, end, step)
-times = [t*1000 for t in times]
-melt_labels = ['0.009','0.005','0.001'] 
+times = range(2,10,1)  # (start, end, step)
+times = [t*1 for t in times]
+melt_labels = ['0.008','0.005','0.002'] 
 # melt_labels = ['0.009','0.008','0.007','0.006','0.005','0.004','0.003','0.002','0.001'] 
 # melt_labels = ['0.008','0.006','0.004','0.002'] 
 
@@ -53,7 +53,7 @@ for t in times:
         filename = 'images_in_grid/rose_w_defRate_mRate_t'
         ax.set_ylabel('Pressure increment')
 
-    plt.savefig(filename+str(int(t/1000)).zfill(3)+'.png',dpi=600)  # back to the default name that matches viz_images_in_grid
+    plt.savefig(filename+str(int(t)).zfill(5)+'.png',dpi=600)  # back to the default name that matches viz_images_in_grid
     
     #plt.show()
 

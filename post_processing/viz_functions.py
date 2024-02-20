@@ -81,10 +81,10 @@ def build_array(big_array,variab,x,x_val,melt_rate,file_number,row,cols,rose):
 
     else:
         """ here "rose_file" only """
-        rose_file = potential_file_path +'/rose_norm_p_top_py_bb_'+file_number+'_nx.png' # try "top" first    
+        rose_file = potential_file_path +'/rose_weight_p_top_py_bb_'+file_number+'_nx.png' # try "top" first    
         if os.path.isfile(rose_file) == False:
             """ try another version """
-            rose_file = potential_file_path +'/rose_norm_p_py_bb_'+file_number+'_nx.png'   # e.g.  rose_norm_p_py_bb_026000_nx
+            rose_file = potential_file_path +'/rose_weight_p_py_bb_'+file_number+'_nx.png'   # e.g.  rose_norm_p_py_bb_026000_nx
         if os.path.isfile(rose_file):
             print(f'found file {rose_file}')
             rose_big_file = Image.open(rose_file)  # to do: do I need to crop it?
