@@ -29,20 +29,20 @@ def plot_data(root_dirs, visc, vis, row_index,custom_labels):
                 if os.path.exists(csv_file):
                     # Read the csv file
                     df = pd.read_csv(csv_file, sep=',')
-                    print(f'df: {df}')
+                    # print(f'df: {df}')
                     if os.getcwd() == '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt01':
                         if root_dir == 'rt0.004' or root_dir == 'rt0.006' or root_dir == 'rt0.008':
                             temp_row_index *= 10
                             print(f'row_index {temp_row_index}')
                     if vis.endswith("02"):
                         temp_row_index = round(temp_row_index / 2)
-                        print(f'tstep = {temp_row_index} (should be {temp_row_index / 2})')
+                        print(f'tstep = {temp_row_index} (should be {row_index / 2})')
                     if vis.endswith("05"):
                         temp_row_index = round(temp_row_index / 5)
-                        print(f'tstep = {temp_row_index} (should be {temp_row_index / 5})')
+                        print(f'tstep = {temp_row_index} (should be {row_index / 5})')
                     if vis.endswith("08"):
                         temp_row_index = round(temp_row_index / 8)
-                        print(f'tstep = {temp_row_index} (should be {temp_row_index / 8})')
+                        print(f'tstep = {temp_row_index} (should be {row_index / 8})')
                     if temp_row_index < len(df):
                         x.append(label_mapping[root_dir])
                         y.append(df.loc[temp_row_index, metric])
@@ -71,10 +71,13 @@ def plot_data(root_dirs, visc, vis, row_index,custom_labels):
 
 # root_dirs =     ['p52',    'p53',   'p50',    'p61',     'p62',    'p56',       'p63']#, 'p50']  # Add your p* directories here
 # custom_labels = ['0.001', '0.0015','0.002','0.001, 2','0.001, 4','0.001, 10','0.001, 20']    # Custom labels
-root_dirs =     ['rt0.006',    'rt0.01',   'rt0.02','rt0.04']#,    'p61',     'p62',    'p56',       'p63']#, 'p50'] 
-visc = 'visc_1_1e1'#,'visc_4_1e4']
-vis_dirs = ['vis1e1_mR_02', 'vis1e1_mR_05','vis1e1_mR_08']  # Add your selected vis* subdirectories here
-row_index = 10  # Specify the row index = timestep
+# root_dirs =     ['rt0.006',    'rt0.01',   'rt0.02','rt0.04']#,    'p61',     'p62',    'p56',       'p63']#, 'p50'] 
+entries = os.listdir('.')
+root_dirs = sorted([entry for entry in entries if entry.startswith('rt0') and os.path.isdir(entry)])
+print(f'dirs are {root_dirs}')
+visc = 'visc_4_1e4'#,'visc_4_1e4']
+vis_dirs = ['vis1e4_mR_02', 'vis1e4_mR_05','vis1e4_mR_08']  # Add your selected vis* subdirectories here
+row_index = 100  # Specify the row index = timestep
 
 
 custom_labels = []

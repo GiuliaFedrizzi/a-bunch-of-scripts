@@ -229,6 +229,16 @@ df_m
 time_string <- sprintf("%02i",time/1e6)  # pad with zeros until string is 2 characters long
 time_string <- paste(time_string,"e6",sep="")
 
+# Define the directory name
+dir_name <- "branch_plots"
+
+# Check if the directory exists
+if (!dir.exists(dir_name)) {
+  # The directory does not exist, so create it
+  dir.create(dir_name)
+  cat("Directory created: ", dir_name, "\n")
+}
+
 if (FALSE) {
     write.csv(df_m, paste("p03_branches_df_",time_string,".csv",sep=""), row.names=FALSE)
 }

@@ -40,6 +40,7 @@ import os
 import glob
 import seaborn as sns
 from pathlib import Path
+import re
 
 # import functions from external file
 from useful_functions import * 
@@ -60,18 +61,19 @@ var_to_plot = "Sigma_1"
 # dir_labels = ['p52/visc_1_1e1/vis1e1_mR_01','p54/visc_1_1e1/vis1e1_mR_01','p55/visc_1_1e1/vis1e1_mR_01']#,'p49/visc_1_1e1/vis1e1_mR_01']
 # dir_labels = ['rb0.006','rb0.01','rb0.03']
 # dir_labels = ['scale400/young1','scale400/young2','scale800/young1','scale800/young2','scale1000/young2']
-# dir_labels = ['scale0400','scale0800','scale1000']
-# dir_labels = ['rb0.01','rb0.03']
-# dir_labels = ['young2']
+# dir_labels = ['scale400','scale800']#,'scale1000']
+dir_labels = ['rb0.01','rb0.03']
+# dir_labels = ['young2']#,'young10']
 # dir_labels = ['grad0.4']
-dir_labels = ['rt0.001','rt0.002','rt0.004','rt0.006','rt0.01','rt0.02','rt0.04']
-
-
+# dir_labels = ['rt0.002','rt0.004','rt0.006','rt0.01','rt0.02']
+# dir_labels = ['grad0.5','grad0.5_depth']
+# dir_labels = ['grad0.5','grad0.5_depth']
+# dir_labels = ['t01000','t02000','t05000','t10000']
 
 # my_labels = ['p52, 0.001','p54, 0.0005','p55, 0.0001']#,'p49, 0.005'] # leave empty for default labels (= dir labels)
 my_labels = [] # leave empty for default labels (= dir labels)
 
-resolution = 200
+# resolution = 200 # now extracted automatically
 
 dir_list = []; sigmas_top_true = []; sigmas_bot_true = []; sigmas_top_theor = []; sigmas_bot_theor = []
 sigmas_top_ratio = []; sigmas_bot_ratio = []; sigmas_diff_theor = []; sigmas_diff_true = []; sigmas_diff_ratio = []
@@ -92,15 +94,16 @@ for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/relax_threshold/rt10/size'+str(i)+'/rt0.005/')
     # dir_list.append('/nobackup/scgf/myExperiments/gravity_x/'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/gravity_x/gy11/'+str(i)+'/gx_02/')  
-    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/background_stress/bs19/'+str(i)+'/scale400/young2/rb0.03')
+    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/background_stress/bs19/grad0.5_depth/'+i+'/young2/rb0.03')
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/thr/thr01/rt0.01/'+i)
-    dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/thr/thr01/'+i+'/pincr1e2')
+    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/thr/thr02/'+i+'/pincr1e2')
+    dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/singleInjection/si02/res200/'+i)
     
 print(dir_list)
 
 f1=-1  # first file to plot. They account for "my_experiment-0003.csv" as the first file in dir :::  -1  =  0
-f2=21  # second file. if f2 = 5 -> my_experiment00500.csv
-step=19
+f2=30  # second file. if f2 = 5 -> my_experiment00500.csv
+step=30
 
 df_x = pd.DataFrame()
 df_y = pd.DataFrame()
@@ -120,6 +123,7 @@ for dirnum,dir in enumerate(dir_list):
         print('skipping '+os.getcwd())
         continue
     else:
+        resolution = int(getResolution())
         # relaxed_file = getWhenItRelaxed("latte.log")
         # print(f'First file after complete relaxation: {relaxed_file}')  # not working
         first_file = sorted(glob.glob("my_experiment*"))[1]
@@ -158,10 +162,10 @@ for dirnum,dir in enumerate(dir_list):
         # meltYmin = float(getParameterFromLatte("input.txt","meltYmin"))
         # ymax = meltYmin/(resolution/2)   #  WHAT IT SHOULD BE
         # ymax = meltYmin/(200/2)   # in real units (meters)
-        ymax = 0.00644  # TEMPORARY, pb27
+        ymax = 0.98  # TEMPORARY, pb27
         # print(f'max y coord: {max(myExp["y coord"])}')
         print(f'ymax: {ymax}')
-        xmax = 0.0025    # 0.5 if point is in the middle (or 0.502)
+        xmax = 0.502    # 0.5 if point is in the middle (or 0.502)
 
         tolerance_y = dom_size*100/300*1e-5 #dom_size/300*1e-3  for 200,400,...,10000
         tolerance_x = dom_size*100/200*1e-5 #dom_size/300*1e-3  for 200,400,...,10000

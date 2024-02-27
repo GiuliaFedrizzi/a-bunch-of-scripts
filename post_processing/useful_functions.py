@@ -1,4 +1,6 @@
 import os.path
+import re
+import glob
 
 def getTimeStep(inputFile):
     with open(inputFile) as iFile:
@@ -88,3 +90,27 @@ def getFirstBrokenBond(lattefile):
                 timebb = timebb.replace("\n","")  # get rid of \n
                 return timebb  
 
+def getResolution():
+    def extract_number_from_files():
+        # List all files that start with "sub"
+        files = glob.glob("sub*.sh")
+        for file_path in files:
+            try:
+                with open(file_path, 'r') as file:
+                    content = file.read()
+                    # Regular expression to find "res" followed by any number of digits and then ".elle"
+                    match = re.search(r'res(\d+)\.elle', content)
+                    if match:
+                        return match.group(1), file_path  # Return the number and the file where it was found
+            except FileNotFoundError:
+                continue  # If file not found, just go to the next file
+        
+        return "No matching pattern found in any file.", None    
+
+    number, found_file = extract_number_from_files()
+    if found_file:
+        print(f"Number found: {number} in file: {found_file}")
+        return number
+    else:
+        print(number)
+        return 200
