@@ -62,13 +62,15 @@ var_to_plot = "Sigma_1"
 # dir_labels = ['rb0.006','rb0.01','rb0.03']
 # dir_labels = ['scale400/young1','scale400/young2','scale800/young1','scale800/young2','scale1000/young2']
 # dir_labels = ['scale400','scale800']#,'scale1000']
-dir_labels = ['rb0.01','rb0.03']
+# dir_labels = ['res200/rb0.006','res200/rb0.01','res200/rb0.02','res400/rb0.003','res400/rb0.007','res400/rb0.01']#,'res400/rb0.01']#,'res400/rb0.03']
+dir_labels = ['res400/rb0.001','res400/rb0.003','res400/rb0.005','res400/rb0.007']#,'res400/rb0.01']#,'res400/rb0.03']
 # dir_labels = ['young2']#,'young10']
-# dir_labels = ['grad0.4']
+# dir_labels = ['grad0.2','grad0.4','grad0.6']
+# dir_labels = ['grad0.6','grad0.8','grad1','grad1.5']
 # dir_labels = ['rt0.002','rt0.004','rt0.006','rt0.01','rt0.02']
 # dir_labels = ['grad0.5','grad0.5_depth']
-# dir_labels = ['grad0.5','grad0.5_depth']
 # dir_labels = ['t01000','t02000','t05000','t10000']
+# dir_labels = ['rb0.01','rb0.03','rb0.05']#,'rb1.0'] # 'rb0.01',
 
 # my_labels = ['p52, 0.001','p54, 0.0005','p55, 0.0001']#,'p49, 0.005'] # leave empty for default labels (= dir labels)
 my_labels = [] # leave empty for default labels (= dir labels)
@@ -97,13 +99,14 @@ for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/background_stress/bs19/grad0.5_depth/'+i+'/young2/rb0.03')
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/thr/thr01/rt0.01/'+i)
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/thr/thr02/'+i+'/pincr1e2')
-    dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/singleInjection/si02/res200/'+i)
+    dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/singleInjection/si05/'+i)
+    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/background_stress/bs23/'+i+'/depth0100/young2/rb0.03')
     
 print(dir_list)
 
 f1=-1  # first file to plot. They account for "my_experiment-0003.csv" as the first file in dir :::  -1  =  0
-f2=30  # second file. if f2 = 5 -> my_experiment00500.csv
-step=30
+f2=5  # second file. if f2 = 5 -> my_experiment00500.csv
+step=5
 
 df_x = pd.DataFrame()
 df_y = pd.DataFrame()
@@ -157,18 +160,26 @@ for dirnum,dir in enumerate(dir_list):
             dir_label = dir_labels[dirnum]   # get the label that corresponds to the directory
             scale_factor = dom_size # default factor for scaling the axes. 
 
-
+        # get the maximum height of the domain (will be something like 0.99). Depends on how 'compressed' the domain has been
+        domain_max_y = max(myExp["y coord"])
+        domain_min_y = min(myExp["y coord"])
+        domain_max_x = max(myExp["x coord"])
+        domain_min_x = min(myExp["x coord"])
         ## manually get the coordinates of the central point:
         # meltYmin = float(getParameterFromLatte("input.txt","meltYmin"))
         # ymax = meltYmin/(resolution/2)   #  WHAT IT SHOULD BE
         # ymax = meltYmin/(200/2)   # in real units (meters)
-        ymax = 0.98  # TEMPORARY, pb27
+        ymax = 0.5 * domain_max_y 
         # print(f'max y coord: {max(myExp["y coord"])}')
         print(f'ymax: {ymax}')
-        xmax = 0.502    # 0.5 if point is in the middle (or 0.502)
+        xmax = 0.503    # 0.5 if point is in the middle (or 0.502)
 
-        tolerance_y = dom_size*100/300*1e-5 #dom_size/300*1e-3  for 200,400,...,10000
-        tolerance_x = dom_size*100/200*1e-5 #dom_size/300*1e-3  for 200,400,...,10000
+        # define tolerances when looking for points along a vertical and a horizontal line starting from the chosen point
+        #  1.15*resolution = 230 or 460, so the number of particles in the y direction. Using this, 
+        tolerance_y = (domain_max_y-domain_min_y)/(1.15*resolution)
+        tolerance_x = (domain_max_x-domain_min_x)/resolution
+        print(f'tolerance in y: {tolerance_y}')
+        print(f'tolerance in x: {tolerance_x}')
         matches_x = np.where(np.isclose(myExp["x coord"],xmax,atol=tolerance_x)==True)[0] # vertical
         print(f'x matches: {len(matches_x)}')
         matches_y = np.where(np.isclose(myExp["y coord"],ymax,atol=tolerance_y)==True)[0]
@@ -191,14 +202,14 @@ for dirnum,dir in enumerate(dir_list):
             max_id = max_ids[0]
         else:
             max_id = max_ids
-
+        print(f'max_id {max_id}')
         # max_id = myExp_upper['Pressure'].idxmax()   #  index of the point with the maximum pressure value
         
         # what it should be:
         # offset = max_id%resolution   # so that they are all centered around 0 on the x axis. It's the shift in the x direction.
         # what works bc I haven't changed the location of the point yet:
-        offset = max_id%200   # so that they are all centered around 0 on the x axis. It's the shift in the x direction.
-
+        offset = max_id%resolution+1   # so that they are all centered around 0 on the x axis. It's the shift in the x direction.
+        print(f'offset {offset}')
 
 
         # else:
@@ -298,6 +309,7 @@ if True:
     # if 
     g_x = sns.lineplot(data=df_x ,x="x",y=var_to_plot,ax=ax1,hue='time',style='scale',alpha=0.5)
     g_y = sns.lineplot(data=df_y ,x="y",y=var_to_plot,ax=ax2,hue='time',style='scale',alpha=0.5)
+    # g_y = sns.lineplot(data=df_y ,x="y",y=var_to_plot,ax=ax2,hue='time',style='scale',alpha=0.5)
     # if var_to_plot == "Actual Movement" or var_to_plot == "Original Movement":
     #         ax1.axhline(y=relax_thresh[0], linestyle='--',color='red',label="first relaxation threshold")
     #         ax1.axhline(y=relax_thresh[1], linestyle='--',color='blue',label="second relaxation threshold")

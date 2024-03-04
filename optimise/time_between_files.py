@@ -15,17 +15,18 @@ ax1 = plt.subplot2grid((2, 2), (0, 0), rowspan=2)
 ax2 = plt.subplot2grid((2, 2), (0, 1))
 ax3 = plt.subplot2grid((2, 2), (1, 1))
 
-prt_dirs = ['prt06','prt07']
-second_part_of_path = 'rt0.002/visc_1_1e1/vis1e1_mR_01'
+prt_dirs = ['depth1000','depth5000']
+second_part_of_path = 'scale1000/rb0.01'
 time_diffs_all = []
 
 for i,prt_dir in enumerate(prt_dirs):
-    directory = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/'+prt_dir+"/"+second_part_of_path
+    # directory = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/'+prt_dir+"/"+second_part_of_path
+    directory = os.getcwd()+"/"+prt_dir+"/"+second_part_of_path
 
     # Get list of files that match the pattern 'my_experiment*.csv'
     file_list = [f for f in os.listdir(directory) if f.startswith('my_experiment') and f.endswith('.csv')]
     file_list.sort()  # Sort the files by name
-
+    print(f'file_list {file_list}')
     # Get the creation times for each file
     creation_times = [get_creation_time(os.path.join(directory, file)) for file in file_list]
     # Calculate the time differences in minutes
