@@ -5,6 +5,7 @@
 import pandas as pd
 from matplotlib import colors
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 import numpy as np
 import math
 from scipy import interpolate
@@ -13,6 +14,7 @@ import glob
 import cProfile
 import pstats
 profile = cProfile.Profile()
+import re
 
 filefrequency = 100
 
@@ -31,41 +33,61 @@ def getTimeStep(inputFile):
                 input_tstep = line.split(" ")[1]  # split before and after space, take the second word (value of timestep)
                 return input_tstep  
 
-
+# Get the number from the filename
+def extract_number(filename):
+    match = re.search(r"(\d+)", filename)
+    if match:
+        return int(match.group(1))
+    return 0
 
 fig, axs = plt.subplots(nrows=1,ncols=1)
+# marker_styles = ['']
+# print(f'matplotlib.markers {[x for x in matplotlib.markers]}')
+# print([x for x in Line2D.markers])
+marks=[x for x in Line2D.markers]
+# print(f'marks {marks[0]}, {marks[1]}')
 
-for dir in sorted(glob.glob("sigma*/*gaussTime05/tstep04_5_1e5")):
+for a,dir in enumerate(sorted(glob.glob("rt0.*/pincr1e2"))):
     os.chdir(dir)
     print(os.getcwd())
     maxPressure = [] # initialise empty array
     time_array = []
 
-
-    for i,filename in enumerate(sorted(glob.glob("my_experiment*"))):
+    i = 0
+    for filename in (sorted(glob.glob("my_experiment*"),key=extract_number))[0::filefrequency]:
+        print(f'filename {filename}')
         if i == 0:
+            i +=1 
             continue  # skip t = 0
-        if i%filefrequency == 0:   #  plot only every x timesteps (files)
-            myExp = pd.read_csv(filename, header=0)
-            maxPressure.append(getMaxPressures(myExp))
-            input_tstep = float(getTimeStep("input.txt"))
-            file_num = float(filename.split("experiment")[1].split(".")[0])  # first take the part after "experiment", then the one before the "."
-            time_array.append(input_tstep*file_num)
-            # # name of the line
-            # labelName = "t=" + str('{:.1e}'.format(input_tstep*file_num))
-            if i == 20*filefrequency:
-                break
-    plotStyle='-o'
-    dirName = os.getcwd().split("myExperiments/")[1] # get the part of the path that is after "myExperiments/"
-    sigma_components = dirName.split("/")[1].split("_")   # take the second part after / in "gaussTime/sigma_1_0/sigma_1_0_gaussTime05/tstep04_5_1e5", split around "_"
-    labelName = "$\sigma$ = " + sigma_components[1] + "." + sigma_components[2]   # from sigma_1_0 to 1.0
-    axs.plot(time_array, maxPressure,plotStyle,label=labelName)     
-    os.chdir("../../..")   
-        
+        myExp = pd.read_csv(filename, header=0)
+        maxPressure.append(getMaxPressures(myExp))
+        input_tstep = float(getTimeStep("input.txt"))
+        file_num = float(filename.split("experiment")[1].split(".")[0])  # first take the part after "experiment", then the one before the "."
+        time_array.append(input_tstep*file_num)
+        # # name of the line
+        # labelName = "t=" + str('{:.1e}'.format(input_tstep*file_num))
+        # stopping criterion otherwise it could load too many files
+        i +=1 
+        if i == 200*filefrequency:
+            print(f'Stopping early')
+            break
+    print(f'Last plotted file: {filename}')
+    # plotStyle='-o'
+    plotStyle='-'+marks[a+2]
+    # print(f'plotStyle {plotStyle}')
+    dirName = os.getcwd().split("/")[-1] + "/" + os.getcwd().split("/")[-2] # get the last part of the path 
+    dirPress = os.getcwd().split("/")[-1] # get the part of the path with pressure increase
+    # sigma_components = dirName.split("/")[1].split("_")   # take the second part after / in "gaussTime/sigma_1_0/sigma_1_0_gaussTime05/tstep04_5_1e5", split around "_"
+    # labelName = "$\sigma$ = " + sigma_components[1] + "." + sigma_components[2]   # from sigma_1_0 to 1.0
+    # axs.plot(time_array, maxPressure,plotStyle,label=dirName,markersize=5,alpha=0.7)     
+    axs.plot(time_array, maxPressure,plotStyle,label=dirName,markersize=5,alpha=0.7)     
+    axs.plot([time_array[0],time_array[-1]], [maxPressure[0],maxPressure[-1]],'k--',alpha=0.7,label="line between first and last point")     
+    os.chdir("../..")   
+           
 
 axs.set_xlabel("Time")
 axs.set_ylabel("Max Fluid Pressure")
-axs.set_title("Max Fluid Pressure in time. Time step = " + dirName.split("/")[-1].split("_")[-1] + "\nValues every " + str(filefrequency) + " files.")
+axs.set_title("Max Fluid Pressure in time. Pressure increment = 10^" + dirPress.split("/")[-1].split("e")[-1] + "\nValues every " + str(filefrequency) + " files.")
 #axs.xaxis.set_major_formatter(FormatStrFormatter('% .1e'))
 #fig.suptitle(os.getcwd().split("myExperiments/")[1]) # get the part of the path that is after "myExperiments/"
 

@@ -45,8 +45,8 @@ import re
 # import functions from external file
 from useful_functions import * 
 
-var_to_plot = "Sigma_1"
-# options: Pressure, Mean Stress, Actual Movement, Gravity, Porosity, Sigma_1, Sigma_2, Youngs Modulus, Differential Stress
+var_to_plot = "Pressure"
+# options: Pressure, Mean Stress, Actual Movement, Gravity, Porosity, Sigma_1, Sigma_2, Youngs Modulus, Differential Stress,Permeability
 #         F_P_x, F_P_y, pf_grad_x, pf_grad_y, Original Movement, Movement in Gravity, Smooth function, area_par_fluid
 #         gauss_scaling_par, gauss_scaling_par_sum, gauss_scaling_par_n_tot, xy_melt_point
 #         Youngs in Gravity, Poisson in Gravity, Youngs Modulus E, Youngs Modulus Par, Youngs Modulus Real, fg, poisson_ratio
@@ -63,17 +63,19 @@ var_to_plot = "Sigma_1"
 # dir_labels = ['scale400/young1','scale400/young2','scale800/young1','scale800/young2','scale1000/young2']
 # dir_labels = ['scale400','scale800']#,'scale1000']
 # dir_labels = ['res200/rb0.006','res200/rb0.01','res200/rb0.02','res400/rb0.003','res400/rb0.007','res400/rb0.01']#,'res400/rb0.01']#,'res400/rb0.03']
-dir_labels = ['res400/rb0.001','res400/rb0.003','res400/rb0.005','res400/rb0.007']#,'res400/rb0.01']#,'res400/rb0.03']
+# dir_labels = ['res400/depth1000/rb0.01']#'res400/depth1000/rb0.003','res400/depth1000/rb0.007','res400/depth1000/rb0.01']#,'res400/rb0.01']#,'res400/rb0.03']
 # dir_labels = ['young2']#,'young10']
 # dir_labels = ['grad0.2','grad0.4','grad0.6']
 # dir_labels = ['grad0.6','grad0.8','grad1','grad1.5']
-# dir_labels = ['rt0.002','rt0.004','rt0.006','rt0.01','rt0.02']
-# dir_labels = ['grad0.5','grad0.5_depth']
+# dir_labels = ['rb0.003','rb0.007','rb0.01']
 # dir_labels = ['t01000','t02000','t05000','t10000']
-# dir_labels = ['rb0.01','rb0.03','rb0.05']#,'rb1.0'] # 'rb0.01',
+# dir_labels = ['rb0.01']#,'rb1.0'] # 'rb0.01',  
+dir_labels = ['tw09/rt0.1/pincr1e2','tw09/rt0.5/pincr1e2'] #,'tw09/rt0.1/pincr1e4','tw09/rt0.1/pincr1e5'
+# dir_labels = ['si08','si10']#,'rb1.0'] # 'rb0.01',  
 
 # my_labels = ['p52, 0.001','p54, 0.0005','p55, 0.0001']#,'p49, 0.005'] # leave empty for default labels (= dir labels)
 my_labels = [] # leave empty for default labels (= dir labels)
+# my_labels = ['grad0.3','grad0.4'] # leave empty for default labels (= dir labels)
 
 # resolution = 200 # now extracted automatically
 
@@ -99,18 +101,26 @@ for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/background_stress/bs19/grad0.5_depth/'+i+'/young2/rb0.03')
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/thr/thr01/rt0.01/'+i)
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/thr/thr02/'+i+'/pincr1e2')
-    dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/singleInjection/si05/'+i)
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/background_stress/bs23/'+i+'/depth0100/young2/rb0.03')
+    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/singleInjection/si10/res400/depth1200/'+i) #'rb0.003'
+    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/singleInjection/'+i+'/res400/depth1200/rb0.003/')
+    dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/tw/'+i)
     
 print(dir_list)
 
 f1=-1  # first file to plot. They account for "my_experiment-0003.csv" as the first file in dir :::  -1  =  0
-f2=5  # second file. if f2 = 5 -> my_experiment00500.csv
-step=5
+f2=1500  # second file. if f2 = 5 -> my_experiment00500.csv
+step=200
 
 df_x = pd.DataFrame()
 df_y = pd.DataFrame()
 
+# Get the number from the filename
+def extract_number(filename):
+    match = re.search(r"(\d+)", filename)
+    if match:
+        return int(match.group(1))
+    return 0
 
 # check if labels only contain numbers (it means they are the dimensions of the domain = scales)
 if dir_labels[-1].startswith('size'):
@@ -229,7 +239,7 @@ for dirnum,dir in enumerate(dir_list):
         print(f'real radius: {real_radius}')
 
         # for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[f1+1:f2+2:(f2-f1)]): #[beg:end:step]  set which timesteps (based on FILE NUMBER) to plot. first and second file are defined at the beginning
-        for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[f1+1:f2+2:step]): #[beg:end:step]  set which timesteps (based on FILE NUMBER) to plot. first and second file are defined at the beginning
+        for i,filename in enumerate(sorted(glob.glob("my_experiment*"),key=extract_number)[f1+1:f2+2:step]): #[beg:end:step]  set which timesteps (based on FILE NUMBER) to plot. first and second file are defined at the beginning
             myfile = Path(os.getcwd()+'/'+filename)  # build file name including path
             if myfile.is_file():
                 print(filename)
