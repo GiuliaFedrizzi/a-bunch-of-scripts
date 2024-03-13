@@ -16,7 +16,7 @@ import pstats
 profile = cProfile.Profile()
 import re
 
-filefrequency = 100
+filefrequency = 1
 
 
 def getMaxPressures(myExp):
@@ -47,7 +47,7 @@ fig, axs = plt.subplots(nrows=1,ncols=1)
 marks=[x for x in Line2D.markers]
 # print(f'marks {marks[0]}, {marks[1]}')
 
-for a,dir in enumerate(sorted(glob.glob("rt0.*/pincr1e2"))):
+for a,dir in enumerate(sorted(glob.glob("rt*/pincr1e4"))):
     os.chdir(dir)
     print(os.getcwd())
     maxPressure = [] # initialise empty array
@@ -55,7 +55,6 @@ for a,dir in enumerate(sorted(glob.glob("rt0.*/pincr1e2"))):
 
     i = 0
     for filename in (sorted(glob.glob("my_experiment*"),key=extract_number))[0::filefrequency]:
-        print(f'filename {filename}')
         if i == 0:
             i +=1 
             continue  # skip t = 0
@@ -81,7 +80,7 @@ for a,dir in enumerate(sorted(glob.glob("rt0.*/pincr1e2"))):
     # labelName = "$\sigma$ = " + sigma_components[1] + "." + sigma_components[2]   # from sigma_1_0 to 1.0
     # axs.plot(time_array, maxPressure,plotStyle,label=dirName,markersize=5,alpha=0.7)     
     axs.plot(time_array, maxPressure,plotStyle,label=dirName,markersize=5,alpha=0.7)     
-    axs.plot([time_array[0],time_array[-1]], [maxPressure[0],maxPressure[-1]],'k--',alpha=0.7,label="line between first and last point")     
+    # axs.plot([time_array[0],time_array[-1]], [maxPressure[0],maxPressure[-1]],'k--',alpha=0.7,label="line between first and last point")     
     os.chdir("../..")   
            
 

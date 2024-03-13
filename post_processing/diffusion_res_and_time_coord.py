@@ -45,16 +45,12 @@ import re
 # import functions from external file
 from useful_functions import * 
 
-var_to_plot = "Pressure"
+var_to_plot = "Sigma_1"
 # options: Pressure, Mean Stress, Actual Movement, Gravity, Porosity, Sigma_1, Sigma_2, Youngs Modulus, Differential Stress,Permeability
 #         F_P_x, F_P_y, pf_grad_x, pf_grad_y, Original Movement, Movement in Gravity, Smooth function, area_par_fluid
 #         gauss_scaling_par, gauss_scaling_par_sum, gauss_scaling_par_n_tot, xy_melt_point
 #         Youngs in Gravity, Poisson in Gravity, Youngs Modulus E, Youngs Modulus Par, Youngs Modulus Real, fg, poisson_ratio
 
-# dir_labels = ['400','200']  # res400.elle, res200.elle
-# dir_labels = ['00200','00400','00600','00800','01000'] # 
-# dir_labels = ['02000','04000','06000','08000','10000'] 
-# dir_labels = ['00200', '00400','00600','00800','01000','02000','04000','06000']#,'08000','10000'] 
 # dir_labels = ['01']#,'02']#,'03','04','05','06','07','08','09'] 
 # dir_labels = ['op10/vis1e1_mR_01','op08a/vis1e1_mR_01','op09/vis1e1_mR_01','op09a/vis1e1_mR_01']
 # dir_labels = ['p11/visc_1_1e1/vis1e1_mR_01']
@@ -68,9 +64,12 @@ var_to_plot = "Pressure"
 # dir_labels = ['grad0.2','grad0.4','grad0.6']
 # dir_labels = ['grad0.6','grad0.8','grad1','grad1.5']
 # dir_labels = ['rb0.003','rb0.007','rb0.01']
+# dir_labels = ['rb0.006','rb0.01','rb0.02']
+dir_labels = ['res200/depth1000/rb0.006','res200/depth1000/rb0.01','res200/depth1000/rb0.02']#,'res400/depth1000/rb0.01']#,'res400/depth1000/rb0.007','res400/depth1000/rb0.01','res400/depth1000/rb0.05']#,'res400/depth1300/rb0.003','res400/depth1300/rb0.007']
+# dir_labels = ['res200/depth1300/rb0.006','res400/depth1300/rb0.007']
 # dir_labels = ['t01000','t02000','t05000','t10000']
 # dir_labels = ['rb0.01']#,'rb1.0'] # 'rb0.01',  
-dir_labels = ['tw09/rt0.1/pincr1e2','tw09/rt0.5/pincr1e2'] #,'tw09/rt0.1/pincr1e4','tw09/rt0.1/pincr1e5'
+# dir_labels = ['tw12/rt0.1/pincr1e6','tw12/rt0.5/pincr1e6'] # 'tw12/rt0.01/pincr1e6','tw12/rt0.03/pincr1e6',
 # dir_labels = ['si08','si10']#,'rb1.0'] # 'rb0.01',  
 
 # my_labels = ['p52, 0.001','p54, 0.0005','p55, 0.0001']#,'p49, 0.005'] # leave empty for default labels (= dir labels)
@@ -83,34 +82,26 @@ dir_list = []; sigmas_top_true = []; sigmas_bot_true = []; sigmas_top_theor = []
 sigmas_top_ratio = []; sigmas_bot_ratio = []; sigmas_diff_theor = []; sigmas_diff_true = []; sigmas_diff_ratio = []
 sizes = []
 
-####   WARNING: (horizontal) offset is set to 50 instead of the central point (1/4 of domain)
-
 
 ######  first complete relaxation  ---> Saving file: #####     
 
 for i in dir_labels:
-    # dir_list.append('/nobackup/scgf/myExperiments/gaussJan2022/gj190/size'+str(i)) 
-    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/timestep/ts02/visc_1_1e1/vis1e1_tstep_'+str(i))  
-    # dir_list.append('/nobackup/scgf/myExperiments/optimise/op11/'+str(i)+'/vis1e1_mR01')  
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt16/'+str(i)+'/visc_1_1e1/vis1e1_mR_01')  
-    # dir_list.append('/nobackup/scgf/myExperiments/relax_threshold/rt13/size02000/'+str(i))  
-    # dir_list.append('/nobackup/scgf/myExperiments/relax_threshold/rtp66/'+str(i))  
-    # dir_list.append('/nobackup/scgf/myExperiments/relax_threshold/rt10/size'+str(i)+'/rt0.005/')
     # dir_list.append('/nobackup/scgf/myExperiments/gravity_x/'+str(i))  
     # dir_list.append('/nobackup/scgf/myExperiments/gravity_x/gy11/'+str(i)+'/gx_02/')  
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/background_stress/bs19/grad0.5_depth/'+i+'/young2/rb0.03')
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/thr/thr01/rt0.01/'+i)
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/thr/thr02/'+i+'/pincr1e2')
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/background_stress/bs23/'+i+'/depth0100/young2/rb0.03')
-    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/singleInjection/si10/res400/depth1200/'+i) #'rb0.003'
-    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/singleInjection/'+i+'/res400/depth1200/rb0.003/')
-    dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/tw/'+i)
+    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/singleInjection/si12/res200/depth3000/'+i) #'rb0.003'
+    dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/singleInjection/si22/'+i)
+    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/tw/'+i)
     
 print(dir_list)
 
 f1=-1  # first file to plot. They account for "my_experiment-0003.csv" as the first file in dir :::  -1  =  0
-f2=1500  # second file. if f2 = 5 -> my_experiment00500.csv
-step=200
+f2= -1  # second file. if f2 = 5 -> my_experiment00500.csv
+step=1
 
 df_x = pd.DataFrame()
 df_y = pd.DataFrame()
@@ -121,6 +112,11 @@ def extract_number(filename):
     if match:
         return int(match.group(1))
     return 0
+
+dir_counter_200=0
+dir_counter_400=0
+res200_flag=0
+res400_flag=0
 
 # check if labels only contain numbers (it means they are the dimensions of the domain = scales)
 if dir_labels[-1].startswith('size'):
@@ -139,6 +135,26 @@ for dirnum,dir in enumerate(dir_list):
         resolution = int(getResolution())
         # relaxed_file = getWhenItRelaxed("latte.log")
         # print(f'First file after complete relaxation: {relaxed_file}')  # not working
+        # --- for paths that contain "res200" and "res400": use colour to differentiate between resolutions, not time (default)
+        current_path_components = os.getcwd().split(os.sep)
+        if 'res200' in current_path_components:
+            has_res_directory = True
+            res_directory = 'res200'
+            res200_flag = 1
+            res400_flag = 0
+            dir_counter_200+=1
+            rb=current_path_components[-1]
+        elif 'res400' in current_path_components:
+            res200_flag = 0
+            res400_flag = 1
+            has_res_directory = True
+            res_directory = 'res400'
+            dir_counter_400+=1
+            rb=current_path_components[-1]
+        else:
+            has_res_directory = False
+            res_directory = 'no dir'
+            rb=0
         first_file = sorted(glob.glob("my_experiment*"))[1]
         dom_size = float(getParameterFromLatte('input.txt','Scale'))
         print(f'scale: {dom_size}')
@@ -179,7 +195,7 @@ for dirnum,dir in enumerate(dir_list):
         # meltYmin = float(getParameterFromLatte("input.txt","meltYmin"))
         # ymax = meltYmin/(resolution/2)   #  WHAT IT SHOULD BE
         # ymax = meltYmin/(200/2)   # in real units (meters)
-        ymax = 0.5 * domain_max_y 
+        ymax = 0.505# * domain_max_y <-- no, don't scale because the melt point is chosen in the fluid lattice grid (fixed)
         # print(f'max y coord: {max(myExp["y coord"])}')
         print(f'ymax: {ymax}')
         xmax = 0.503    # 0.5 if point is in the middle (or 0.502)
@@ -259,12 +275,12 @@ for dirnum,dir in enumerate(dir_list):
                 labelName = "t=" + str('{:.1e}'.format(input_tstep*file_num))
 
                 # y                  shift array by the max value so that the maximum is at zero and scale it 
-                data1_y = {'y': (y_array - ymax)*scale_factor,var_to_plot: var_array_y, 'scale': dir_label,'time': labelName}  # save temporarily. dictionary with y coord, the variable, the scale and time
+                data1_y = {'y': (y_array - ymax)*scale_factor,var_to_plot: var_array_y, 'scale': dir_label,'time': labelName,'res':res_directory,'dir_counter':dir_counter_200*res200_flag+dir_counter_400*res400_flag,'rel_thr':rb}  # save temporarily. dictionary with y coord, the variable, the scale and time
                 df1_y = pd.DataFrame(data1_y)
                 df_y = pd.concat([df_y,df1_y], ignore_index=True) # append to old one
 
                 # x                  shift array by the max value so that the maximum is at zero
-                data1_x = {'x': (x_array - xmax)*scale_factor,var_to_plot: var_array_x, 'scale': dir_label,'time': labelName}  # save temporarily
+                data1_x = {'x': (x_array - xmax)*scale_factor,var_to_plot: var_array_x, 'scale': dir_label,'time': labelName,'res':res_directory,'dir_counter':dir_counter_200*res200_flag+dir_counter_400*res400_flag,'rel_thr':rb}  # save temporarily
                 df1_x = pd.DataFrame(data1_x)
                 df_x = pd.concat([df_x,df1_x], ignore_index=True) # append to old one
             # end of file loop
@@ -316,9 +332,13 @@ def set_axes_options(fig):
 
 if True:
     fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
-    # if 
-    g_x = sns.lineplot(data=df_x ,x="x",y=var_to_plot,ax=ax1,hue='time',style='scale',alpha=0.5)
-    g_y = sns.lineplot(data=df_y ,x="y",y=var_to_plot,ax=ax2,hue='time',style='scale',alpha=0.5)
+    
+    if has_res_directory:  # hue is res200 or res400
+        g_x = sns.lineplot(data=df_x ,x="x",y=var_to_plot,ax=ax1,hue='res',style='rel_thr',alpha=0.5)
+        g_y = sns.lineplot(data=df_y ,x="y",y=var_to_plot,ax=ax2,hue='res',style='rel_thr',alpha=0.5)
+    else:  # hue is time
+        g_x = sns.lineplot(data=df_x ,x="x",y=var_to_plot,ax=ax1,hue='time',style='scale',alpha=0.5)
+        g_y = sns.lineplot(data=df_y ,x="y",y=var_to_plot,ax=ax2,hue='time',style='scale',alpha=0.5)
     # g_y = sns.lineplot(data=df_y ,x="y",y=var_to_plot,ax=ax2,hue='time',style='scale',alpha=0.5)
     # if var_to_plot == "Actual Movement" or var_to_plot == "Original Movement":
     #         ax1.axhline(y=relax_thresh[0], linestyle='--',color='red',label="first relaxation threshold")
