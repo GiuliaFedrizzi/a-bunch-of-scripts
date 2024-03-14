@@ -38,29 +38,23 @@ def dbscan_and_plot(X,e):
     
     custom_colormap = ListedColormap(colors)
     
+    edges = [i%2 for i in dbscan.labels_]
+    # print(f'edges {edges}')
     # Plotting
     plt.figure(figsize=(10, 6))
-    # scatter = plt.scatter(x_coords, y_coords, c=dbscan.labels_, marker='o', s=10, alpha=0.75, cmap=custom_colormap) #  edgecolor='k',
-    # plt.colorbar(scatter, label='Cluster Label')
-    # plt.title('DBSCAN Clustering, eps ='+str(e))
-    # plt.xlabel('x coord')
-    # plt.ylabel('y coord')
+    scatter = plt.scatter(x_coords, y_coords, c=dbscan.labels_, marker='o', s=10, alpha=0.75,edgecolor='k',linewidth=edges, cmap=custom_colormap) #  edgecolor='k',
+    plt.colorbar(scatter, label='Cluster Label')
+    plt.title('DBSCAN Clustering, eps ='+str(e))
+    plt.xlabel('x coord')
+    plt.ylabel('y coord')
 
-    # # Highlight noise points
-    # noise_points = dbscan.labels_ == -1
-    # plt.scatter(x_coords[noise_points], y_coords[noise_points], color='red', marker='x', s=10, label='Noise')
-    # plt.gca().set_aspect('equal')  # aspect ratio = image is a square
-    # plt.legend()
+    # Highlight noise points
+    noise_points = dbscan.labels_ == -1
+    plt.scatter(x_coords[noise_points], y_coords[noise_points], color='k', marker='x', s=10, label='Noise')
+    plt.gca().set_aspect('equal')  # aspect ratio = image is a square
+    plt.legend()
 
-    # Calculate the centroid of each cluster
-    centroids = np.array([X[dbscan.labels_ == i].mean(axis=0) for i in range(1,num_clusters)])
-
-    # Calculate pairwise distances between centroids
-    distances = squareform(pdist(centroids, metric='euclidean'))
-
-    # Plot a heatmap
-    sns.heatmap(distances, annot=True, cmap='coolwarm')
-    plt.show()
+# plt.show()
 
 
 data = read_and_filter_data_from_csv(filename)
@@ -73,7 +67,7 @@ for e in [0.015, 0.02, 0.025]:
     dbscan_and_plot(X,e)
 # X = myExp[["x coord", "y coord"]]
 
-# plt.show()  # show all of them at the end
+plt.show()  # show all of them at the end
 
 
 # # Use NearestNeighbors to find the distance to the k-th nearest neighbor
