@@ -65,12 +65,13 @@ var_to_plot = "Sigma_1"
 # dir_labels = ['grad0.6','grad0.8','grad1','grad1.5']
 # dir_labels = ['rb0.003','rb0.007','rb0.01']
 # dir_labels = ['rb0.006','rb0.01','rb0.02']
-dir_labels = ['res200/depth1000/rb0.006','res200/depth1000/rb0.01','res200/depth1000/rb0.02']#,'res400/depth1000/rb0.01']#,'res400/depth1000/rb0.007','res400/depth1000/rb0.01','res400/depth1000/rb0.05']#,'res400/depth1300/rb0.003','res400/depth1300/rb0.007']
+# dir_labels = ['res200/depth1000/rb0.006','res200/depth1000/rb0.01','res200/depth1000/rb0.02']#,'res400/depth1000/rb0.01']#,'res400/depth1000/rb0.007','res400/depth1000/rb0.01','res400/depth1000/rb0.05']#,'res400/depth1300/rb0.003','res400/depth1300/rb0.007']
 # dir_labels = ['res200/depth1300/rb0.006','res400/depth1300/rb0.007']
 # dir_labels = ['t01000','t02000','t05000','t10000']
 # dir_labels = ['rb0.01']#,'rb1.0'] # 'rb0.01',  
 # dir_labels = ['tw12/rt0.1/pincr1e6','tw12/rt0.5/pincr1e6'] # 'tw12/rt0.01/pincr1e6','tw12/rt0.03/pincr1e6',
 # dir_labels = ['si08','si10']#,'rb1.0'] # 'rb0.01',  
+dir_labels = ['rt0.01','rt0.03','rt0.05'] 
 
 # my_labels = ['p52, 0.001','p54, 0.0005','p55, 0.0001']#,'p49, 0.005'] # leave empty for default labels (= dir labels)
 my_labels = [] # leave empty for default labels (= dir labels)
@@ -94,13 +95,14 @@ for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/thr/thr02/'+i+'/pincr1e2')
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/background_stress/bs23/'+i+'/depth0100/young2/rb0.03')
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/singleInjection/si12/res200/depth3000/'+i) #'rb0.003'
-    dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/singleInjection/si22/'+i)
+    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/singleInjection/si22/'+i)
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/tw/'+i)
+    dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/thprod/single/ts02/'+i+'/mrate0.001')
     
 print(dir_list)
 
 f1=-1  # first file to plot. They account for "my_experiment-0003.csv" as the first file in dir :::  -1  =  0
-f2= -1  # second file. if f2 = 5 -> my_experiment00500.csv
+f2= 0  # second file. if f2 = 5 -> my_experiment00500.csv
 step=1
 
 df_x = pd.DataFrame()

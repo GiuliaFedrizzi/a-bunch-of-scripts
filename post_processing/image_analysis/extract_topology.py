@@ -790,18 +790,18 @@ def analyse_png(png_file: str, part_to_analyse: str, all_angles: list) -> dict:
     # print(g.edges(data=True))
 
     # viz grid with networkx's plot
-    ax = draw_nx_graph(im, g)
-    plt.savefig(out_path+".grid.png",dpi=150)
-    plt.clf()
-    # plt.show()
+    # ax = draw_nx_graph(im, g)
+    # plt.savefig(out_path+".grid.png",dpi=150)
+    # plt.clf()
+    # # plt.show()
 
-    ax1 = draw_rose_diagram(g,False)  # proportional to branch length?
-    plt.savefig("rose_"+out_path,dpi=200)
-    plt.clf()
+    # ax1 = draw_rose_diagram(g,False)  # proportional to branch length?
+    # plt.savefig("rose_"+out_path,dpi=200)
+    # plt.clf()
 
-    ax2 = draw_rose_diagram(g,True)  # proportional to branch length?
-    plt.savefig("rose_weight_"+out_path,dpi=200)
-    plt.clf()
+    # ax2 = draw_rose_diagram(g,True)  # proportional to branch length?
+    # plt.savefig("rose_weight_"+out_path,dpi=200)
+    # plt.clf()
 
     rose_histogram, angles, lengths = calculate_rose(g)
     
