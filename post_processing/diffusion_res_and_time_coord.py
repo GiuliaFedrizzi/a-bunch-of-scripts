@@ -51,18 +51,13 @@ var_to_plot = "Sigma_1"
 #         gauss_scaling_par, gauss_scaling_par_sum, gauss_scaling_par_n_tot, xy_melt_point
 #         Youngs in Gravity, Poisson in Gravity, Youngs Modulus E, Youngs Modulus Par, Youngs Modulus Real, fg, poisson_ratio
 
-# dir_labels = ['01']#,'02']#,'03','04','05','06','07','08','09'] 
-# dir_labels = ['op10/vis1e1_mR_01','op08a/vis1e1_mR_01','op09/vis1e1_mR_01','op09a/vis1e1_mR_01']
-# dir_labels = ['p11/visc_1_1e1/vis1e1_mR_01']
-# dir_labels = ['p52/visc_1_1e1/vis1e1_mR_01','p54/visc_1_1e1/vis1e1_mR_01','p55/visc_1_1e1/vis1e1_mR_01']#,'p49/visc_1_1e1/vis1e1_mR_01']
-# dir_labels = ['rb0.006','rb0.01','rb0.03']
+
 # dir_labels = ['scale400/young1','scale400/young2','scale800/young1','scale800/young2','scale1000/young2']
 # dir_labels = ['scale400','scale800']#,'scale1000']
 # dir_labels = ['res200/rb0.006','res200/rb0.01','res200/rb0.02','res400/rb0.003','res400/rb0.007','res400/rb0.01']#,'res400/rb0.01']#,'res400/rb0.03']
 # dir_labels = ['res400/depth1000/rb0.01']#'res400/depth1000/rb0.003','res400/depth1000/rb0.007','res400/depth1000/rb0.01']#,'res400/rb0.01']#,'res400/rb0.03']
 # dir_labels = ['young2']#,'young10']
 # dir_labels = ['grad0.2','grad0.4','grad0.6']
-# dir_labels = ['grad0.6','grad0.8','grad1','grad1.5']
 # dir_labels = ['rb0.003','rb0.007','rb0.01']
 # dir_labels = ['rb0.006','rb0.01','rb0.02']
 # dir_labels = ['res200/depth1000/rb0.006','res200/depth1000/rb0.01','res200/depth1000/rb0.02']#,'res400/depth1000/rb0.01']#,'res400/depth1000/rb0.007','res400/depth1000/rb0.01','res400/depth1000/rb0.05']#,'res400/depth1300/rb0.003','res400/depth1300/rb0.007']
@@ -71,7 +66,8 @@ var_to_plot = "Sigma_1"
 # dir_labels = ['rb0.01']#,'rb1.0'] # 'rb0.01',  
 # dir_labels = ['tw12/rt0.1/pincr1e6','tw12/rt0.5/pincr1e6'] # 'tw12/rt0.01/pincr1e6','tw12/rt0.03/pincr1e6',
 # dir_labels = ['si08','si10']#,'rb1.0'] # 'rb0.01',  
-dir_labels = ['rt0.01','rt0.03','rt0.05'] 
+# dir_labels = ['rt0.01','rt0.03']#,'rt0.05'] 
+dir_labels = ['threads1','threads2','threads4','threads8','threads16']#,'rt0.05'] 
 
 # my_labels = ['p52, 0.001','p54, 0.0005','p55, 0.0001']#,'p49, 0.005'] # leave empty for default labels (= dir labels)
 my_labels = [] # leave empty for default labels (= dir labels)
@@ -97,13 +93,14 @@ for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/singleInjection/si12/res200/depth3000/'+i) #'rb0.003'
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/singleInjection/si22/'+i)
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/tw/'+i)
-    dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/thprod/single/ts02/'+i+'/mrate0.001')
+    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/thprod/single/ts02/'+i+'/mrate0.001')
+    dir_list.append('/nobackup/scgf/myExperiments/optimise/op13/rt0.03/'+i)
     
 print(dir_list)
 
-f1=-1  # first file to plot. They account for "my_experiment-0003.csv" as the first file in dir :::  -1  =  0
-f2= 0  # second file. if f2 = 5 -> my_experiment00500.csv
-step=1
+f1=8  # first file to plot. They account for "my_experiment-0003.csv" as the first file in dir :::  -1  =  0
+f2= 18  # second file. if f2 = 5 -> my_experiment00500.csv
+step=7
 
 df_x = pd.DataFrame()
 df_y = pd.DataFrame()
@@ -159,7 +156,7 @@ for dirnum,dir in enumerate(dir_list):
             rb=0
         first_file = sorted(glob.glob("my_experiment*"))[1]
         dom_size = float(getParameterFromLatte('input.txt','Scale'))
-        print(f'scale: {dom_size}')
+        # print(f'scale: {dom_size}')
 
         myExp = pd.read_csv(first_file, header=0)
         # with open("latte.log") as iFile:
@@ -206,8 +203,8 @@ for dirnum,dir in enumerate(dir_list):
         #  1.15*resolution = 230 or 460, so the number of particles in the y direction. Using this, 
         tolerance_y = (domain_max_y-domain_min_y)/(1.15*resolution)
         tolerance_x = (domain_max_x-domain_min_x)/resolution
-        print(f'tolerance in y: {tolerance_y}')
-        print(f'tolerance in x: {tolerance_x}')
+        # print(f'tolerance in y: {tolerance_y}')
+        # print(f'tolerance in x: {tolerance_x}')
         matches_x = np.where(np.isclose(myExp["x coord"],xmax,atol=tolerance_x)==True)[0] # vertical
         print(f'x matches: {len(matches_x)}')
         matches_y = np.where(np.isclose(myExp["y coord"],ymax,atol=tolerance_y)==True)[0]
@@ -230,14 +227,14 @@ for dirnum,dir in enumerate(dir_list):
             max_id = max_ids[0]
         else:
             max_id = max_ids
-        print(f'max_id {max_id}')
+        # print(f'max_id {max_id}')
         # max_id = myExp_upper['Pressure'].idxmax()   #  index of the point with the maximum pressure value
         
         # what it should be:
         # offset = max_id%resolution   # so that they are all centered around 0 on the x axis. It's the shift in the x direction.
         # what works bc I haven't changed the location of the point yet:
         offset = max_id%resolution+1   # so that they are all centered around 0 on the x axis. It's the shift in the x direction.
-        print(f'offset {offset}')
+        # print(f'offset {offset}')
 
 
         # else:
@@ -254,7 +251,7 @@ for dirnum,dir in enumerate(dir_list):
         y_array = myExp.iloc[offset::resolution,myExp.columns.get_loc('y coord')] # first: the point with coorinate = offset. Then every point above it (with a period of 'resolution') 
 
         real_radius = getParameterFromInput('input.txt','Scale')/resolution  # real_radius is scale/res
-        print(f'real radius: {real_radius}')
+        # print(f'real radius: {real_radius}')
 
         # for i,filename in enumerate(sorted(glob.glob("my_experiment*"))[f1+1:f2+2:(f2-f1)]): #[beg:end:step]  set which timesteps (based on FILE NUMBER) to plot. first and second file are defined at the beginning
         for i,filename in enumerate(sorted(glob.glob("my_experiment*"),key=extract_number)[f1+1:f2+2:step]): #[beg:end:step]  set which timesteps (based on FILE NUMBER) to plot. first and second file are defined at the beginning
@@ -269,7 +266,7 @@ for dirnum,dir in enumerate(dir_list):
                 #     var_array_x = var_array_x*2
                 #     var_array_y = var_array_y*2
                 input_tstep = float(getTimeStep("input.txt"))
-                print(f'timestep: {input_tstep}')
+                # print(f'timestep: {input_tstep}')
                 input_viscosity = float(getViscosity("input.txt"))
                 file_num = float(filename.split("experiment")[1].split(".")[0])  # first take the part after "experiment", then the one before the "."
                 # name of the line
@@ -292,7 +289,7 @@ for dirnum,dir in enumerate(dir_list):
             depth = getDepth("input.txt")
             # solid_density = getDensity()
             solid_density = 3000
-            print(f'solid_density {solid_density}')
+            # print(f'solid_density {solid_density}')
             sigma_top_theor = 0.66666 * solid_density*9.8*(float(depth)+2*float(real_radius))  # rho * g * depth+first row  (height of first row = 2*real_radius)
             sigma_bot_theor = 0.66666 * solid_density*9.8*(float(depth)+float(dom_size))  # rho * g * (depth+size)
 
