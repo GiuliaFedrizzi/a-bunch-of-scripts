@@ -22,10 +22,15 @@ times = list(range(1, 20, 1)) + list(range(20, 141, 5)) + list(range(150, 501, 2
 # melt_labels = ['0.008','0.006','0.004','0.002'] 
 
 x_variable = find_dirs(variab)
-
+print(f'First directory: {x_variable[0]}')
 os.chdir(x_variable[0])
 melt_labels = find_dirs(variab)
-melt_labels = [ '0.00'+i.split('mR_0')[1] for i in melt_labels]   # from full name of directory to 0.001, 0.002 etc
+print(f'melt labels {melt_labels}, melt_labels[0] {melt_labels[0]}')
+if '_mR_0' in melt_labels[0]:
+    melt_labels = [ '0.00'+i.split('mR_0')[1] for i in melt_labels]   # from full name of directory to 0.001, 0.002 etc
+else:
+    melt_labels = [ '0.00'+i.split('mR0')[1] for i in melt_labels]   # from full name of directory to 0.001, 0.002 etc
+print(f'melt_labels {melt_labels}')
 os.chdir('..')
 # print(melt_labels)
 

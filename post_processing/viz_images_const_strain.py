@@ -10,7 +10,8 @@ import matplotlib.pyplot as plt
 import os
 from PIL import Image
 
-from viz_functions import gallery,build_array,build_melt_labels_t,set_ax_options,find_variab,setup_array_const_strain
+# from viz_functions import gallery,build_array,build_melt_labels_t,set_ax_options,find_variab,setup_array_const_strain
+from viz_functions import gallery,build_array,build_melt_labels_t,set_ax_options,find_variab,setup_array,find_dirs
 
 # variab = "def_rate"  # options: def_rate, viscosity
 variab = find_variab()
