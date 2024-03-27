@@ -25,7 +25,7 @@ from useful_functions_moments import *
  
 # palette_option = ['white','black']  # this one works on my laptop
 palette_option = {-1:'w',0:'b'}       # this one works on ARC. Now saves in BLUE!!
-
+palette_option_bb = {0:'b', 1:'w', 2:'w', 3:'w', 4:'w', 5:'w', 6:'w',7:'w'}  # no broken bonds = blue,  bb >=1  = white
 
 
 def read_calculate_plot(filename,input_tstep):
@@ -41,8 +41,10 @@ def read_calculate_plot(filename,input_tstep):
 
     if 'Fractures' in bb_df.columns:
         sns.scatterplot(data=bb_df,x="x coord",y="y coord",hue="Fractures",marker='.',s=9,palette=palette_option,linewidth=0,legend=False).set_aspect('equal') #,alpha=0.8  hue="Fracrures",
-    else:  # account for a spelling mistake: some old simulations have "Fracrures"
+    elif 'Fracrures' in bb_df.columns:  # account for a spelling mistake: some old simulations have "Fracrures"
         sns.scatterplot(data=bb_df,x="x coord",y="y coord",hue="Fracrures",marker='.',s=9,palette=palette_option,linewidth=0,legend=False).set_aspect('equal') #,alpha=0.8  hue="Fracrures",
+    else:
+        sns.scatterplot(data=bb_df,x="x coord",y="y coord",hue="Broken Bonds",marker='.',s=9,palette=palette_option_bb,linewidth=0,legend=False).set_aspect('equal') # I've stopped saving "Fractures"
     plt.title(time)
     plt.tight_layout()
     plt.savefig("py_bb_"+str(timestep_number).zfill(6)+".png",dpi=300)
