@@ -63,7 +63,8 @@ def build_array(big_array,variab,x,x_val,melt_rate,file_number,row,cols,rose):
     if rose == False:
         """ "poro_file" and "bb_file"  """
         poro_file = potential_file_path +'/a_porosity_160_'+file_number+'.png' 
-        bb_file  = potential_file_path +'/a_brokenBonds_'+file_number+'.png'
+        # bb_file  = potential_file_path +'/a_brokenBonds_'+file_number+'.png'
+        bb_file  = potential_file_path +'/viz_bb_'+file_number+'.png'
     
         if os.path.isfile(poro_file):
             poro_big_file = Image.open(poro_file)  # I open it here so then I can call poro_big_file.close() and close it
