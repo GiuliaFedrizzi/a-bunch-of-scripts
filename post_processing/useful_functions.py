@@ -114,3 +114,28 @@ def getResolution():
     else:
         print(number)
         return 200
+
+def getSaveFreq():
+    def extract_number_from_files():
+        # List all files that start with "sub"
+        files = glob.glob("sub*.sh")
+        for file_path in files:
+            try:
+                with open(file_path, 'r') as file:
+                    content = file.read()
+                    # Regular expression to find "res" followed by any number of digits and then ".elle"
+                    match = re.search(r'saveCsvInterval=(\d+)', content)
+                    if match:
+                        return match.group(1), file_path  # Return the number and the file where it was found
+            except FileNotFoundError:
+                continue  # If file not found, just go to the next file
+        
+        return "No matching pattern found in any file.", None    
+
+    number, found_file = extract_number_from_files()
+    if found_file:
+        print(f"Number found: {number} in file: {found_file}")
+        return number
+    else:
+        print(number)
+        return 100  # just a default
