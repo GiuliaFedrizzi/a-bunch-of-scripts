@@ -2,12 +2,6 @@
 save a screenshot of my_experiment*.csv
 """
 
-""" 
-Save a figure based on broken bonds
-
-made for wavedec2022, to be analysed in imagej
-
-"""
 
 # I use this ^ to run python in VS code in interactive mode
 import pandas as pd
@@ -30,7 +24,7 @@ import colorsys
 sys.path.append('/home/home01/scgf/myscripts/post_processing')   # where to look for useful_functions.py
 
 from useful_functions import * 
-from useful_functions_moments import *
+# from useful_functions_moments import *
 
 def adjust_colours(colours_from_paraview):
     adjusted_colours=[]

@@ -10,18 +10,18 @@ import os
 from PIL import Image
 
 from viz_functions import gallery,build_array,build_melt_labels_t,set_ax_options,find_variab,setup_array,find_dirs
+from useful_functions import getSaveFreq
 
 variab = find_variab()
 rose = False
-im_length = 875
-im_height = 883
-# times = range(155,201,5)  # (start, end, step)
-times = list(range(1, 20, 1)) + list(range(20, 141, 5)) + list(range(150, 501, 20)) + list(range(500, 801, 20))# + list(range(850, 1500, 40))
-# melt_labels = ['0.009','0.005','0.001'] 
-# melt_labels = ['0.009','0.008','0.007','0.006','0.005','0.004','0.003','0.002','0.001'] 
-# melt_labels = ['0.008','0.006','0.004','0.002'] 
+im_length = 500
+im_height = 506
+# times = range(1000,1011,5)  # (start, end, step)
+# times = list(range(1, 20, 1)) + list(range(20, 141, 5)) + list(range(150, 501, 20)) + list(range(500, 801, 20)) + list(range(850, 1500, 40))
+times = list(range(1000, 20000, 1000)) #+ list(range(2000, 14100, 500)) + list(range(15000, 50100, 2000)) + list(range(50000, 80100, 2000)) + list(range(85000, 150000, 4000))
 
 x_variable = find_dirs(variab)
+save_freq = int(getSaveFreq())
 print(f'First directory: {x_variable[0]}')
 os.chdir(x_variable[0])
 melt_labels = find_dirs(variab)
@@ -55,7 +55,7 @@ elif variab == "def_rate":
 
 ncols = len(x_variable)*2
 for t in times:
-    array,melt_and_time = setup_array(x_variable,melt_labels,t,im_length,im_height,variab,rose)   # load all files
+    array,melt_and_time = setup_array(x_variable,melt_labels,t,im_length,im_height,variab,rose,save_freq)   # load all files
     result = gallery(array,ncols)           # organise in gallery view
     fig, ax = plt.subplots()
     ax.imshow(result.astype('uint8')) # uint8 explanation: https://stackoverflow.com/questions/49643907/clipping-input-data-to-the-valid-range-for-imshow-with-rgb-data-0-1-for-floa

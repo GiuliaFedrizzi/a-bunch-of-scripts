@@ -62,13 +62,16 @@ def build_array(big_array,variab,x,x_val,melt_rate,file_number,row,cols,rose):
     # now we have the path, choose if I open "poro_file" and "bb_file" or "rose_file"
     if rose == False:
         """ "poro_file" and "bb_file"  """
-        poro_file = potential_file_path +'/a_porosity_160_'+file_number+'.png' 
+        # poro_file = potential_file_path +'/a_porosity_160_'+file_number+'.png' 
         # bb_file  = potential_file_path +'/a_brokenBonds_'+file_number+'.png'
         bb_file  = potential_file_path +'/viz_bb_'+file_number+'.png'
+        poro_file  = potential_file_path +'/viz_por_'+file_number+'.png'
     
         if os.path.isfile(poro_file):
             poro_big_file = Image.open(poro_file)  # I open it here so then I can call poro_big_file.close() and close it
-            poro = np.asarray(poro_big_file.crop((585,188,1468,1063)).convert('RGB'))
+            # poro = np.asarray(poro_big_file.crop((585,188,1468,1063)).convert('RGB')) # when it was made with paraview and called a_brokenBonds_
+            poro = np.asarray(poro_big_file.crop((33,42,716,718)).resize((506,500)).convert('RGB'))
+            # poro = poro.resize(506,500)
             big_array[row*cols+2*x,:,:,:] = poro  # 0 2 4 rows*2 because there are 2 images for each simulation. First index is for each image
             #print(row*cols+2*x)
             poro_big_file.close()
@@ -77,7 +80,9 @@ def build_array(big_array,variab,x,x_val,melt_rate,file_number,row,cols,rose):
 
         if os.path.isfile(bb_file):
             bb_big_file = Image.open(bb_file)
-            bb  =  np.asarray(bb_big_file.crop((585,188,1468,1063)).convert('RGB'))
+            # bb  =  np.asarray(bb_big_file.crop((585,188,1468,1063)).convert('RGB'))
+            bb  =  np.asarray(bb_big_file.crop((24,23,537,530)).resize((506,500)).convert('RGB'))
+            # bb = bb.resize(506,500)
             big_array[row*cols+2*x+1,:,:,:] = bb  # 1 3 5 same as above, but +1 (the next one)
             # print(row*cols+2*x+1)
             bb_big_file.close()
@@ -147,7 +152,7 @@ def find_variab():
         raise ValueError('Could not find directories with names that tells me what the variable is')
     return variab
 
-def setup_array(x_variable,melt_labels,t,im_length,im_height,variab,rose):
+def setup_array(x_variable,melt_labels,t,im_length,im_height,variab,rose,save_freq):
     """ setup the big array with dimensions 
          - rows*cols, 
          - length and 
@@ -169,7 +174,7 @@ def setup_array(x_variable,melt_labels,t,im_length,im_height,variab,rose):
     # for row in range(0,rows):
     for row,melt_rate in enumerate(melt_labels):
         melt_rate = melt_rate.replace("0.0","")   # e.g. from 0.001 to 01, or from 0.02 to 2
-        file_number = str(round(t/(int(melt_rate)))).zfill(5)  # normalise t by the melt rate.  .zfill(5) fills the string with 0 until it's 5 characters long
+        file_number = str(round(t/(int(melt_rate))/save_freq)*save_freq).zfill(6)  # normalise t by the melt rate.  .zfill(6) fills the string with 0 until it's 5 characters long
         if rose:
             file_number = str(round(int(file_number)/1000)*1000).zfill(6)
         for x,x_val in enumerate(x_variable):
@@ -206,7 +211,7 @@ def setup_array_const_strain(x_variable,melt_labels,t,target_mr_def_ratios,im_le
         melt_rate = melt_rate.replace("0.0","")   # e.g. from 0.001 to 01, or from 0.02 to 2
         norm_time = t/(float(melt_rate))
         # print(f'norm time: {norm_time}')
-        file_number = str(round(norm_time)).zfill(5)  # normalise t by the melt rate.  .zfill(5) fills the string with 0 until it's 5 characters long
+        file_number = str(round(norm_time)).zfill(6)  # normalise t by the melt rate.  .zfill(6) fills the string with 0 until it's 6 characters long
         if rose:
             file_number = str(round(int(file_number)/1000)*1000).zfill(6)
         # print(f'file n {file_number}')
