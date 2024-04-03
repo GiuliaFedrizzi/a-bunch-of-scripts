@@ -70,7 +70,7 @@ porosity_cmap = LinearSegmentedColormap.from_list("porosity_colormap", colours_a
 
 
 
-def read_calculate_plot(filename,input_tstep,palette_option_bb,porosity_cmap,poro_range):
+def read_calculate_plot(filename,palette_option_bb,porosity_cmap,poro_range):
     """
     read the csv file, plot fractures
     """
@@ -78,14 +78,16 @@ def read_calculate_plot(filename,input_tstep,palette_option_bb,porosity_cmap,por
 
     bb_df = pd.read_csv(filename, header=0)  # build the dataframe from the csv file
 
-    # time = str(input_tstep*timestep_number)
-    # print(f'time {time}, tstep: {input_tstep}')
+    # broken bonds
+    sns.scatterplot(data=bb_df,x="x coord",y="y coord",hue="Broken Bonds",marker='h',s=4,palette=palette_option_bb,linewidth=0,legend=False).set_aspect('equal') # I've stopped saving "Fractures"
     
-    # sns.scatterplot(data=bb_df,x="x coord",y="y coord",hue="Broken Bonds",marker='h',s=4,palette=palette_option_bb,linewidth=0,legend=False).set_aspect('equal') # I've stopped saving "Fractures"
+    plt.axis('off')
+    plt.savefig("viz_bb_"+str(timestep_number).zfill(6)+".png",dpi=150, bbox_inches='tight', pad_inches=0)
+    plt.clf()
+    
+    # porosity
     sns.scatterplot(data=bb_df,x="x coord",y="y coord",vmin=poro_range[0],vmax=poro_range[1], hue='Porosity', palette=porosity_cmap,marker='h',s=4,linewidth=0,legend=False).set_aspect('equal') # I've stopped saving "Fractures"
 
-    # plt.title(time)
-    # plt.tight_layout()
     plt.axis('off')
     # colormap options:
     norm = Normalize(vmin=poro_range[0], vmax=poro_range[1])
@@ -108,10 +110,26 @@ def extract_number(filename):
 
 print(os.getcwd())
 
-input_tstep = float(getTimeStep("input.txt"))
-
+# default
 poro_range = [0, 0]
-for filename in sorted(glob.glob("my_experiment110800.csv"),key=extract_number, reverse=True):
+
+poro_range_read = [] # the porosity range read from a file
+if os.path.isfile('global_porosity_range.txt'):
+    with open('global_porosity_range.txt') as f:
+        for l in f: 
+            poro_range_read.append(float(l))
+    poro_range = poro_range_read
+else:
+    poro_range = [0, 0]
+
+# check that the range is valid
+# if it's not, set it to the default
+if len(poro_range) != 2 or poro_range[0] >= 1.0 or poro_range[1] >= 1.0 or poro_range[0] <= 0.0 or poro_range[1] <= 0.0:
+    print(f'problem! range is {poro_range}')
+    poro_range = [0, 0]
+
+
+for filename in sorted(glob.glob("my_experiment*.csv"),key=extract_number, reverse=True):
     """ loop through files"""
     print(f'filename: {filename}')
     # get the porosity range
@@ -119,10 +137,10 @@ for filename in sorted(glob.glob("my_experiment110800.csv"),key=extract_number, 
         df = pd.read_csv(filename, header=0)
         poro_range[0] = min(df["Porosity"])
         poro_range[1] = max(df["Porosity"])
-        print(f'range: {poro_range}')
+    # print(f'range: {poro_range}')
 
     myfile = Path(os.getcwd()+'/'+filename)  # build file name including path
     if myfile.is_file():
-        read_calculate_plot(filename,input_tstep,palette_option_bb,porosity_cmap,poro_range)
+        read_calculate_plot(filename,palette_option_bb,porosity_cmap,poro_range)
     
 
