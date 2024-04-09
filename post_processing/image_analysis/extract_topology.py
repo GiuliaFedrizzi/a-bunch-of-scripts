@@ -460,6 +460,8 @@ def connect_graph(skel: np.ndarray, min_distance: int) -> nx.MultiGraph:
     print(f'done with removing nodes, angle diff = 5, {g}')
     g = remove_nodes_if_straight_edges(g,10)
     print(f'done with removing nodes, angle diff = 10, {g}')
+    g = remove_nodes_if_straight_edges(g,15)
+    print(f'done with removing nodes, angle diff = 15, {g}')
     # g = remove_nodes_if_straight_edges(g,20)
     # print(f'done with removing nodes, {g}')
     nodes = g.nodes()
@@ -512,9 +514,15 @@ def draw_nx_graph(im: Image, g: nx.Graph) -> None:
     Returns a figure, which can then be visualised with plt.show() or saved with plt.savefig(out_path) """
     # fig, ax = plt.subplots()
     # print(list(g.degree)[0])
+    remove = [node for node,degree in dict(g.degree()).items() if degree == 0]  # list of nodes to be removed
+    # print(f'remove: {remove}')
+    g.remove_nodes_from(remove)
     all_degrees = dict(nx.degree(g)).values()
+    # all_degrees = [d for d in all_degrees if d !=0]
+    # print(all_degrees)
     all_degrees_list = list(all_degrees)
     all_degrees_coord = list(zip(all_degrees_list,g.nodes()))
+    # all_degrees_coord_filtered = [item for item in all_degrees_coord if item[0] != 0] # Filter out nodes with degree 0
     # print(f'all_degrees: {all_degrees}')
     # print(f'all_degrees_coord: {all_degrees_coord}')
     # print(f'g.nodes() {g.nodes()}')
@@ -751,9 +759,9 @@ def analyse_png(png_file: str, part_to_analyse: str, all_angles: list) -> dict:
         im = im.crop((left, top, right, bottom))
     
     # Apply median filter to smooth the edges
-    # im = im.filter(ImageFilter.ModeFilter(size=7)) # https://stackoverflow.com/questions/62078016/smooth-the-edges-of-binary-images-face-using-python-and-open-cv 
-    # out_path = png_file.replace('.png', '_median.png')
-    # im.save(out_path)
+    im = im.filter(ImageFilter.ModeFilter(size=9)) # https://stackoverflow.com/questions/62078016/smooth-the-edges-of-binary-images-face-using-python-and-open-cv 
+    # out_path_med = png_file.replace('.png', '_median.png')
+    # im.save(out_path_med)
     # im.show()   DO NOT DO im.show() ON BOLT/OFFICE COMPUTER OR IT WILL OPEN FIREFOX AND CRASH EVERYTHING
 
 
@@ -826,12 +834,12 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
     rose_hist_list = [] # empty list to temporarily save all the values to build the rose diagram. Will be normalised by the maximum length.
     out_paths = []
     all_angles = []
-    string_in_name = "py_bb_*[0-9].png"
+    # string_in_name = "py_bb_*[0-9].png"
+    string_in_name = "py_bb_022000.png"
     curr_path = os.getcwd()
     if "field_im" in curr_path:
         string_in_name = "Long_drawn_OpeningInvert.png"
     print(f'list of files {sorted(glob.glob(string_in_name))}')
-    # for f,filename in enumerate(sorted(glob.glob("ldo_*.png"))):
     for f,filename in enumerate(sorted(glob.glob(string_in_name))):
     # for f,filename in enumerate(sorted(glob.glob("Long_drawn_OpeningInvert*.png"))):
         """ Get the file name, run 'analyse_png', get the info on the branches,
