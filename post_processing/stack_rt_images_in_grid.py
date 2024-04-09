@@ -11,11 +11,17 @@ from PIL import Image, ImageDraw, ImageFont
 import os
 import glob
 
+from useful_functions import getSaveFreq
+
 # List of rt directories
 rt_dirs = sorted((glob.glob("rt0.*"))) 
 # print(rt_dirs)
+save_freq = int(getSaveFreq())
 
-tsteps = list(range(1, 20, 1)) + list(range(20, 141, 5)) + list(range(150, 501, 20)) + list(range(500, 801, 20))#  + list(range(850, 1500, 40))
+tsteps = list(range(1, 20, 1)) + list(range(20, 141, 5)) + list(range(150, 501, 20)) + list(range(500, 801, 20)) + list(range(850, 1500, 40))
+# tsteps = list(range(850, 1500, 40))
+# tsteps = list(range(100, 2000, 100)) + list(range(2000, 14100, 500)) + list(range(15000, 50100, 2000)) + list(range(50000, 80100, 20000)) + list(range(85000, 150000, 40000))
+tsteps = [i*save_freq for i in tsteps] 
 
 for t in tsteps:
     timestep = "t"+str(t).zfill(3)
