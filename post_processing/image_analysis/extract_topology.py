@@ -486,9 +486,17 @@ def simplify_paths(g: nx.Graph, tolerance=5) -> nx.Graph:
         g[n1][n2][k]['path'] = shapely.geometry.LineString(g[n1][n2][k]['path']).simplify(tolerance)
     return g
 
-def extract_network(px: np.ndarray, im: Image, min_distance=7) -> nx.Graph:  # was 12
+def extract_network(px: np.ndarray, im: Image, min_distance=7) -> Tuple[nx.Graph,np.ndarray]:  # was 12
     skel = morphology.thin(px)
     print(f'Skeleton px={skel.sum()}')
+    skel_height = skel.shape[1]
+    # fracture_clustering(skel,10)
+    fracture_clustering(skel,round(skel_height*1/5))
+    # fracture_clustering(skel,round(skel_height/4))
+    # fracture_clustering(skel,round(skel_height/2))
+    # fracture_clustering(skel,round(skel_height*3/4))
+    fracture_clustering(skel,round(skel_height*4/5))
+
     g = connect_graph(skel, min_distance)
     # ax = draw_nx_graph(im, g)
     # plt.savefig("g04connect_graph.png",dpi=200)
@@ -506,7 +514,7 @@ def extract_network(px: np.ndarray, im: Image, min_distance=7) -> nx.Graph:  # w
     g.remove_edges_from(to_remove)
 
 
-    return g
+    return g,skel
 
 
 def draw_nx_graph(im: Image, g: nx.Graph) -> None:
@@ -709,6 +717,52 @@ def orientation_calc(g: nx.Graph) -> nx.Graph:
     # print([o for (u,v,o) in g.edges.data('orientation')])
     return g
 
+def fracture_clustering(skel,y_value):
+    """
+    extract data about fracture distances along a line defined in the skeleton
+    saves the distances between consecutive fractures.
+    Then calculate the coefficient of variation of fracture separations (CV):
+    dividing the standard deviation of fracture separations by the mean separation 
+    and can be used as a measure of fracture clustering [Johnston et al., 1994] 
+     - from Manzocchi 2002
+    """
+    width,height=skel.shape
+    # y_value = 2# round(height/2)
+    line_data = skel[:,y_value]
+    print(f'y_value {y_value}')
+    dist = 0      # current distance (resets at every fracture pixel)
+    distances = [] 
+    for i in line_data:
+        dist+=1
+        if i==0:
+            continue
+        elif i==1:
+            if dist == 1:  # if the previous pixel was also a fracture, shift the old distance by half (add 0.5)
+                distances[-1] += 0.5
+            else:
+                distances.append(dist)
+            dist=0
+    print(f'distances {distances}')
+    #  coefficient of variation of fracture separations (CV):
+    if len(distances) > 0:
+        mean_dist = np.mean(distances)
+        st_dev = np.std(distances)
+        print(f'st_dev {st_dev}, mean_dist {mean_dist} ')
+        CV = st_dev/mean_dist
+    else:
+        CV = 0
+    print(f'CV {CV}')
+
+    # visualise:
+    plt.figure(figsize=(10, 10))
+    plt.imshow(skel.T, cmap='gray')
+    plt.gca().invert_yaxis() # invert y axis because images start y=0 in the top left corner
+    plt.axhline(y=y_value, color='r', linestyle='-')
+    plt.axis('off')
+    plt.savefig('hor_line_'+str(y_value)+'_'+"{:.2f}".format(CV)+ '.png')
+    print("Saved")
+
+
 def analyse_png(png_file: str, part_to_analyse: str, all_angles: list) -> dict:
     color = '(255, 255, 255)'  # select the colour: do the analysis on the white parts
     # color = '(0, 0, 0)'  # select the colour: do the analysis on the black parts
@@ -781,7 +835,7 @@ def analyse_png(png_file: str, part_to_analyse: str, all_angles: list) -> dict:
         branch_info = {"time":timestep_number*input_tstep,"n_0":0,"n_I":0,"n_2":0,"n_3":0,"n_4":0,"n_5":0,
                 "branches_tot_length":0} # dictionary with all zeros: there are no fractures in this area
         return branch_info, np.zeros(36), "path", all_angles # sequences of zeros of the same length as the output of calculate_rose(). Placeholder for path
-    g = extract_network(px,im)
+    g,skel = extract_network(px,im)
     print(f'Extracted fracture network:')
     print(f'  - {len(g.nodes())} nodes')
     print(f'  - {len(g.edges())} edges')
@@ -793,6 +847,7 @@ def analyse_png(png_file: str, part_to_analyse: str, all_angles: list) -> dict:
                 "branches_tot_length":0} # dictionary with all zeros: there are no fractures in this area
         return branch_info, np.zeros(36), "path", all_angles
 
+    # fracture_clustering(skel)
     # do some statistics
     branch_info = topo_analysis(g,timestep_number)
     # print(g.edges(data=True))
