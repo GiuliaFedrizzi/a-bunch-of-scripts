@@ -49,7 +49,7 @@ if (var_is_visc){
     if (two_subdirs){
         # x_variable <- c('1e1','5e1','1e2','5e2','1e3','5e3','1e4')  # the values of the x variable to plot (viscosity)
         # x_variable <- c('1e1','1e15','1e2','1e25','1e3','1e35','1e4')  # the values of the x variable to plot (viscosity)
-        x_variable <- c('1e1','1e25','1e4')  # the values of the x variable to plot (viscosity)
+        x_variable <- c('1e1','1e2','1e3','1e4')  # the values of the x variable to plot (viscosity)
     } else {
         x_variable <- c('1e2')  # just one value
     }
@@ -90,7 +90,7 @@ build_branch_df <- function(x,m,time) {
             stop("I can't find the variable (viscosity or defomation rate")
         }
 
-        norm_time = round(time/1e6/as.double(m))*1e6  # from accurate number, round so that it opens a file that exists
+        norm_time = round(time/1e9/as.double(m))*1e9  # from accurate number, round so that it opens a file that exists
 
         if (startsWith(m,'0'))
         {
@@ -139,6 +139,9 @@ build_branch_df <- function(x,m,time) {
                 n_Y <- df_bi_t$n_2+df_bi_t$n_3
                 n_X <- df_bi_t$n_4+df_bi_t$n_4
 
+                CV_hor <- df_bi_t$CV_hor
+                CV_ver <- df_bi_t$CV_ver
+
                 ## n of branches, n of lines
                 n_B <- sum(df_bi_t$n_I+df_bi_t$n_2+df_bi_t$n_3+df_bi_t$n_4+df_bi_t$n_5)
                 n_L <- 0.5*(n_I+n_Y)
@@ -157,22 +160,23 @@ build_branch_df <- function(x,m,time) {
                     if (var_is_visc) {
                         if (nchar(x) == 4) {  # 1e15 -> 15 -> 1.5 -> 10^(1.5)
                             de <- list(viscosity=10^(as.double(full_exponent)/10),melt_rate=m,true_m_rate=true_m_rate,B_20=B_20,B_21=B_21,B_C=B_C,B_22=B_22,
-                        n_I=n_I,n_Y=n_Y,n_X=n_X,n_B=n_B,n_L=n_L,time=time,norm_time=norm_time)
+                        n_I=n_I,n_Y=n_Y,n_X=n_X,n_B=n_B,n_L=n_L,CV_hor=CV_hor,CV_ver=CV_ver,time=time,norm_time=norm_time)
                             # visc <- 10^(as.double(full_exponent)/10)  
                         } else {
                             de <- list(viscosity=as.double(x),melt_rate=m,true_m_rate=true_m_rate,B_20=B_20,B_21=B_21,B_C=B_C,B_22=B_22,
-                        n_I=n_I,n_Y=n_Y,n_X=n_X,n_B=n_B,n_L=n_L,time=time,norm_time=norm_time)
+                        n_I=n_I,n_Y=n_Y,n_X=n_X,n_B=n_B,n_L=n_L,CV_hor=CV_hor,CV_ver=CV_ver,time=time,norm_time=norm_time)
                             # visc <-as.double(x)
                         }
 
                     } else if (var_is_def) {
                         x <- gsub("e+","e-", x)
                         de <- list(def_rate=as.double(x),melt_rate=m,true_m_rate=true_m_rate,B_20=B_20,B_21=B_21,B_C=B_C,B_22=B_22,
-                        n_I=n_I,n_Y=n_Y,n_X=n_X,n_B=n_B,n_L=n_L,time=time,norm_time=norm_time)
+                        n_I=n_I,n_Y=n_Y,n_X=n_X,n_B=n_B,n_L=n_L,CV_hor=CV_hor,CV_ver=CV_ver,time=time,norm_time=norm_time)
                     }
                     de <- data.frame(de)
                     df_m <- rbind.fill(df_m,de)#,stringsAsFactors=FALSE)
                 }
+                print(paste("found ",x,", melt rate ",m," at time ",time,", norm time ",norm_time,sep=""))
 
                 # df_m <- rbind(df_m,de,stringsAsFactors=FALSE)
             } else {
@@ -196,12 +200,12 @@ build_branch_df <- function(x,m,time) {
 if (var_is_visc) {
         df_m <- data.frame(viscosity=double(),melt_rate=factor(levels=melt_rate_list),true_m_rate=double(),
         B_20=double(),B_21=double(),B_C=double(),B_22=double(),
-        n_I=double(),n_Y=double(),n_X=double(),n_B=double(),n_L=double(),
+        n_I=double(),n_Y=double(),n_X=double(),n_B=double(),n_L=double(),CV_hor=double(),CV_ver=double(),
         time=double(),norm_time=double())#,stringsAsFactors=FALSE)
     } else if (var_is_def) {
         df_m <- data.frame(def_rate=double(),melt_rate=factor(levels=melt_rate_list),true_m_rate=double(),
         B_20=double(),B_21=double(),B_C=double(),B_22=double(),
-        n_I=double(),n_Y=double(),n_X=double(),n_B=double(),n_L=double(),
+        n_I=double(),n_Y=double(),n_X=double(),n_B=double(),n_L=double(),CV_hor=double(),CV_ver=double(),
         time=double(),norm_time=double())#,stringsAsFactors=FALSE)
     }
 
@@ -582,7 +586,7 @@ if(FALSE) {
 
 }
 
-if (FALSE) {
+if (TRUE) {
     png_name <- paste(base_path,"/branch_plots/br_heat_nb_cl_",time_string,".png",sep='')  # build name of png
     png(file=png_name,width = 2800,height = 2800,res=100)
     p_heat1 <- ggplot(df_m,aes(factor(x=viscosity),melt_rate, fill=n_B_n_L))  + scale_fill_distiller(direction = +1)+ geom_tile() + theme(legend.key.size = unit(0.5, 'cm'))
@@ -595,6 +599,30 @@ if (FALSE) {
     # plot viscosity
     pv1 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=n_B_n_L)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10') 
     pv2 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=C_L)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
+
+    # define the layout
+    hlay <- rbind(c(1,1,1,NA,NA, 2,2,2, NA,NA),
+                c(3,3,3, 4,4,  5,5,5,  6,6),
+                c(3,3,3, 4,4,  5,5,5,  6,6))
+
+    pg <- grid.arrange(pv1,pv2,p_heat1,pm1,p_heat2,pm2,layout_matrix=hlay)
+    print(pg)
+    dev.off()
+}
+
+if (TRUE) {
+    png_name <- paste(base_path,"/branch_plots/br_heat_CV_",time_string,".png",sep='')  # build name of png
+    png(file=png_name,width = 2800,height = 2800,res=100)
+    p_heat1 <- ggplot(df_m,aes(factor(x=viscosity),melt_rate, fill=CV_hor))  + scale_fill_distiller(direction = +1)+ geom_tile() + theme(legend.key.size = unit(0.5, 'cm'))
+    p_heat2 <- ggplot(df_m,aes(factor(x=viscosity),melt_rate, fill=CV_ver))  + scale_fill_distiller(direction = +1)+ geom_tile()+ theme(legend.key.size = unit(0.5, 'cm'))
+
+    # plot melt rate
+    pm1 <- ggplot(data=df_m,mapping = aes(x=true_m_rate,y=CV_hor)) + geom_point(aes(color = factor(x=viscosity)))+ geom_line(aes(color = factor(x=viscosity)))+ theme(legend.key.size = unit(0.5, 'cm')) #+ coord_flip() #,linetype = "dashed") #+ scale_x_continuous(trans='log10') 
+    pm2 <- ggplot(data=df_m,mapping = aes(x=true_m_rate,y=CV_ver)) + geom_point(aes(color = factor(x=viscosity)))+ geom_line(aes(color = factor(x=viscosity)))+ theme(legend.key.size = unit(0.5, 'cm'))# + geom_line(aes(color = viscosity),linetype = "dashed") + scale_x_continuous(trans='log10')
+
+    # plot viscosity
+    pv1 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=CV_hor)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10') 
+    pv2 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=CV_ver)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
 
     # define the layout
     hlay <- rbind(c(1,1,1,NA,NA, 2,2,2, NA,NA),
