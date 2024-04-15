@@ -445,7 +445,7 @@ def connect_graph(skel: np.ndarray, min_distance: int) -> nx.MultiGraph:
                     g.remove_edges_from([(pos_current,pos_left),(pos_current,pos_right)])
                     # print("done")
                     g.add_edge(pos_left,pos_right)
-                    print(f'connecting {pos_left,pos_right}')
+                    # print(f'connecting {pos_left,pos_right}')
                     changed = True
                     break
                 else:
@@ -486,17 +486,21 @@ def simplify_paths(g: nx.Graph, tolerance=5) -> nx.Graph:
         g[n1][n2][k]['path'] = shapely.geometry.LineString(g[n1][n2][k]['path']).simplify(tolerance)
     return g
 
-def extract_network(px: np.ndarray, im: Image, min_distance=7) -> Tuple[nx.Graph,np.ndarray]:  # was 12
+def extract_network(px: np.ndarray, im: Image, min_distance=7) -> Tuple[nx.Graph,np.ndarray,float,float]:  # was 12
     skel = morphology.thin(px)
     print(f'Skeleton px={skel.sum()}')
+    skel_width = skel.shape[0]
     skel_height = skel.shape[1]
     # fracture_clustering(skel,10)
-    fracture_clustering(skel,round(skel_height*1/5))
+    # fracture_clustering(skel,float('NaN'),round(skel_height*1/5))
     # fracture_clustering(skel,round(skel_height/4))
     # fracture_clustering(skel,round(skel_height/2))
     # fracture_clustering(skel,round(skel_height*3/4))
-    fracture_clustering(skel,round(skel_height*4/5))
+    CV_hor = fracture_clustering(skel,float('NaN'),round(skel_height/2))
 
+    # vertical lines:
+    CV_ver = fracture_clustering(skel,round(skel_width/2),float('NaN'))
+    print(f'CV_hor {CV_hor}, CV_ver {CV_ver}')
     g = connect_graph(skel, min_distance)
     # ax = draw_nx_graph(im, g)
     # plt.savefig("g04connect_graph.png",dpi=200)
@@ -514,7 +518,7 @@ def extract_network(px: np.ndarray, im: Image, min_distance=7) -> Tuple[nx.Graph
     g.remove_edges_from(to_remove)
 
 
-    return g,skel
+    return g,skel, CV_hor, CV_ver
 
 
 def draw_nx_graph(im: Image, g: nx.Graph) -> None:
@@ -717,19 +721,7 @@ def orientation_calc(g: nx.Graph) -> nx.Graph:
     # print([o for (u,v,o) in g.edges.data('orientation')])
     return g
 
-def fracture_clustering(skel,y_value):
-    """
-    extract data about fracture distances along a line defined in the skeleton
-    saves the distances between consecutive fractures.
-    Then calculate the coefficient of variation of fracture separations (CV):
-    dividing the standard deviation of fracture separations by the mean separation 
-    and can be used as a measure of fracture clustering [Johnston et al., 1994] 
-     - from Manzocchi 2002
-    """
-    width,height=skel.shape
-    # y_value = 2# round(height/2)
-    line_data = skel[:,y_value]
-    print(f'y_value {y_value}')
+def distance_between_fractures(line_data):
     dist = 0      # current distance (resets at every fracture pixel)
     distances = [] 
     for i in line_data:
@@ -742,6 +734,27 @@ def fracture_clustering(skel,y_value):
             else:
                 distances.append(dist)
             dist=0
+    return distances
+
+def fracture_clustering(skel,x_value,y_value):
+    """
+    extract data about fracture distances along a line defined in the skeleton
+    saves the distances between consecutive fractures.
+    Then calculate the coefficient of variation of fracture separations (CV):
+    dividing the standard deviation of fracture separations by the mean separation 
+    and can be used as a measure of fracture clustering [Johnston et al., 1994] 
+     - from Manzocchi 2002
+    """
+    line_data = []
+    if math.isnan(x_value) and (y_value): # is NaN and y_value !=0:
+        line_data = skel[:,y_value]
+    # print(f'y_value {y_value}')
+    elif (x_value) and math.isnan(y_value): # is NaN and y_value !=0:
+        line_data = skel[x_value,:]
+    else:
+        print("Format error in x_value,y_value")
+    distances = distance_between_fractures(line_data)
+
     print(f'distances {distances}')
     #  coefficient of variation of fracture separations (CV):
     if len(distances) > 0:
@@ -751,16 +764,20 @@ def fracture_clustering(skel,y_value):
         CV = st_dev/mean_dist
     else:
         CV = 0
-    print(f'CV {CV}')
+    # print(f'CV {CV}')
 
     # visualise:
-    plt.figure(figsize=(10, 10))
-    plt.imshow(skel.T, cmap='gray')
-    plt.gca().invert_yaxis() # invert y axis because images start y=0 in the top left corner
-    plt.axhline(y=y_value, color='r', linestyle='-')
-    plt.axis('off')
-    plt.savefig('hor_line_'+str(y_value)+'_'+"{:.2f}".format(CV)+ '.png')
-    print("Saved")
+    # plt.figure(figsize=(10, 10))
+    # plt.imshow(skel.T, cmap='gray')
+    # plt.gca().invert_yaxis() # invert y axis because images start y=0 in the top left corner
+    # if y_value:
+    #     plt.axhline(y=y_value, color='r', linestyle='-')
+    # elif x_value:
+    #     plt.axvline(x=x_value, color='r', linestyle='-')
+    # plt.axis('off')
+    # plt.savefig('ver_line_'+str(x_value)+'_'+"{:.2f}".format(CV)+ '.png')
+    # print("Saved")
+    return CV
 
 
 def analyse_png(png_file: str, part_to_analyse: str, all_angles: list) -> dict:
@@ -833,9 +850,9 @@ def analyse_png(png_file: str, part_to_analyse: str, all_angles: list) -> dict:
         """ if no fractures, skip analysis and return a dictionary full of zeros """
         print("0 pixels, skipping")
         branch_info = {"time":timestep_number*input_tstep,"n_0":0,"n_I":0,"n_2":0,"n_3":0,"n_4":0,"n_5":0,
-                "branches_tot_length":0} # dictionary with all zeros: there are no fractures in this area
+                "branches_tot_length":0,"CV_hor":0,"CV_ver":0} # dictionary with all zeros: there are no fractures in this area
         return branch_info, np.zeros(36), "path", all_angles # sequences of zeros of the same length as the output of calculate_rose(). Placeholder for path
-    g,skel = extract_network(px,im)
+    g,skel,CV_hor,CV_ver = extract_network(px,im)
     print(f'Extracted fracture network:')
     print(f'  - {len(g.nodes())} nodes')
     print(f'  - {len(g.edges())} edges')
@@ -844,14 +861,17 @@ def analyse_png(png_file: str, part_to_analyse: str, all_angles: list) -> dict:
         """ if after extracting the network there are zero branches, skip analysis and return a dictionary full of zeros """
         print("0 edges, skipping")
         branch_info = {"time":timestep_number*input_tstep,"n_0":0,"n_I":0,"n_2":0,"n_3":0,"n_4":0,"n_5":0,
-                "branches_tot_length":0} # dictionary with all zeros: there are no fractures in this area
+                "branches_tot_length":0,"CV_hor":0,"CV_ver":0} # dictionary with all zeros: there are no fractures in this area
         return branch_info, np.zeros(36), "path", all_angles
 
     # fracture_clustering(skel)
     # do some statistics
     branch_info = topo_analysis(g,timestep_number)
-    # print(g.edges(data=True))
 
+    # add new elements: CV on a horizontal and vertical line
+    branch_info["CV_hor"] = CV_hor
+    branch_info["CV_ver"] = CV_ver
+    print(branch_info)
     # viz grid with networkx's plot
     # ax = draw_nx_graph(im, g)
     # plt.savefig(out_path+".grid.png",dpi=150)
@@ -877,6 +897,16 @@ def analyse_png(png_file: str, part_to_analyse: str, all_angles: list) -> dict:
 
     return branch_info, rose_histogram, out_path, all_angles
 
+def write_to_csv_file(branch_info,csv_file_name):
+
+    keys = branch_info[0].keys()  #  read the command line arguments
+
+    # write to csv file
+    with open(csv_file_name, 'w', newline='') as output_file:
+        dict_writer = csv.DictWriter(output_file, keys)
+        dict_writer.writeheader()
+        dict_writer.writerows(branch_info)
+
 def file_loop(parent_dir: str,part_to_analyse: str) -> None:
     """ given the parent directory, cd there and go through all png files"""
     # os.chdir("/Users/giuliafedrizzi/Library/CloudStorage/OneDrive-UniversityofLeeds/PhD/arc/myExperiments/wavedec2022/wd05_visc/visc_4_5e4/vis5e4_mR_09")
@@ -889,12 +919,20 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
     rose_hist_list = [] # empty list to temporarily save all the values to build the rose diagram. Will be normalised by the maximum length.
     out_paths = []
     all_angles = []
-    # string_in_name = "py_bb_*[0-9].png"
-    string_in_name = "py_bb_022000.png"
+    string_in_name = "py_bb_*[0-9].png"
+    # string_in_name = "py_bb_022000.png"
     curr_path = os.getcwd()
     if "field_im" in curr_path:
         string_in_name = "Long_drawn_OpeningInvert.png"
     print(f'list of files {sorted(glob.glob(string_in_name))}')
+
+    if part_to_analyse == 'w' or part_to_analyse == 'f': # whole domain
+        csv_file_name = "py_branch_info.csv" 
+    elif part_to_analyse == 'b':
+        csv_file_name = "py_branch_info_bot.csv" 
+    elif part_to_analyse == 't':
+        csv_file_name = "py_branch_info_top.csv" 
+
     for f,filename in enumerate(sorted(glob.glob(string_in_name))):
     # for f,filename in enumerate(sorted(glob.glob("Long_drawn_OpeningInvert*.png"))):
         """ Get the file name, run 'analyse_png', get the info on the branches,
@@ -903,6 +941,8 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
         branch_info.append(branch_dict)  # build the list of dictionaries
         rose_hist_list.append(rose_hist)
         out_paths.append(out_path)
+        if f%10 == 0:   # checkpoint: write out what I have so far 
+            write_to_csv_file(branch_info,csv_file_name)
     
     # save angle data in a json file
     with open('segments_angles.json', 'w') as file:
@@ -918,20 +958,6 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
             plt.savefig("rose_norm_"+out_paths[i],dpi=200)
 
 
-    keys = branch_info[0].keys()  #  read the command line arguments
-
-    if part_to_analyse == 'w' or part_to_analyse == 'f': # whole domain
-        csv_file_name = "py_branch_info.csv" 
-    elif part_to_analyse == 'b':
-        csv_file_name = "py_branch_info_bot.csv" 
-    elif part_to_analyse == 't':
-        csv_file_name = "py_branch_info_top.csv" 
-
-    # write to csv file
-    with open(csv_file_name, 'w', newline='') as output_file:
-        dict_writer = csv.DictWriter(output_file, keys)
-        dict_writer.writeheader()
-        dict_writer.writerows(branch_info)
 
 # starting here:           
 d = os.getcwd()  # save path to current directory (will be given as input to file_loop() function)
