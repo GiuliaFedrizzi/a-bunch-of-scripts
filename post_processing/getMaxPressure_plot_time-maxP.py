@@ -16,7 +16,7 @@ import pstats
 profile = cProfile.Profile()
 import re
 
-filefrequency = 1
+filefrequency = 5
 
 
 def getMaxPressures(myExp):
@@ -48,7 +48,7 @@ ax2 = axs.twinx()  # create a secon axis so I can plot broken bonds on the same 
 marks=[x for x in Line2D.markers]
 # print(f'marks {marks[0]}, {marks[1]}')
 
-for a,dir in enumerate(sorted(glob.glob("rt0.03/mrate3e6"))):
+for a,dir in enumerate(sorted(glob.glob("rt0.08/mrate0.0005"))):
     os.chdir(dir)
     print(os.getcwd())
     maxPressure = [] # initialise empty array
@@ -84,14 +84,14 @@ for a,dir in enumerate(sorted(glob.glob("rt0.03/mrate3e6"))):
     # labelName = "$\sigma$ = " + sigma_components[1] + "." + sigma_components[2]   # from sigma_1_0 to 1.0
     # axs.plot(time_array, maxPressure,plotStyle,label=dirName,markersize=5,alpha=0.7)     
     axs.plot(time_array, maxPressure,plotStyle,label=dirName+", pressure",markersize=5,alpha=0.7)     
-    # ax2.plot(time_array, tot_bb,plotStyle1,label=dirName+", Broken Bonds",markersize=5,alpha=0.5)     
+    ax2.plot(time_array, tot_bb,plotStyle1,label=dirName+", Broken Bonds",markersize=5,alpha=0.5)     
     # axs.plot([time_array[0],time_array[-1]], [maxPressure[0],maxPressure[-1]],'k--',alpha=0.7,label="line between first and last point")     
     os.chdir("../..")   
            
 
 axs.set_xlabel("Time")
 axs.set_ylabel("Max Fluid Pressure")
-# ax2.set_ylabel("Broken Bonds")
+ax2.set_ylabel("Broken Bonds")
 axs.set_title("Max Fluid Pressure in time. Melt increment = " + dirPress.split("/")[-1] + "\nValues every " + str(filefrequency) + " files.")
 #axs.xaxis.set_major_formatter(FormatStrFormatter('% .1e'))
 #fig.suptitle(os.getcwd().split("myExperiments/")[1]) # get the part of the path that is after "myExperiments/"
@@ -104,7 +104,7 @@ axs.set_title("Max Fluid Pressure in time. Melt increment = " + dirPress.split("
 #axs.legend(loc='center left',bbox_to_anchor=(1,0.5),fancybox=True, ncol=1) 
 #axs.legend(loc='upper left',fancybox=True, ncol=1) 
 axs.legend(fancybox=True, ncol=1,loc='center right',bbox_to_anchor=(0.99,0.2)) 
-# ax2.legend(fancybox=True, ncol=1,loc='center right',bbox_to_anchor=(0.99,0.1)) 
+ax2.legend(fancybox=True, ncol=1,loc='center right',bbox_to_anchor=(0.99,0.1)) 
 axs.grid(linestyle='--',alpha=0.6)#(linestyle='-', linewidth=2)
 #axs.legend()
 #plt.tight_layout()
