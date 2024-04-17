@@ -45,7 +45,7 @@ import re
 # import functions from external file
 from useful_functions import * 
 
-var_to_plot = "Pressure"
+var_to_plot = "Sigma_1"
 # options: Pressure, Mean Stress, Actual Movement, Gravity, Porosity, Sigma_1, Sigma_2, Youngs Modulus, Differential Stress,Permeability
 #         F_P_x, F_P_y, pf_grad_x, pf_grad_y, Original Movement, Movement in Gravity, Smooth function, area_par_fluid
 #         gauss_scaling_par, gauss_scaling_par_sum, gauss_scaling_par_n_tot, xy_melt_point
@@ -56,19 +56,14 @@ var_to_plot = "Pressure"
 # dir_labels = ['scale400','scale800']#,'scale1000']
 # dir_labels = ['res200/rb0.006','res200/rb0.01','res200/rb0.02','res400/rb0.003','res400/rb0.007','res400/rb0.01']#,'res400/rb0.01']#,'res400/rb0.03']
 # dir_labels = ['res400/depth1000/rb0.01']#'res400/depth1000/rb0.003','res400/depth1000/rb0.007','res400/depth1000/rb0.01']#,'res400/rb0.01']#,'res400/rb0.03']
-# dir_labels = ['young2']#,'young10']
 # dir_labels = ['grad0.2','grad0.4','grad0.6']
-# dir_labels = ['rb0.003','rb0.007','rb0.01']
 # dir_labels = ['rb0.006','rb0.01','rb0.02']
-# dir_labels = ['res200/depth1000/rb0.006','res200/depth1000/rb0.01','res200/depth1000/rb0.02']#,'res400/depth1000/rb0.01']#,'res400/depth1000/rb0.007','res400/depth1000/rb0.01','res400/depth1000/rb0.05']#,'res400/depth1300/rb0.003','res400/depth1300/rb0.007']
-# dir_labels = ['res200/depth1300/rb0.006','res400/depth1300/rb0.007']
-# dir_labels = ['t01000','t02000','t05000','t10000']
-# dir_labels = ['rb0.01']#,'rb1.0'] # 'rb0.01',  
 # dir_labels = ['tw12/rt0.1/pincr1e6','tw12/rt0.5/pincr1e6'] # 'tw12/rt0.01/pincr1e6','tw12/rt0.03/pincr1e6',
 # dir_labels = ['si08','si10']#,'rb1.0'] # 'rb0.01',  
 # dir_labels = ['rt0.01','rt0.03']#,'rt0.05'] 
 # dir_labels = ['op13/rt0.03/threads1','op18/rt0.03/threads2','op18/rt0.03/threads4']#,'threads8','threads16']#,'rt0.05'] 
-dir_labels = ['rt0.03']#,'threads8','threads16']#,'rt0.05'] 
+# dir_labels = ['rt0.08/mrate0.0005']#,'threads8','threads16']#,'rt0.05'] 
+dir_labels = ['vis1e2_mR_05']#,'threads8','threads16']#,'rt0.05'] 
 
 # my_labels = ['p52, 0.001','p54, 0.0005','p55, 0.0001']#,'p49, 0.005'] # leave empty for default labels (= dir labels)
 my_labels = [] # leave empty for default labels (= dir labels)
@@ -92,16 +87,16 @@ for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/thr/thr02/'+i+'/pincr1e2')
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/background_stress/bs23/'+i+'/depth0100/young2/rb0.03')
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/singleInjection/si12/res200/depth3000/'+i) #'rb0.003'
-    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/singleInjection/si22/'+i)
-    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/thprod/tp04/'+i)
-    dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/thprod/single/ts04/'+i+'/mrate1e6')
+    dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt43a/rt0.5/visc_2_1e2/'+i)
+    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/thprod/tp12/'+i)
+    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/thprod/single/ts04/'+i+'/mrate1e6')
     # dir_list.append('/nobackup/scgf/myExperiments/optimise/'+i)
     
 print(dir_list)
 
-f1=1  # first file to plot. They account for "my_experiment-0003.csv" as the first file in dir :::  -1  =  0
-f2= 40  # second file. if f2 = 5 -> my_experiment00500.csv
-step=4
+f1=-1  # first file to plot. They account for "my_experiment-0003.csv" as the first file in dir :::  -1  =  0
+f2= 10  # second file. if f2 = 5 -> my_experiment00500.csv
+step=3
 
 df_x = pd.DataFrame()
 df_y = pd.DataFrame()
