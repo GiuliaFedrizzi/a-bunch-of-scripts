@@ -16,21 +16,26 @@ variab = find_variab()
 rose = False
 im_length = 500
 im_height = 506
+save_freq = int(getSaveFreq())
 # times = range(1000,1011,5)  # (start, end, step)
-# times = list(range(1, 20, 1)) + list(range(20, 141, 5)) + list(range(150, 501, 20)) + list(range(500, 801, 20)) + list(range(850, 1500, 40))
-times = list(range(1000, 20000, 1000)) #+ list(range(2000, 14100, 500)) + list(range(15000, 50100, 2000)) + list(range(50000, 80100, 2000)) + list(range(85000, 150000, 4000))
+
+# file number
+times = list(range(1, 20, 1)) + list(range(20, 141, 5)) + list(range(150, 501, 20)) + list(range(500, 801, 20)) + list(range(850, 1500, 40))
+# translate to timestep
+# times *= save_freq 
+times = [i*save_freq for i in times] 
 
 x_variable = find_dirs(variab)
-save_freq = int(getSaveFreq())
-print(f'First directory: {x_variable[0]}')
+# print(f'First directory: {x_variable[0]}')
 os.chdir(x_variable[0])
 melt_labels = find_dirs(variab)
-print(f'melt labels {melt_labels}, melt_labels[0] {melt_labels[0]}')
+melt_labels.reverse()
+# print(f'melt labels {melt_labels}, melt_labels[0] {melt_labels[0]}')
 if '_mR_0' in melt_labels[0]:
     melt_labels = [ '0.00'+i.split('mR_0')[1] for i in melt_labels]   # from full name of directory to 0.001, 0.002 etc
 else:
     melt_labels = [ '0.00'+i.split('mR0')[1] for i in melt_labels]   # from full name of directory to 0.001, 0.002 etc
-print(f'melt_labels {melt_labels}')
+# print(f'melt_labels {melt_labels}')
 os.chdir('..')
 # print(melt_labels)
 
