@@ -17,15 +17,16 @@ first_part_of_path = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt41/rt0
 
 dir = first_part_of_path
 
+# define the indexes for the two profiles, the first one is the start for the horizontal, the second for the vertical profile
+point_indexes = [res*res_y-res,res-1]   # X original: res*res_y/2+res, central: res*res_y/2 (?)
 
-def read_calculate_plot(filename, var_to_plot):
+def read_calculate_plot(filename, var_to_plot,point_indexes):
 
     myExp = pd.read_csv(filename, header=0)
-    # print(myExp.idxmax())#(axis=""))
     # df_v = myExp[50:len(myExp):res]    # dataframe only containing a vertical line. start from the 50th element and skip 2 rows of 200 elements
-    df_v = myExp[int(res-1):len(myExp):int(res)]    # dataframe only containing a vertical line. start from the n-th element and skip 2 rows of 200 elements
-    x_index_start = int(res*res_y-res)  # original: res*res_y/2+res, central: res*res_y/2 (?)
-    df_h = myExp[x_index_start:x_index_start+res:1]    # dataframe only containing a horizontal line. start from the left boundary, continue for 200 elements
+    df_v = myExp[int(point_indexes[1]):len(myExp):int(res)]    # dataframe only containing a vertical line. start from the n-th element and skip 2 rows of 200 elements
+    hor_index_start = int(point_indexes[0])  # y coordinate for the horizontal profile
+    df_h = myExp[hor_index_start:hor_index_start+res:1]    # dataframe only containing a horizontal line. start from the left boundary, continue for 200 elements
     # print(len(df_v))
     variable_vals_v = df_v[var_to_plot].values
     variable_vals_h = df_h[var_to_plot].values
@@ -48,7 +49,7 @@ all_data_v = {}
 all_data_h = {}
 
 for v in vars_to_plot:
-    (x_v, y_v), (x_h, y_h) = read_calculate_plot(filename, v)
+    (x_v, y_v), (x_h, y_h) = read_calculate_plot(filename, v,point_indexes)
     all_data_v[v] = (x_v, y_v)
     all_data_h[v] = (x_h, y_h)
 

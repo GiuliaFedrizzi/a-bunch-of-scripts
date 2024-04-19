@@ -30,8 +30,8 @@ def read_calculate_plot(filename, var_to_plot):
     myExp = pd.read_csv(filename, header=0)
     # print(myExp.idxmax())#(axis=""))
     # df_v = myExp[50:len(myExp):res]    # dataframe only containing a vertical line. start from the 50th element and skip 2 rows of 200 elements
-    df_v = myExp[0:len(myExp):int(res)]    # dataframe only containing a vertical line. start from the 50th element and skip 2 rows of 200 elements
-    df_h = myExp[int(res*res_y/2+res):int(res*res_y/2+2*res):1]    # dataframe only containing a vertical line. start from the 50th element and skip 2 rows of 200 elements
+    df_v = myExp[0:len(myExp):int(res)]    # dataframe only containing a vertical line. start from the n-th element and skip 2 rows of 200 elements
+    df_h = myExp[int(res*res_y/2+res):int(res*res_y/2+2*res):1]    # dataframe only containing a horizontal line. start from the 50th element and skip 2 rows of 200 elements
     # print(len(df_v))
     variable_vals_v = df_v[var_to_plot].values
     variable_vals_h = df_h[var_to_plot].values
