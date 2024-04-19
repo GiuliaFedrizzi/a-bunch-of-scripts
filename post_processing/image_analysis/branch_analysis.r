@@ -603,35 +603,40 @@ if (TRUE) {
     pv2 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=C_L)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
 
     # define the layout
-    hlay <- rbind(c(1,1,1,NA,NA, 2,2,2, NA,NA),
-                c(3,3,3, 4,4,  5,5,5,  6,6),
-                c(3,3,3, 4,4,  5,5,5,  6,6))
+    hlay <- rbind( c(NA,NA, NA,NA), 
+                c(3,1, 5,2),
+                c(3,4, 5,6),
+                c(NA,NA, NA,NA))
 
     pg <- grid.arrange(pv1,pv2,p_heat1,pm1,p_heat2,pm2,layout_matrix=hlay)
-    print(pg)
+    # print(pg)
     dev.off()
 }
 
-if (TRUE) {
+if (TRUE) {   
+
+    df_CV_hor <- df_m[df_m$CV_hor != 0, ]  # filter out if CV_hor is 0
+    df_CV_ver <- df_m[df_m$CV_ver != 0, ]  # filter out if CV_ver is 0
     png_name <- paste(base_path,"/branch_plots/br_heat_CV_",time_string,".png",sep='')  # build name of png
     png(file=png_name,width = 2800,height = 2800,res=100)
-    p_heat1 <- ggplot(df_m,aes(factor(x=viscosity),melt_rate, fill=CV_hor))  + scale_fill_distiller(direction = +1)+ geom_tile() + theme(legend.key.size = unit(0.5, 'cm'))
-    p_heat2 <- ggplot(df_m,aes(factor(x=viscosity),melt_rate, fill=CV_ver))  + scale_fill_distiller(direction = +1)+ geom_tile()+ theme(legend.key.size = unit(0.5, 'cm'))
+    p_heat1 <- ggplot(df_CV_hor,aes(factor(x=viscosity),melt_rate, fill=CV_hor))  + scale_fill_distiller(direction = +1)+ geom_tile() + theme(legend.key.size = unit(0.5, 'cm'))
+    p_heat2 <- ggplot(df_CV_ver,aes(factor(x=viscosity),melt_rate, fill=CV_ver))  + scale_fill_distiller(direction = +1)+ geom_tile()+ theme(legend.key.size = unit(0.5, 'cm'))
 
     # plot melt rate
-    pm1 <- ggplot(data=df_m,mapping = aes(x=true_m_rate,y=CV_hor)) + geom_point(aes(color = factor(x=viscosity)))+ geom_line(aes(color = factor(x=viscosity)))+ theme(legend.key.size = unit(0.5, 'cm')) #+ coord_flip() #,linetype = "dashed") #+ scale_x_continuous(trans='log10') 
-    pm2 <- ggplot(data=df_m,mapping = aes(x=true_m_rate,y=CV_ver)) + geom_point(aes(color = factor(x=viscosity)))+ geom_line(aes(color = factor(x=viscosity)))+ theme(legend.key.size = unit(0.5, 'cm'))# + geom_line(aes(color = viscosity),linetype = "dashed") + scale_x_continuous(trans='log10')
+    pm1 <- ggplot(data=df_CV_hor,mapping = aes(x=true_m_rate,y=CV_hor)) + geom_point(aes(color = factor(x=viscosity)))+ geom_line(aes(color = factor(x=viscosity)))+ theme(legend.key.size = unit(0.5, 'cm')) #+ coord_flip() #,linetype = "dashed") #+ scale_x_continuous(trans='log10') 
+    pm2 <- ggplot(data=df_CV_ver,mapping = aes(x=true_m_rate,y=CV_ver)) + geom_point(aes(color = factor(x=viscosity)))+ geom_line(aes(color = factor(x=viscosity)))+ theme(legend.key.size = unit(0.5, 'cm'))# + geom_line(aes(color = viscosity),linetype = "dashed") + scale_x_continuous(trans='log10')
 
     # plot viscosity
-    pv1 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=CV_hor)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10') 
-    pv2 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=CV_ver)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
+    pv1 <- ggplot(data=df_CV_hor,mapping = aes(x=viscosity,y=CV_hor)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10') 
+    pv2 <- ggplot(data=df_CV_ver,mapping = aes(x=viscosity,y=CV_ver)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
 
     # define the layout
-    hlay <- rbind(c(1,1,1,NA,NA, 2,2,2, NA,NA),
-                c(3,3,3, 4,4,  5,5,5,  6,6),
-                c(3,3,3, 4,4,  5,5,5,  6,6))
+    hlay <- rbind( c(NA,NA, NA,NA), 
+                c(3,1, 5,2),
+                c(3,4, 5,6),
+                c(NA,NA, NA,NA))
 
     pg <- grid.arrange(pv1,pv2,p_heat1,pm1,p_heat2,pm2,layout_matrix=hlay)
-    print(pg)
+    # print(pg)
     dev.off()
 }
