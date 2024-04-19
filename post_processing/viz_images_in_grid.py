@@ -25,10 +25,10 @@ times = list(range(1, 20, 1)) + list(range(20, 141, 5)) + list(range(150, 501, 2
 # times *= save_freq 
 times = [i*save_freq for i in times] 
 
-x_variable = find_dirs(variab)
+x_variable = find_dirs()
 # print(f'First directory: {x_variable[0]}')
 os.chdir(x_variable[0])
-melt_labels = find_dirs(variab)
+melt_labels = find_dirs()
 melt_labels.reverse()
 # print(f'melt labels {melt_labels}, melt_labels[0] {melt_labels[0]}')
 if '_mR_0' in melt_labels[0]:

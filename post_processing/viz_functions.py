@@ -236,9 +236,8 @@ def setup_array_const_strain(x_variable,melt_labels,t,target_mr_def_ratios,im_le
     return big_array  # the number of columns is the num of x variable times two (two images for each sim)
     
 
-def find_dirs(dir_type):
+def find_dirs():
     directories_list = []
-    # if dir_type == "def_rate":
     # List to hold the names of directories
 
     # Iterate over the items in the current directory
