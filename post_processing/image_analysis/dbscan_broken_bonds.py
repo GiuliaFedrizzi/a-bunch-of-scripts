@@ -8,9 +8,11 @@ from scipy.stats import gaussian_kde
 from matplotlib.colors import ListedColormap
 from scipy.spatial.distance import pdist, squareform
 import seaborn as sns
+import colorcet  as cc
 import pandas as pd
 
-filename = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_3_1e3/vis1e3_mR_08/my_experiment16000.csv'
+# filename = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_3_1e3/vis1e3_mR_08/my_experiment16000.csv'
+filename = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_3_1e3/vis1e3_mR_08/my_experiment03000.csv'
 
 min_samples = 10
 
@@ -26,37 +28,31 @@ def read_and_filter_data_from_csv(file_path):
 def dbscan_and_plot(X,e,min_samples):
     dbscan = DBSCAN(eps=e, min_samples=min_samples).fit(X)
     X['cluster'] = dbscan.labels_
-    X=X[X['cluster']>-1]
-
-    # get the number of clusters to create a custom colormap
-    # num_clusters = len(unique_labels)
-    # colours = plt.cm.hsv(np.linspace(0, 1, num_clusters))
-    # custom_colormap = ListedColormap(colours)
+    X=X[X['cluster']>-1]  # remove noise cluster
     
     if len(X)>0:
         # X['edge'] = X['cluster']%2
         # Plotting
         plt.figure(figsize=(10, 6))
 
-        n_elements = 30 # minimum number of elements in a cluster to be kept
+        n_elements = 40 # minimum number of elements in a cluster to be kept
         cluster_counts = X['cluster'].value_counts()  # count the number of points in each cluster
         large_clusters = cluster_counts[cluster_counts >= n_elements].index
         print(set(X['cluster'].value_counts()))
         X_filtered = X[X['cluster'].isin(large_clusters)]
+        print(set(X_filtered['cluster'].value_counts()))
         unique_labels = set(X_filtered['cluster'])
+        palette = sns.color_palette(cc.glasbey, n_colors=len(unique_labels))
 
         # scatter = plt.scatter(x_coords, y_coords, c=dbscan.labels_, marker='o', s=10, alpha=0.75,edgecolor='k',linewidth=edges)#, cmap=custom_colormap) #  edgecolor='k',
-        # plt.colorbar(scatter, label='Cluster Label')
-        # plt.colorbar(plt.cm.ScalarMappable(cmap=custom_colormap),label='Cluster Label')
-        scatter = sns.scatterplot(data=X_filtered,x='x coord',y='y coord',hue='cluster',palette="Paired",marker='o',alpha=0.75,s=10,edgecolor='k',linewidth=0)
-        sns.color_palette("hls", 20)
+        scatter = sns.scatterplot(data=X_filtered,x='x coord',y='y coord',hue='cluster',palette=palette,marker='o',alpha=0.75,s=10,edgecolor='k',linewidth=0)
 
         # Calculate the centroids of each cluster or choose representative points
         centroids = X_filtered.groupby('cluster').mean().reset_index()
 
         # Loop through the centroids to annotate the cluster number
         for index, row in centroids.iterrows():
-            plt.text(row['x coord'], row['y coord'], f"{row['cluster']}", horizontalalignment='center', size='medium', color='black', weight='semibold')
+            plt.text(row['x coord'], row['y coord'], f"{int(row['cluster'])}", horizontalalignment='center', size='medium', color='black', weight='semibold')
 
         plt.title('DBSCAN Clustering, eps ='+str(e)+', min_samples = '+str(min_samples) + ', min elements in a cluster = '+str(n_elements))
         plt.xlabel('x coord')
@@ -65,7 +61,10 @@ def dbscan_and_plot(X,e,min_samples):
         plt.gca().set_aspect('equal')  # aspect ratio = image is a square
         # plt.colorbar(scatter, label='Cluster Label')
 
-        scatter.legend(ncol=int(len(unique_labels)/10),loc='center left',bbox_to_anchor=(1.05, 0.5))
+        legend_columns = int(len(unique_labels)/20)
+        if legend_columns < 2:
+            legend_columns = 2
+        scatter.legend(ncol=legend_columns,loc='center left',bbox_to_anchor=(1.05, 0.5))
 
 # plt.show()
 
@@ -76,7 +75,7 @@ data = read_and_filter_data_from_csv(filename)
 X = data[data['Broken Bonds'] > 0] # Only where there are bb 
 X = X[['x coord','y coord']] # Only x and y coordinates 
 
-for e in [0.0088,0.00995,0.01,0.012]:
+for e in [0.0088,0.00995,0.01]:
 # for e in [0.005, 0.008]:
     dbscan_and_plot(X,e,min_samples)
 
