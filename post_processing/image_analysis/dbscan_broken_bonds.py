@@ -38,21 +38,39 @@ def dbscan_and_plot(X,e,min_samples):
         n_elements = 40 # minimum number of elements in a cluster to be kept
         cluster_counts = X['cluster'].value_counts()  # count the number of points in each cluster
         large_clusters = cluster_counts[cluster_counts >= n_elements].index
-        print(set(X['cluster'].value_counts()))
         X_filtered = X[X['cluster'].isin(large_clusters)]
-        print(set(X_filtered['cluster'].value_counts()))
+
+        # define custom palette with as many colours as there are clusters
         unique_labels = set(X_filtered['cluster'])
         palette = sns.color_palette(cc.glasbey, n_colors=len(unique_labels))
 
         # scatter = plt.scatter(x_coords, y_coords, c=dbscan.labels_, marker='o', s=10, alpha=0.75,edgecolor='k',linewidth=edges)#, cmap=custom_colormap) #  edgecolor='k',
         scatter = sns.scatterplot(data=X_filtered,x='x coord',y='y coord',hue='cluster',palette=palette,marker='o',alpha=0.75,s=10,edgecolor='k',linewidth=0)
 
+        
         # Calculate the centroids of each cluster or choose representative points
-        centroids = X_filtered.groupby('cluster').mean().reset_index()
+        centroids = X_filtered.groupby('cluster').mean()#.reset_index()
+
+        # Momentum analysis
+        moments_of_inertia = {}
+        for cluster_label, centroid in centroids.iterrows():
+            # Select the points that belong to the current cluster
+            cluster_points = X_filtered[X_filtered['cluster'] == cluster_label][['x coord', 'y coord']]
+
+            print(f'cluster {cluster_label}, cluster_points n {len(cluster_points)}')
+            # Subtract the centroid from the cluster points
+            cluster_points -= centroid
+            # Calculate the covariance matrix
+            covariance_matrix = np.cov(cluster_points, rowvar=False)
+            # Calculate the eigenvalues (moment of inertia components) and eigenvectors
+            eigenvalues, eigenvectors = np.linalg.eigh(covariance_matrix)
+            # Store the eigenvalues in the dictionary
+            moments_of_inertia[cluster_label] = eigenvalues
+        print(f'moments of inertia \n{moments_of_inertia}')
 
         # Loop through the centroids to annotate the cluster number
         for index, row in centroids.iterrows():
-            plt.text(row['x coord'], row['y coord'], f"{int(row['cluster'])}", horizontalalignment='center', size='medium', color='black', weight='semibold')
+            plt.text(row['x coord'], row['y coord'], f"{int(index)}", horizontalalignment='center', size='medium', color='black', weight='semibold')
 
         plt.title('DBSCAN Clustering, eps ='+str(e)+', min_samples = '+str(min_samples) + ', min elements in a cluster = '+str(n_elements))
         plt.xlabel('x coord')
@@ -75,9 +93,8 @@ data = read_and_filter_data_from_csv(filename)
 X = data[data['Broken Bonds'] > 0] # Only where there are bb 
 X = X[['x coord','y coord']] # Only x and y coordinates 
 
-for e in [0.0088,0.00995,0.01]:
-# for e in [0.005, 0.008]:
-    dbscan_and_plot(X,e,min_samples)
+
+dbscan_and_plot(X,0.01,min_samples)
 
 plt.show()  # show all of them at the end
 
