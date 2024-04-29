@@ -71,6 +71,9 @@ def dbscan_and_plot(X,e,min_samples):
             # Moments analysis
             moments_of_inertia = {}
             all_eigenvectors = {}
+            all_elong = {}
+            all_angles = {}
+            all_sizes = {}
             for cluster_label, centroid in centroids.iterrows():
                 # Select the points that belong to the current cluster
                 cluster_points = X_filtered[X_filtered['cluster'] == cluster_label][['x coord', 'y coord']]
@@ -98,26 +101,40 @@ def dbscan_and_plot(X,e,min_samples):
                 # Store the eigenvalues in the dictionary
                 moments_of_inertia[cluster_label] = eigenvalues
                 all_eigenvectors[cluster_label] = eigenvectors
-                
-                
+                all_elong[cluster_label] = eigenvalues[0]/eigenvalues[1]
+                all_angles[cluster_label] = angle_degrees
+                all_sizes[cluster_label] = len(cluster_points)+1
+            
+            #compute some global data
+            weighted_sum = sum(angle * all_sizes[cluster] for cluster, angle in all_angles.items())
+            weighted_average_angle = weighted_sum / sum(all_sizes.values())
+            weighted_elong = sum(elong * all_sizes[cluster] for cluster, elong in all_elong.items())
+            weighted_average_elong = weighted_elong / sum(all_sizes.values())
+
+            cluster_data = {'cluster_n':len(all_sizes),'average_size':sum(all_sizes.values())/len(all_sizes),'average_angle':weighted_average_angle,'average_elong':weighted_average_elong}
+            print(cluster_data)
+            
             #print(f'moments of inertia \n{moments_of_inertia}')
             # Loop through the centroids to annotate the cluster number
             for index, row in centroids.iterrows():
                 plt.text(row['x coord'], row['y coord'], f"{int(index)}", horizontalalignment='center', size='medium', color='black', weight='semibold')
-
+            
     else:
         print("Clusters are too small")
 # plt.show()
 
-
+df = pd.DataFrame()
 data = read_and_filter_data_from_csv(filename)
+X = data[data['Broken Bonds'] > 0] # Only where there are bb 
+X = X[['x coord','y coord']] # Only x and y coordinates 
+dbscan_and_plot(X,0.0088,min_samples)
 
 #dbscan_and_plot(X,0.0088,min_samples)
-for e in [0.0088,0.00999, 0.01]:
-    # I need to reset what X is at every cycle
-    X = data[data['Broken Bonds'] > 0] # Only where there are bb 
-    X = X[['x coord','y coord']] # Only x and y coordinates 
-    dbscan_and_plot(X,e,min_samples)
+#for e in [0.0088,0.00999, 0.01]:
+#    # I need to reset what X is at every cycle
+#    X = data[data['Broken Bonds'] > 0] # Only where there are bb 
+#    X = X[['x coord','y coord']] # Only x and y coordinates 
+#    dbscan_and_plot(X,e,min_samples)
 
 plt.show()  # show all of them at the end
 
