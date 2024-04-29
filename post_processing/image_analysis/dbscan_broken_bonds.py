@@ -12,9 +12,15 @@ from scipy.spatial.distance import pdist, squareform
 import seaborn as sns
 import colorcet  as cc
 import pandas as pd
+import sys
+sys.path.append('/home/home01/scgf/myscripts/post_processing')
 
-# filename = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_3_1e3/vis1e3_mR_08/my_experiment16000.csv'
-filename = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_3_1e3/vis1e3_mR_08/my_experiment03000.csv'
+from useful_functions import getSaveFreq
+
+#filename = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_3_1e3/vis1e3_mR_08/my_experiment07000.csv'
+#filename = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_3_1e3/vis1e3_mR_08/my_experiment16000.csv'
+filename = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_3_1e3/vis1e3_mR_08/my_experiment12000.csv'
+#filename = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_1_1e1/vis1e1_mR_06/my_experiment70000.csv'
 
 min_samples = 10
 
@@ -33,7 +39,6 @@ def dbscan_and_plot(X,e,min_samples):
     X=X[X['cluster']>-1]  # remove noise cluster
     
     if len(X)>0:
-        # X['edge'] = X['cluster']%2
         # Plotting
         plt.figure(figsize=(10, 6))
 
@@ -41,84 +46,83 @@ def dbscan_and_plot(X,e,min_samples):
         cluster_counts = X['cluster'].value_counts()  # count the number of points in each cluster
         large_clusters = cluster_counts[cluster_counts >= n_elements].index
         X_filtered = X[X['cluster'].isin(large_clusters)]
+        if len(X_filtered)>0:
+            # define custom palette with as many colours as there are clusters
+            unique_labels = set(X_filtered['cluster'])
+            palette = sns.color_palette(cc.glasbey, n_colors=len(unique_labels))
 
-        # define custom palette with as many colours as there are clusters
-        unique_labels = set(X_filtered['cluster'])
-        palette = sns.color_palette(cc.glasbey, n_colors=len(unique_labels))
-
-        # scatter = plt.scatter(x_coords, y_coords, c=dbscan.labels_, marker='o', s=10, alpha=0.75,edgecolor='k',linewidth=edges)#, cmap=custom_colormap) #  edgecolor='k',
-        scatter = sns.scatterplot(data=X_filtered,x='x coord',y='y coord',hue='cluster',palette=palette,marker='o',alpha=0.75,s=10,edgecolor='k',linewidth=0)
-
-        
-        # Calculate the centroids of each cluster or choose representative points
-        centroids = X_filtered.groupby('cluster').mean()#.reset_index()
-
-        # Momentum analysis
-        moments_of_inertia = {}
-        all_eigenvectors = {}
-        for cluster_label, centroid in centroids.iterrows():
-            # Select the points that belong to the current cluster
-            cluster_points = X_filtered[X_filtered['cluster'] == cluster_label][['x coord', 'y coord']]
-
-            #print(f'cluster {cluster_label}, cluster_points n {len(cluster_points)}')
-            # Subtract the centroid from the cluster points
-            cluster_points -= centroid
-            # Calculate the covariance matrix
-            covariance_matrix = np.cov(cluster_points, rowvar=False)
+            # scatter = plt.scatter(x_coords, y_coords, c=dbscan.labels_, marker='o', s=10, alpha=0.75,edgecolor='k',linewidth=edges)#, cmap=custom_colormap) #  edgecolor='k',
+            scatter = sns.scatterplot(data=X_filtered,x='x coord',y='y coord',hue='cluster',palette=palette,marker='o',alpha=0.75,s=10,edgecolor='k',linewidth=0)
             
-            # Calculate the eigenvalues (moment of inertia components) and eigenvectors
-            eigenvalues, eigenvectors = np.linalg.eigh(covariance_matrix)
+            plt.title('DBSCAN Clustering, eps ='+str(e)+', min_samples = '+str(min_samples) + ', min elements in a cluster = '+str(n_elements)+'\n'+filename)
+            plt.xlabel('x coord')
+            plt.ylabel('y coord')
+
+            plt.gca().set_aspect('equal')  # aspect ratio = image is a square
+            # plt.colorbar(scatter, label='Cluster Label')
+
+            legend_columns = int(len(unique_labels)/20)
+            if legend_columns < 2:
+                legend_columns = 2
+            scatter.legend(ncol=legend_columns,loc='center left',bbox_to_anchor=(1.05, 0.5))
             
-            order = eigenvalues.argsort()[::-1] # sort in descending order
-            eigenvalues = eigenvalues[order]
-            eigenvectors = eigenvectors[:,order]
-            largest_eigenvector = eigenvectors[:,0]  # take the largest
-            angle = np.arctan2(largest_eigenvector[1], largest_eigenvector[0]) # arctan is the angle in radians
-            angle_degrees = np.degrees(angle)
-            theta = np.linspace(0, 2*np.pi, 1000);
-            # draw an ellipse:
-            eigenvalues_draw = eigenvalues*3; eigenvectors_draw = eigenvectors
-            ellipsis = (np.sqrt(eigenvalues_draw[None,:]) * eigenvectors_draw) @ [np.sin(theta), np.cos(theta)] # parametric form
-            plt.plot(ellipsis[0,:]+centroid['x coord'], ellipsis[1,:]+centroid['y coord'],'k')
+            # Calculate the centroids of each cluster or choose representative points
+            centroids = X_filtered.groupby('cluster').mean()#.reset_index()
+            # Moments analysis
+            moments_of_inertia = {}
+            all_eigenvectors = {}
+            for cluster_label, centroid in centroids.iterrows():
+                # Select the points that belong to the current cluster
+                cluster_points = X_filtered[X_filtered['cluster'] == cluster_label][['x coord', 'y coord']]
 
-            # Store the eigenvalues in the dictionary
-            moments_of_inertia[cluster_label] = eigenvalues
-            all_eigenvectors[cluster_label] = eigenvectors
-            
-            
-        #print(f'moments of inertia \n{moments_of_inertia}')
+                # Subtract the centroid from the cluster points
+                cluster_points -= centroid
+                # Calculate the covariance matrix
+                covariance_matrix = np.cov(cluster_points, rowvar=False)
+                
+                # Calculate the eigenvalues (moment of inertia components) and eigenvectors
+                eigenvalues, eigenvectors = np.linalg.eigh(covariance_matrix)
+                
+                order = eigenvalues.argsort()[::-1] # sort in descending order
+                eigenvalues = eigenvalues[order]
+                eigenvectors = eigenvectors[:,order]
+                largest_eigenvector = eigenvectors[:,0]  # take the largest
+                angle = np.arctan2(largest_eigenvector[1], largest_eigenvector[0]) # arctan is the angle in radians
+                angle_degrees = np.degrees(angle)
+                theta = np.linspace(0, 2*np.pi, 1000);
+                # draw an ellipse:
+                eigenvalues_draw = eigenvalues*3; eigenvectors_draw = eigenvectors
+                ellipsis = (np.sqrt(eigenvalues_draw[None,:]) * eigenvectors_draw) @ [np.sin(theta), np.cos(theta)] # parametric form
+                plt.plot(ellipsis[0,:]+centroid['x coord'], ellipsis[1,:]+centroid['y coord'],'k')
 
-        # Loop through the centroids to annotate the cluster number
-        #for index, row in centroids.iterrows():
-        #    plt.text(row['x coord'], row['y coord'], f"{int(index)}", horizontalalignment='center', size='medium', color='black', weight='semibold')
+                # Store the eigenvalues in the dictionary
+                moments_of_inertia[cluster_label] = eigenvalues
+                all_eigenvectors[cluster_label] = eigenvectors
+                
+                
+            #print(f'moments of inertia \n{moments_of_inertia}')
+            # Loop through the centroids to annotate the cluster number
+            for index, row in centroids.iterrows():
+                plt.text(row['x coord'], row['y coord'], f"{int(index)}", horizontalalignment='center', size='medium', color='black', weight='semibold')
 
-        plt.title('DBSCAN Clustering, eps ='+str(e)+', min_samples = '+str(min_samples) + ', min elements in a cluster = '+str(n_elements))
-        plt.xlabel('x coord')
-        plt.ylabel('y coord')
-
-        plt.gca().set_aspect('equal')  # aspect ratio = image is a square
-        # plt.colorbar(scatter, label='Cluster Label')
-
-        legend_columns = int(len(unique_labels)/20)
-        if legend_columns < 2:
-            legend_columns = 2
-        scatter.legend(ncol=legend_columns,loc='center left',bbox_to_anchor=(1.05, 0.5))
-
+    else:
+        print("Clusters are too small")
 # plt.show()
 
 
 data = read_and_filter_data_from_csv(filename)
 
-# Preparing the data for DBSCAN
-X = data[data['Broken Bonds'] > 0] # Only where there are bb 
-X = X[['x coord','y coord']] # Only x and y coordinates 
-
-
-dbscan_and_plot(X,0.01,min_samples)
+#dbscan_and_plot(X,0.0088,min_samples)
+for e in [0.0088,0.00999, 0.01]:
+    # I need to reset what X is at every cycle
+    X = data[data['Broken Bonds'] > 0] # Only where there are bb 
+    X = X[['x coord','y coord']] # Only x and y coordinates 
+    dbscan_and_plot(X,e,min_samples)
 
 plt.show()  # show all of them at the end
 
 if False:
+    X = data[data['Broken Bonds'] > 0] # Only where there are bb 
     # Use NearestNeighbors to find the distance to the k-th nearest neighbor
     k = min_samples  # Same as your DBSCAN min_samples value
     nearest_neighbors = NearestNeighbors(n_neighbors=k)
