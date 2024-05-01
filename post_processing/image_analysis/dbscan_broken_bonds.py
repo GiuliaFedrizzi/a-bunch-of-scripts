@@ -16,7 +16,7 @@ import sys
 import os
 sys.path.append('/home/home01/scgf/myscripts/post_processing')
 
-from useful_functions import getSaveFreq
+from useful_functions import getSaveFreq,getParameterFromLatte
 from viz_functions import find_dirs,find_variab
 
 #filename = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_3_1e3/vis1e3_mR_08/my_experiment07000.csv'
@@ -26,6 +26,7 @@ filename = 'my_experiment12000.csv'
 #filename = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_1_1e1/vis1e1_mR_06/my_experiment70000.csv'
 
 min_samples = 10
+plot_figures = False  # if I want to visualise clusters, ellipses etc
 
 # read file without using pandas
 # keep only x and y coordinates that have at least one broken bond
@@ -43,42 +44,42 @@ def dbscan_and_plot(X,e,min_samples,df,variab,x_value,melt_value):
     dbscan = DBSCAN(eps=e, min_samples=min_samples).fit(X)
     X['cluster'] = dbscan.labels_
     X=X[X['cluster']>-1]  # remove noise cluster
-    
+
     if len(X)>0:
         n_elements = 40 # minimum number of elements in a cluster to be kept
         cluster_counts = X['cluster'].value_counts()  # count the number of points in each cluster
         large_clusters = cluster_counts[cluster_counts >= n_elements].index
         X_filtered = X[X['cluster'].isin(large_clusters)]
+        # Calculate the centroids of each cluster or choose representative points
+        centroids = X_filtered.groupby('cluster').mean()#.reset_index()
+
         if len(X_filtered)>0:
-            """
-            plt.figure(figsize=(10, 6))
-            # define custom palette with as many colours as there are clusters
-            unique_labels = set(X_filtered['cluster'])
-            palette = sns.color_palette(cc.glasbey, n_colors=len(unique_labels))
+            if plot_figures:
+                plt.figure(figsize=(10, 6))
+                # define custom palette with as many colours as there are clusters
+                unique_labels = set(X_filtered['cluster'])
+                palette = sns.color_palette(cc.glasbey, n_colors=len(unique_labels))
 
-            # scatter = plt.scatter(x_coords, y_coords, c=dbscan.labels_, marker='o', s=10, alpha=0.75,edgecolor='k',linewidth=edges)#, cmap=custom_colormap) #  edgecolor='k',
-            scatter = sns.scatterplot(data=X_filtered,x='x coord',y='y coord',hue='cluster',palette=palette,marker='o',alpha=0.75,s=10,edgecolor='k',linewidth=0)
-            
-            plt.title('DBSCAN Clustering, eps ='+str(e)+', min_samples = '+str(min_samples) + ', min elements in a cluster = '+str(n_elements)+'\n'+os.getcwd())
-            plt.xlabel('x coord')
-            plt.ylabel('y coord')
-            plt.xlim([0,1])
-            plt.ylim([0,1])
-            plt.gca().set_aspect('equal')  # aspect ratio = image is a square
-            # plt.colorbar(scatter, label='Cluster Label')
-
-            legend_columns = int(len(unique_labels)/20)
-            if legend_columns < 2:
-                legend_columns = 2
-            scatter.legend(ncol=legend_columns,loc='center left',bbox_to_anchor=(1.05, 0.5))
-            """
-            # Calculate the centroids of each cluster or choose representative points
-            centroids = X_filtered.groupby('cluster').mean()#.reset_index()
-
-            # Loop through the centroids to annotate the cluster number
-            for index, row in centroids.iterrows():
-                plt.text(row['x coord'], row['y coord'], f"{int(index)}", horizontalalignment='center', size='medium', color='black', weight='semibold')
+                # scatter = plt.scatter(x_coords, y_coords, c=dbscan.labels_, marker='o', s=10, alpha=0.75,edgecolor='k',linewidth=edges)#, cmap=custom_colormap) #  edgecolor='k',
+                scatter = sns.scatterplot(data=X_filtered,x='x coord',y='y coord',hue='cluster',palette=palette,marker='o',alpha=0.75,s=10,edgecolor='k',linewidth=0)
                 
+                plt.title('DBSCAN Clustering, eps ='+str(e)+', min_samples = '+str(min_samples) + ', min elements in a cluster = '+str(n_elements)+'\n'+os.getcwd())
+                plt.xlabel('x coord')
+                plt.ylabel('y coord')
+                plt.xlim([0,1])
+                plt.ylim([0,1])
+                plt.gca().set_aspect('equal')  # aspect ratio = image is a square
+                # plt.colorbar(scatter, label='Cluster Label')
+
+                legend_columns = int(len(unique_labels)/20)
+                if legend_columns < 2:
+                    legend_columns = 2
+                scatter.legend(ncol=legend_columns,loc='center left',bbox_to_anchor=(1.05, 0.5))
+                
+                # Loop through the centroids to annotate the cluster number
+                for index, row in centroids.iterrows():
+                    plt.text(row['x coord'], row['y coord'], f"{int(index)}", horizontalalignment='center', size='medium', color='black', weight='semibold')
+
             # Moments analysis
             moments_of_inertia = {}
             all_eigenvectors = {}
@@ -107,7 +108,8 @@ def dbscan_and_plot(X,e,min_samples,df,variab,x_value,melt_value):
                 # draw an ellipse:
                 eigenvalues_draw = eigenvalues*3; eigenvectors_draw = eigenvectors
                 ellipsis = (np.sqrt(eigenvalues_draw[None,:]) * eigenvectors_draw) @ [np.sin(theta), np.cos(theta)] # parametric form
-                # plt.plot(ellipsis[0,:]+centroid['x coord'], ellipsis[1,:]+centroid['y coord'],'k')
+                if plot_figures:
+                    plt.plot(ellipsis[0,:]+centroid['x coord'], ellipsis[1,:]+centroid['y coord'],'k')
 
                 # Store the eigenvalues in the dictionary
                 moments_of_inertia[cluster_label] = eigenvalues
@@ -153,10 +155,13 @@ x_variable = find_dirs()  # viscosity dirs
 
 for x in x_variable:
     if variab == "viscosity":
-        x_value = x.split('_')[2]  # take the third part of the string, the one that comes after _     -> from visc_1_1e1 to 1e1
+        x_value = float(getParameterFromLatte(x+'/baseFiles/input.txt','mu_f'))
     elif variab == "def_rate":
-        x_value = x.split('def')[1]  # take the second part of the string, the one that comes after def     -> from pdef1e8 to 1e8
-    print(f'x {x}, x_value {x_value}')
+        x_value = float(getParameterFromLatte(x+'/baseFiles/input.txt','defRate'))
+        # x_value = x.split('def')[1]  # take the second part of the string, the one that comes after def     -> from pdef1e8 to 1e8
+    # print(f'x {x}, x_value {x_value}')
+    if x == "visc_2_1e25":
+        break
     os.chdir(x)  # enter viscosity dir
     melt_labels = find_dirs()
     melt_labels.reverse()
@@ -165,11 +170,11 @@ for x in x_variable:
             melt_value = '0.00'+m.split('mR_0')[1]    # from full name of directory to 0.001, 0.002 etc
         else:
             melt_labels = '0.00'+m.split('mR0')[1]    # from full name of directory to 0.001, 0.002 etc
-        print(f'm {m}, melt_value {melt_value}')
+        # print(f'm {m}, melt_value {melt_value}')
 
         data = read_and_filter_data_from_csv(m+'/'+filename)
         if data.empty:
-            print("empty df")
+            print("empty df") 
             continue
         X = data[data['Broken Bonds'] > 0] # Only where there are bb 
         X = X[['x coord','y coord']] # Only x and y coordinates 
@@ -185,7 +190,8 @@ print(df)
 #    X = X[['x coord','y coord']] # Only x and y coordinates 
 #    dbscan_and_plot(X,e,min_samples)
 
-#plt.show()  # show all of them at the end
+if plot_figures:
+    plt.show()  # show all of them at the end
 
 if False:
     X = data[data['Broken Bonds'] > 0] # Only where there are bb 
