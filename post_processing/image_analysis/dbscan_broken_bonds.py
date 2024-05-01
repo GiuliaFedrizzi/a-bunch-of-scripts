@@ -13,13 +13,16 @@ import seaborn as sns
 import colorcet  as cc
 import pandas as pd
 import sys
+import os
 sys.path.append('/home/home01/scgf/myscripts/post_processing')
 
 from useful_functions import getSaveFreq
+from viz_functions import find_dirs,find_variab
 
 #filename = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_3_1e3/vis1e3_mR_08/my_experiment07000.csv'
 #filename = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_3_1e3/vis1e3_mR_08/my_experiment16000.csv'
-filename = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_3_1e3/vis1e3_mR_08/my_experiment12000.csv'
+#filename = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_3_1e3/vis1e3_mR_08/my_experiment12000.csv'
+filename = 'my_experiment12000.csv'
 #filename = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_1_1e1/vis1e1_mR_06/my_experiment70000.csv'
 
 min_samples = 10
@@ -27,26 +30,28 @@ min_samples = 10
 # read file without using pandas
 # keep only x and y coordinates that have at least one broken bond
 def read_and_filter_data_from_csv(file_path):
-    all_data = pd.read_csv(file_path)
-    bb_df = all_data[['x coord','y coord','Broken Bonds']]
+    print(file_path)
+    if os.path.isfile(file_path):
+        all_data = pd.read_csv(file_path)
+        bb_df = all_data[['x coord','y coord','Broken Bonds']]
 
-    return bb_df
+        return bb_df
+    else:
+        return pd.DataFrame() 
 
-
-def dbscan_and_plot(X,e,min_samples):
+def dbscan_and_plot(X,e,min_samples,df,variab,x_value,melt_value):
     dbscan = DBSCAN(eps=e, min_samples=min_samples).fit(X)
     X['cluster'] = dbscan.labels_
     X=X[X['cluster']>-1]  # remove noise cluster
     
     if len(X)>0:
-        # Plotting
-        plt.figure(figsize=(10, 6))
-
         n_elements = 40 # minimum number of elements in a cluster to be kept
         cluster_counts = X['cluster'].value_counts()  # count the number of points in each cluster
         large_clusters = cluster_counts[cluster_counts >= n_elements].index
         X_filtered = X[X['cluster'].isin(large_clusters)]
         if len(X_filtered)>0:
+            """
+            plt.figure(figsize=(10, 6))
             # define custom palette with as many colours as there are clusters
             unique_labels = set(X_filtered['cluster'])
             palette = sns.color_palette(cc.glasbey, n_colors=len(unique_labels))
@@ -54,10 +59,11 @@ def dbscan_and_plot(X,e,min_samples):
             # scatter = plt.scatter(x_coords, y_coords, c=dbscan.labels_, marker='o', s=10, alpha=0.75,edgecolor='k',linewidth=edges)#, cmap=custom_colormap) #  edgecolor='k',
             scatter = sns.scatterplot(data=X_filtered,x='x coord',y='y coord',hue='cluster',palette=palette,marker='o',alpha=0.75,s=10,edgecolor='k',linewidth=0)
             
-            plt.title('DBSCAN Clustering, eps ='+str(e)+', min_samples = '+str(min_samples) + ', min elements in a cluster = '+str(n_elements)+'\n'+filename)
+            plt.title('DBSCAN Clustering, eps ='+str(e)+', min_samples = '+str(min_samples) + ', min elements in a cluster = '+str(n_elements)+'\n'+os.getcwd())
             plt.xlabel('x coord')
             plt.ylabel('y coord')
-
+            plt.xlim([0,1])
+            plt.ylim([0,1])
             plt.gca().set_aspect('equal')  # aspect ratio = image is a square
             # plt.colorbar(scatter, label='Cluster Label')
 
@@ -65,9 +71,14 @@ def dbscan_and_plot(X,e,min_samples):
             if legend_columns < 2:
                 legend_columns = 2
             scatter.legend(ncol=legend_columns,loc='center left',bbox_to_anchor=(1.05, 0.5))
-            
+            """
             # Calculate the centroids of each cluster or choose representative points
             centroids = X_filtered.groupby('cluster').mean()#.reset_index()
+
+            # Loop through the centroids to annotate the cluster number
+            for index, row in centroids.iterrows():
+                plt.text(row['x coord'], row['y coord'], f"{int(index)}", horizontalalignment='center', size='medium', color='black', weight='semibold')
+                
             # Moments analysis
             moments_of_inertia = {}
             all_eigenvectors = {}
@@ -96,7 +107,7 @@ def dbscan_and_plot(X,e,min_samples):
                 # draw an ellipse:
                 eigenvalues_draw = eigenvalues*3; eigenvectors_draw = eigenvectors
                 ellipsis = (np.sqrt(eigenvalues_draw[None,:]) * eigenvectors_draw) @ [np.sin(theta), np.cos(theta)] # parametric form
-                plt.plot(ellipsis[0,:]+centroid['x coord'], ellipsis[1,:]+centroid['y coord'],'k')
+                # plt.plot(ellipsis[0,:]+centroid['x coord'], ellipsis[1,:]+centroid['y coord'],'k')
 
                 # Store the eigenvalues in the dictionary
                 moments_of_inertia[cluster_label] = eigenvalues
@@ -111,24 +122,62 @@ def dbscan_and_plot(X,e,min_samples):
             weighted_elong = sum(elong * all_sizes[cluster] for cluster, elong in all_elong.items())
             weighted_average_elong = weighted_elong / sum(all_sizes.values())
 
-            cluster_data = {'cluster_n':len(all_sizes),'average_size':sum(all_sizes.values())/len(all_sizes),'average_angle':weighted_average_angle,'average_elong':weighted_average_elong}
-            print(cluster_data)
+            cluster_data = {'cluster_n':len(all_sizes),'average_size':sum(all_sizes.values())/len(all_sizes),'average_angle':weighted_average_angle,
+            'average_elong':weighted_average_elong,variab:x_value,'melt_rate':melt_value}
             
-            #print(f'moments of inertia \n{moments_of_inertia}')
-            # Loop through the centroids to annotate the cluster number
-            for index, row in centroids.iterrows():
-                plt.text(row['x coord'], row['y coord'], f"{int(index)}", horizontalalignment='center', size='medium', color='black', weight='semibold')
-            
+        else:
+            """ clusters were found, but they are too small: populate the dataframe with NaN """
+            cluster_data = {'cluster_n':float('NaN'),'average_size':float('NaN'),'average_angle':float('NaN'),
+            'average_elong':float('NaN'),variab:x_value,'melt_rate':melt_value}
+            print("Clusters are too small")
+
     else:
-        print("Clusters are too small")
+        """ no clusters were found: populate the dataframe with NaN """
+        cluster_data = {'cluster_n':float('NaN'),'average_size':float('NaN'),'average_angle':float('NaN'),
+            'average_elong':float('NaN'),variab:x_value,'melt_rate':melt_value}
+        print("No Clusters")
+        
+    # add the new data to the existing dataframe
+    cluster_df = pd.DataFrame(cluster_data,index=[0])
+    df = pd.concat([df,cluster_df], ignore_index=True) 
+    
+    return df
 # plt.show()
-
+parent_dir_path = 'rt0.5/'
 df = pd.DataFrame()
-data = read_and_filter_data_from_csv(filename)
-X = data[data['Broken Bonds'] > 0] # Only where there are bb 
-X = X[['x coord','y coord']] # Only x and y coordinates 
-dbscan_and_plot(X,0.0088,min_samples)
 
+# get the list of directories, viscosity dirs and melt rate dirs
+os.chdir(parent_dir_path)
+variab = find_variab()
+x_variable = find_dirs()  # viscosity dirs
+
+for x in x_variable:
+    if variab == "viscosity":
+        x_value = x.split('_')[2]  # take the third part of the string, the one that comes after _     -> from visc_1_1e1 to 1e1
+    elif variab == "def_rate":
+        x_value = x.split('def')[1]  # take the second part of the string, the one that comes after def     -> from pdef1e8 to 1e8
+    print(f'x {x}, x_value {x_value}')
+    os.chdir(x)  # enter viscosity dir
+    melt_labels = find_dirs()
+    melt_labels.reverse()
+    for m in melt_labels:
+        if '_mR_0' in m:
+            melt_value = '0.00'+m.split('mR_0')[1]    # from full name of directory to 0.001, 0.002 etc
+        else:
+            melt_labels = '0.00'+m.split('mR0')[1]    # from full name of directory to 0.001, 0.002 etc
+        print(f'm {m}, melt_value {melt_value}')
+
+        data = read_and_filter_data_from_csv(m+'/'+filename)
+        if data.empty:
+            print("empty df")
+            continue
+        X = data[data['Broken Bonds'] > 0] # Only where there are bb 
+        X = X[['x coord','y coord']] # Only x and y coordinates 
+        if len(X) > 0:
+            df = dbscan_and_plot(X,0.0088,min_samples,df,variab,x_value,melt_value)
+    os.chdir('..')
+# plt.show()  # show all of them at the end
+print(df)
 #dbscan_and_plot(X,0.0088,min_samples)
 #for e in [0.0088,0.00999, 0.01]:
 #    # I need to reset what X is at every cycle
@@ -136,7 +185,7 @@ dbscan_and_plot(X,0.0088,min_samples)
 #    X = X[['x coord','y coord']] # Only x and y coordinates 
 #    dbscan_and_plot(X,e,min_samples)
 
-plt.show()  # show all of them at the end
+#plt.show()  # show all of them at the end
 
 if False:
     X = data[data['Broken Bonds'] > 0] # Only where there are bb 
