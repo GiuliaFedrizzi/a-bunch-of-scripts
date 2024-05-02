@@ -159,40 +159,46 @@ def plot_cluster_data(df):
     # prepare to handle NaNs
     mask = df['average_size'].isna()
 
-    plt.figure(figsize=(10, 6))
-    gs = gridspec.GridSpec(2, 2, width_ratios=[5, 1], height_ratios=[1, 5])
-    # unique_viscosity_values = set(df['viscosity'])
+    plt.figure(figsize=(10, 10))
+    gs = gridspec.GridSpec(2, 2, width_ratios=[3, 1], height_ratios=[1, 3])
+    unique_viscosity_values = set(df['viscosity'])
     #prepare labels
-    # viscosity_labels = {}
-    # for v in unique_viscosity_values:
-       
-    #     viscosity_labels[v] = '10^'+str(np.log10(v))
+    viscosity_labels = {}
+    for v in unique_viscosity_values:
+        viscosity_labels[v] = "$10^{"+str(np.log10(v))+"}$"
+    df['viscosity_label'] = df['viscosity'].map(viscosity_labels)
+    df['melt_rate'] = df['melt_rate'].astype(str)
 
-    # print(f'viscosity_labels {viscosity_labels}')
 
     # Heatmap
     ax0 = plt.subplot(gs[1, 0])
     # sns.heatmap(heatmap_data, ax=ax0, cmap="viridis", cbar_kws={'label': 'Average Size'})
-    sns.scatterplot(data=df, x='viscosity',y='melt_rate',hue='average_size',marker='s',s=700, ax=ax0, cmap="viridis")
+    sns.scatterplot(data=df, x='viscosity',y='melt_rate',hue='average_size',
+                    marker='s',s=1000, ax=ax0, cmap="viridis")
     ax0.set_xlabel("Viscosity")
     ax0.set_ylabel("Melt Rate")
     ax0.set_xscale('log')
 
     # Scatter plot for NaN values 
     sns.scatterplot(data=df[mask], x='viscosity', y='melt_rate', color='gray',
-                    marker='s', s=700, ax=ax0)
+                    marker='s', s=1000, ax=ax0)
 
     # Top plot (Viscosity vs Average Size)
     ax1 = plt.subplot(gs[0, 0], sharex=ax0)   # sharex  so they are aligned
-    sns.lineplot(data=df, x="viscosity", y="average_size",hue="melt_rate", ax=ax1)
+    sns.lineplot(data=df, x="viscosity", y="average_size",hue="melt_rate", ax=ax1, palette="viridis")
     ax1.set_xlabel("")
     ax1.set_ylabel("Average Size")
+    ax1.legend(title="Melt Rate",ncol=1, fontsize=7, title_fontsize=9)
+    ax1.xaxis.tick_top()
 
     # Right plot (Melt Rate vs Average Size)
     ax2 = plt.subplot(gs[1, 1], sharey=ax0)    # sharey  so they are aligned
-    sns.lineplot(data=df, x="average_size", y="melt_rate",hue="viscosity", ax=ax2)
+    sns.lineplot(data=df, x="average_size", y="melt_rate",hue="viscosity_label", ax=ax2, palette="viridis")
     ax2.set_ylabel("")
+    # ax2.set_yticks("")  # no ticks - it removes them from the heatmap too
     ax2.set_xlabel("Average Size")
+    ax2.legend(title="$\mu_f$", fontsize=7, title_fontsize=9)
+    ax2.yaxis.tick_right()
 
     # Adjust layout to prevent overlap
     plt.tight_layout()
@@ -204,7 +210,7 @@ def plot_cluster_data(df):
 def cluster_analysis(t):
     df = pd.DataFrame()
 
-    csv_name = 'cluster_data.csv'
+    csv_name = 'cluster_data'+str(t)+'.csv'
 
     if not os.path.isfile(csv_name):
         variab = find_variab()
@@ -231,6 +237,7 @@ def cluster_analysis(t):
                 melt_number = melt_value.split("0")[-1]  # take the last value, ignore zeros
                 file_number = str(round(t/(int(melt_number))/save_freq)*save_freq).zfill(5)  # normalise t by the melt rate.  .zfill(6) fills the string with 0 until it's 5 characters long
                 print(f'file n normalised {file_number}')
+                # melt_value = float(melt_value)
                 data = read_and_filter_data_from_csv(m+'/my_experiment'+file_number+'.csv')
                 if data.empty:
                     print("empty df") 
@@ -244,7 +251,7 @@ def cluster_analysis(t):
     else:
         df = pd.read_csv(csv_name)
         print("reading")
-    print(df)
+    # print(df)
     print(os.getcwd())
     if not os.path.isfile(csv_name):
         df.to_csv(csv_name)
