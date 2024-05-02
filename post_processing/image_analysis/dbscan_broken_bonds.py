@@ -14,6 +14,8 @@ import colorcet  as cc
 import pandas as pd
 import sys
 import os
+import matplotlib.gridspec as gridspec
+
 sys.path.append('/home/home01/scgf/myscripts/post_processing')
 
 from useful_functions import getSaveFreq,getParameterFromLatte
@@ -31,7 +33,7 @@ plot_figures = False  # if I want to visualise clusters, ellipses etc
 # read file without using pandas
 # keep only x and y coordinates that have at least one broken bond
 def read_and_filter_data_from_csv(file_path):
-    print(file_path)
+    # print(file_path)
     if os.path.isfile(file_path):
         all_data = pd.read_csv(file_path)
         bb_df = all_data[['x coord','y coord','Broken Bonds']]
@@ -144,51 +146,103 @@ def dbscan_and_plot(X,e,min_samples,df,variab,x_value,melt_value):
     df = pd.concat([df,cluster_df], ignore_index=True) 
     
     return df
+
+def plot_cluster_data(df):
+    # prepare to handle NaNs
+    mask = df['average_size'].isna()
+
+    plt.figure(figsize=(10, 6))
+    gs = gridspec.GridSpec(2, 2, width_ratios=[5, 1], height_ratios=[1, 5])
+    # unique_viscosity_values = set(df['viscosity'])
+    #prepare labels
+    # viscosity_labels = {}
+    # for v in unique_viscosity_values:
+       
+    #     viscosity_labels[v] = '10^'+str(np.log10(v))
+
+    # print(f'viscosity_labels {viscosity_labels}')
+
+    # Heatmap
+    ax0 = plt.subplot(gs[1, 0])
+    # sns.heatmap(heatmap_data, ax=ax0, cmap="viridis", cbar_kws={'label': 'Average Size'})
+    sns.scatterplot(data=df, x='viscosity',y='melt_rate',hue='average_size',marker='s',s=700, ax=ax0, cmap="viridis")
+    ax0.set_xlabel("Viscosity")
+    ax0.set_ylabel("Melt Rate")
+    ax0.set_xscale('log')
+
+    # Scatter plot for NaN values 
+    sns.scatterplot(data=df[mask], x='viscosity', y='melt_rate', color='gray',
+                    marker='s', s=700, ax=ax0)
+
+    # Top plot (Viscosity vs Average Size)
+    ax1 = plt.subplot(gs[0, 0], sharex=ax0)   # sharex  so they are aligned
+    sns.lineplot(data=df, x="viscosity", y="average_size",hue="melt_rate", ax=ax1)
+    ax1.set_xlabel("")
+    ax1.set_ylabel("Average Size")
+
+    # Right plot (Melt Rate vs Average Size)
+    ax2 = plt.subplot(gs[1, 1], sharey=ax0)    # sharey  so they are aligned
+    sns.lineplot(data=df, x="average_size", y="melt_rate",hue="viscosity", ax=ax2)
+    ax2.set_ylabel("")
+    ax2.set_xlabel("Average Size")
+
+    # Adjust layout to prevent overlap
+    plt.tight_layout()
+
+    # Show the plot
+    plt.show()
+
 # plt.show()
 parent_dir_path = 'rt0.5/'
 df = pd.DataFrame()
 
 # get the list of directories, viscosity dirs and melt rate dirs
 os.chdir(parent_dir_path)
-variab = find_variab()
-x_variable = find_dirs()  # viscosity dirs
 
-for x in x_variable:
-    if variab == "viscosity":
-        x_value = float(getParameterFromLatte(x+'/baseFiles/input.txt','mu_f'))
-    elif variab == "def_rate":
-        x_value = float(getParameterFromLatte(x+'/baseFiles/input.txt','defRate'))
-        # x_value = x.split('def')[1]  # take the second part of the string, the one that comes after def     -> from pdef1e8 to 1e8
-    # print(f'x {x}, x_value {x_value}')
-    if x == "visc_2_1e25":
-        break
-    os.chdir(x)  # enter viscosity dir
-    melt_labels = find_dirs()
-    melt_labels.reverse()
-    for m in melt_labels:
-        if '_mR_0' in m:
-            melt_value = '0.00'+m.split('mR_0')[1]    # from full name of directory to 0.001, 0.002 etc
-        else:
-            melt_labels = '0.00'+m.split('mR0')[1]    # from full name of directory to 0.001, 0.002 etc
-        # print(f'm {m}, melt_value {melt_value}')
+csv_name = 'cluster_data.csv'
 
-        data = read_and_filter_data_from_csv(m+'/'+filename)
-        if data.empty:
-            print("empty df") 
-            continue
-        X = data[data['Broken Bonds'] > 0] # Only where there are bb 
-        X = X[['x coord','y coord']] # Only x and y coordinates 
-        if len(X) > 0:
-            df = dbscan_and_plot(X,0.0088,min_samples,df,variab,x_value,melt_value)
-    os.chdir('..')
-# plt.show()  # show all of them at the end
+if not os.path.isfile(csv_name):
+    variab = find_variab()
+    x_variable = find_dirs()  # viscosity dirs
+
+    for x in x_variable:
+        if variab == "viscosity":
+            x_value = float(getParameterFromLatte(x+'/baseFiles/input.txt','mu_f'))
+        elif variab == "def_rate":
+            x_value = float(getParameterFromLatte(x+'/baseFiles/input.txt','defRate'))
+            # x_value = x.split('def')[1]  # take the second part of the string, the one that comes after def     -> from pdef1e8 to 1e8
+        # print(f'x {x}, x_value {x_value}')
+
+
+        os.chdir(x)  # enter viscosity dir
+        melt_labels = find_dirs()
+        melt_labels.reverse()
+        for m in melt_labels:
+            if '_mR_0' in m:
+                melt_value = '0.00'+m.split('mR_0')[1]    # from full name of directory to 0.001, 0.002 etc
+            else:
+                melt_labels = '0.00'+m.split('mR0')[1]    # from full name of directory to 0.001, 0.002 etc
+            # print(f'm {m}, melt_value {melt_value}')
+
+            data = read_and_filter_data_from_csv(m+'/'+filename)
+            if data.empty:
+                print("empty df") 
+                continue
+            X = data[data['Broken Bonds'] > 0] # Only where there are bb 
+            X = X[['x coord','y coord']] # Only x and y coordinates 
+            if len(X) > 0:
+                df = dbscan_and_plot(X,0.0088,min_samples,df,variab,x_value,melt_value)
+        os.chdir('..')
+
+else:
+    df = pd.read_csv(csv_name)
+    print("reading")
 print(df)
-#dbscan_and_plot(X,0.0088,min_samples)
-#for e in [0.0088,0.00999, 0.01]:
-#    # I need to reset what X is at every cycle
-#    X = data[data['Broken Bonds'] > 0] # Only where there are bb 
-#    X = X[['x coord','y coord']] # Only x and y coordinates 
-#    dbscan_and_plot(X,e,min_samples)
+print(os.getcwd())
+if not os.path.isfile(csv_name):
+    df.to_csv(csv_name)
+    print("saving")
+plot_cluster_data(df)
 
 if plot_figures:
     plt.show()  # show all of them at the end
