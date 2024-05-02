@@ -155,12 +155,17 @@ def dbscan_and_plot(X,e,min_samples,df,variab,x_value,melt_value):
     
     return df
 
-def plot_cluster_data(df):
+def plot_cluster_data(df,cluster_variable,cluster_variable_label):
     # prepare to handle NaNs
-    mask = df['average_size'].isna()
+    mask = df[cluster_variable].isna()
 
-    plt.figure(figsize=(10, 10))
+    fig = plt.figure(figsize=(8, 10))
+
+
     gs = gridspec.GridSpec(2, 2, width_ratios=[3, 1], height_ratios=[1, 3])
+    # Adjust layout to prevent overlap
+    plt.tight_layout()
+    fig.suptitle("t = " + str(t))
     unique_viscosity_values = set(df['viscosity'])
     #prepare labels
     viscosity_labels = {}
@@ -169,42 +174,41 @@ def plot_cluster_data(df):
     df['viscosity_label'] = df['viscosity'].map(viscosity_labels)
     df['melt_rate'] = df['melt_rate'].astype(str)
 
-
-    # Heatmap
+    # pseudo heatmap
+    square_size = 3000
     ax0 = plt.subplot(gs[1, 0])
     # sns.heatmap(heatmap_data, ax=ax0, cmap="viridis", cbar_kws={'label': 'Average Size'})
-    sns.scatterplot(data=df, x='viscosity',y='melt_rate',hue='average_size',
-                    marker='s',s=1000, ax=ax0, cmap="viridis")
+    sns.scatterplot(data=df, x='viscosity',y='melt_rate',hue=cluster_variable,
+                    marker='s',s=square_size, ax=ax0, palette="crest")
     ax0.set_xlabel("Viscosity")
     ax0.set_ylabel("Melt Rate")
     ax0.set_xscale('log')
 
     # Scatter plot for NaN values 
     sns.scatterplot(data=df[mask], x='viscosity', y='melt_rate', color='gray',
-                    marker='s', s=1000, ax=ax0)
+                    marker='s', s=square_size, ax=ax0)
 
     # Top plot (Viscosity vs Average Size)
     ax1 = plt.subplot(gs[0, 0], sharex=ax0)   # sharex  so they are aligned
-    sns.lineplot(data=df, x="viscosity", y="average_size",hue="melt_rate", ax=ax1, palette="viridis")
+    sns.lineplot(data=df, x="viscosity", y=cluster_variable,hue="melt_rate", ax=ax1, palette="viridis")
     ax1.set_xlabel("")
-    ax1.set_ylabel("Average Size")
+    ax1.set_ylabel(cluster_variable_label)
     ax1.legend(title="Melt Rate",ncol=1, fontsize=7, title_fontsize=9)
     ax1.xaxis.tick_top()
 
     # Right plot (Melt Rate vs Average Size)
     ax2 = plt.subplot(gs[1, 1], sharey=ax0)    # sharey  so they are aligned
-    sns.lineplot(data=df, x="average_size", y="melt_rate",hue="viscosity_label", ax=ax2, palette="viridis")
+    sns.lineplot(data=df, x=cluster_variable, y="melt_rate",hue="viscosity_label", ax=ax2, palette="viridis")
     ax2.set_ylabel("")
     # ax2.set_yticks("")  # no ticks - it removes them from the heatmap too
-    ax2.set_xlabel("Average Size")
+    ax2.set_xlabel(cluster_variable_label)
     ax2.legend(title="$\mu_f$", fontsize=7, title_fontsize=9)
     ax2.yaxis.tick_right()
 
-    # Adjust layout to prevent overlap
-    plt.tight_layout()
 
     # Show the plot
-    plt.show()
+    # plt.show()
+    plt.savefig("cluster_"+cluster_variable+"_"+str(t)+".png")
 
 
 def cluster_analysis(t):
@@ -212,6 +216,7 @@ def cluster_analysis(t):
 
     csv_name = 'cluster_data'+str(t)+'.csv'
 
+    # check if there is already a file with the data. If there isn't, read and calculate
     if not os.path.isfile(csv_name):
         variab = find_variab()
         x_variable = find_dirs()  # viscosity dirs
@@ -248,15 +253,26 @@ def cluster_analysis(t):
                     df = dbscan_and_plot(X,0.0088,min_samples,df,variab,x_value,melt_value)
             os.chdir('..')
 
+            # now that it has read and calculated, save the data for next time
+            df.to_csv(csv_name)
+            print("saving")
+
     else:
         df = pd.read_csv(csv_name)
         print("reading")
-    # print(df)
-    print(os.getcwd())
-    if not os.path.isfile(csv_name):
-        df.to_csv(csv_name)
-        print("saving")
-    plot_cluster_data(df)
+        
+    
+    # cluster_variables = ['cluster_n','average_size','average_angle','average_elong']
+    # for i,cluster_variable in enumerate(cluster_variables):
+    #     plot_cluster_data(df,cluster_variable,cluster_variable_labels[i])
+    cluster_variables = {'cluster_n': "Number of Clusters",
+            'average_size':"Average Cluster Size",
+            'average_angle':"Average Angle",
+            'average_elong':"Average Elongation"}
+
+    for cluster_variable in cluster_variables:
+        # print(f'cluster_variable {cluster_variable}, cluster_variables[cluster_variable] {cluster_variables[cluster_variable]}')
+        plot_cluster_data(df,cluster_variable,cluster_variables[cluster_variable])
 
     if plot_figures:
         plt.show()  # show all of them at the end
