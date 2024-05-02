@@ -27,6 +27,14 @@ from viz_functions import find_dirs,find_variab
 filename = 'my_experiment12000.csv'
 #filename = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_1_1e1/vis1e1_mR_06/my_experiment70000.csv'
 
+
+save_freq = int(getSaveFreq())
+
+# times = list(range(1, 20, 1)) + list(range(20, 141, 5)) + list(range(150, 501, 20)) + list(range(500, 801, 20)) + list(range(850, 1500, 40))
+times = [100, 150]
+times = [i*save_freq for i in times]   # convert to timestep
+
+
 min_samples = 10
 plot_figures = False  # if I want to visualise clusters, ellipses etc
 
@@ -192,78 +200,84 @@ def plot_cluster_data(df):
     # Show the plot
     plt.show()
 
-# plt.show()
-parent_dir_path = 'rt0.5/'
-df = pd.DataFrame()
 
+def cluster_analysis(t):
+    df = pd.DataFrame()
+
+    csv_name = 'cluster_data.csv'
+
+    if not os.path.isfile(csv_name):
+        variab = find_variab()
+        x_variable = find_dirs()  # viscosity dirs
+
+        for x in x_variable:
+            if variab == "viscosity":
+                x_value = float(getParameterFromLatte(x+'/baseFiles/input.txt','mu_f'))
+            elif variab == "def_rate":
+                x_value = float(getParameterFromLatte(x+'/baseFiles/input.txt','defRate'))
+                # x_value = x.split('def')[1]  # take the second part of the string, the one that comes after def     -> from pdef1e8 to 1e8
+            # print(f'x {x}, x_value {x_value}')
+
+
+            os.chdir(x)  # enter viscosity dir
+            melt_labels = find_dirs()
+            melt_labels.reverse()
+            for m in melt_labels:
+                if '_mR_0' in m:
+                    melt_value = '0.00'+m.split('mR_0')[1]    # from full name of directory to 0.001, 0.002 etc
+                else:
+                    melt_value = '0.00'+m.split('mR0')[1]    # from full name of directory to 0.001, 0.002 etc
+                # print(f'm {m}, melt_value {melt_value}')
+                melt_number = melt_value.split("0")[-1]  # take the last value, ignore zeros
+                file_number = str(round(t/(int(melt_number))/save_freq)*save_freq).zfill(5)  # normalise t by the melt rate.  .zfill(6) fills the string with 0 until it's 5 characters long
+                print(f'file n normalised {file_number}')
+                data = read_and_filter_data_from_csv(m+'/my_experiment'+file_number+'.csv')
+                if data.empty:
+                    print("empty df") 
+                    continue
+                X = data[data['Broken Bonds'] > 0] # Only where there are bb 
+                X = X[['x coord','y coord']] # Only x and y coordinates 
+                if len(X) > 0:
+                    df = dbscan_and_plot(X,0.0088,min_samples,df,variab,x_value,melt_value)
+            os.chdir('..')
+
+    else:
+        df = pd.read_csv(csv_name)
+        print("reading")
+    print(df)
+    print(os.getcwd())
+    if not os.path.isfile(csv_name):
+        df.to_csv(csv_name)
+        print("saving")
+    plot_cluster_data(df)
+
+    if plot_figures:
+        plt.show()  # show all of them at the end
+
+    if False:
+        X = data[data['Broken Bonds'] > 0] # Only where there are bb 
+        # Use NearestNeighbors to find the distance to the k-th nearest neighbor
+        k = min_samples  # Same as your DBSCAN min_samples value
+        nearest_neighbors = NearestNeighbors(n_neighbors=k)
+        neighbors_fit = nearest_neighbors.fit(X)
+        distances, indices = neighbors_fit.kneighbors(X)
+
+        # Sort the distances
+        distances = np.sort(distances[:, k-1], axis=0)
+
+        # Plotting
+        plt.figure(figsize=(10, 6))
+        plt.plot(distances)
+        plt.xlabel('Points sorted by distance to the 5th nearest neighbor')
+        plt.ylabel(str(min_samples)+'th nearest neighbor distance')
+        plt.title(str(min_samples)+'th Nearest Neighbor Distance vs. Points')
+        plt.grid(True)
+        plt.show()
+
+
+parent_dir_path = 'rt0.5/'
 # get the list of directories, viscosity dirs and melt rate dirs
 os.chdir(parent_dir_path)
 
-csv_name = 'cluster_data.csv'
-
-if not os.path.isfile(csv_name):
-    variab = find_variab()
-    x_variable = find_dirs()  # viscosity dirs
-
-    for x in x_variable:
-        if variab == "viscosity":
-            x_value = float(getParameterFromLatte(x+'/baseFiles/input.txt','mu_f'))
-        elif variab == "def_rate":
-            x_value = float(getParameterFromLatte(x+'/baseFiles/input.txt','defRate'))
-            # x_value = x.split('def')[1]  # take the second part of the string, the one that comes after def     -> from pdef1e8 to 1e8
-        # print(f'x {x}, x_value {x_value}')
-
-
-        os.chdir(x)  # enter viscosity dir
-        melt_labels = find_dirs()
-        melt_labels.reverse()
-        for m in melt_labels:
-            if '_mR_0' in m:
-                melt_value = '0.00'+m.split('mR_0')[1]    # from full name of directory to 0.001, 0.002 etc
-            else:
-                melt_labels = '0.00'+m.split('mR0')[1]    # from full name of directory to 0.001, 0.002 etc
-            # print(f'm {m}, melt_value {melt_value}')
-
-            data = read_and_filter_data_from_csv(m+'/'+filename)
-            if data.empty:
-                print("empty df") 
-                continue
-            X = data[data['Broken Bonds'] > 0] # Only where there are bb 
-            X = X[['x coord','y coord']] # Only x and y coordinates 
-            if len(X) > 0:
-                df = dbscan_and_plot(X,0.0088,min_samples,df,variab,x_value,melt_value)
-        os.chdir('..')
-
-else:
-    df = pd.read_csv(csv_name)
-    print("reading")
-print(df)
-print(os.getcwd())
-if not os.path.isfile(csv_name):
-    df.to_csv(csv_name)
-    print("saving")
-plot_cluster_data(df)
-
-if plot_figures:
-    plt.show()  # show all of them at the end
-
-if False:
-    X = data[data['Broken Bonds'] > 0] # Only where there are bb 
-    # Use NearestNeighbors to find the distance to the k-th nearest neighbor
-    k = min_samples  # Same as your DBSCAN min_samples value
-    nearest_neighbors = NearestNeighbors(n_neighbors=k)
-    neighbors_fit = nearest_neighbors.fit(X)
-    distances, indices = neighbors_fit.kneighbors(X)
-
-    # Sort the distances
-    distances = np.sort(distances[:, k-1], axis=0)
-
-    # Plotting
-    plt.figure(figsize=(10, 6))
-    plt.plot(distances)
-    plt.xlabel('Points sorted by distance to the 5th nearest neighbor')
-    plt.ylabel(str(min_samples)+'th nearest neighbor distance')
-    plt.title(str(min_samples)+'th Nearest Neighbor Distance vs. Points')
-    plt.grid(True)
-    plt.show()
-
+for t in times:
+    cluster_analysis(t)
