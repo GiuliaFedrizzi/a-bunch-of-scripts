@@ -31,7 +31,7 @@ filename = 'my_experiment12000.csv'
 save_freq = int(getSaveFreq())
 
 # times = list(range(1, 20, 1)) + list(range(20, 141, 5)) + list(range(150, 501, 20)) + list(range(500, 801, 20)) + list(range(850, 1500, 40))
-times = [100, 150]
+times = [100]
 times = [i*save_freq for i in times]   # convert to timestep
 
 
@@ -135,18 +135,18 @@ def dbscan_and_plot(X,e,min_samples,df,variab,x_value,melt_value):
             weighted_average_elong = weighted_elong / sum(all_sizes.values())
 
             cluster_data = {'cluster_n':len(all_sizes),'average_size':sum(all_sizes.values())/len(all_sizes),'average_angle':weighted_average_angle,
-            'average_elong':weighted_average_elong,variab:x_value,'melt_rate':melt_value}
+            'average_angle_from_90':abs(90-weighted_average_angle),'average_elong':weighted_average_elong,variab:x_value,'melt_rate':melt_value}
             
         else:
             """ clusters were found, but they are too small: populate the dataframe with NaN """
             cluster_data = {'cluster_n':float('NaN'),'average_size':float('NaN'),'average_angle':float('NaN'),
-            'average_elong':float('NaN'),variab:x_value,'melt_rate':melt_value}
+            'average_angle_from_90':float('NaN'),'average_elong':float('NaN'),variab:x_value,'melt_rate':melt_value}
             print("Clusters are too small")
 
     else:
         """ no clusters were found: populate the dataframe with NaN """
         cluster_data = {'cluster_n':float('NaN'),'average_size':float('NaN'),'average_angle':float('NaN'),
-            'average_elong':float('NaN'),variab:x_value,'melt_rate':melt_value}
+            'average_angle_from_90':float('NaN'),'average_elong':float('NaN'),variab:x_value,'melt_rate':melt_value}
         print("No Clusters")
         
     # add the new data to the existing dataframe
@@ -155,17 +155,25 @@ def dbscan_and_plot(X,e,min_samples,df,variab,x_value,melt_value):
     
     return df
 
-def plot_cluster_data(df,cluster_variable,cluster_variable_label):
-    # prepare to handle NaNs
-    mask = df[cluster_variable].isna()
+def plot_cluster_data(fig,df,cluster_variable,cluster_variable_label):
+    # set which figure to use
+    plt.figure(fig)
+    plt.clf()
 
-    fig = plt.figure(figsize=(8, 10))
+    # prepare to handle NaNs
+    mask_nan = df[cluster_variable].isna()
+    smallest_value = df[cluster_variable].min()
+    big_values = (df[cluster_variable].max() - smallest_value) * 3/4 + smallest_value
+
+    print(f'{cluster_variable_label}: big_values {big_values}, max {df[cluster_variable].max()}, min {df[cluster_variable].min()}')
+    df_big_values = df.loc[df[cluster_variable] > big_values]
+    
 
 
     gs = gridspec.GridSpec(2, 2, width_ratios=[3, 1], height_ratios=[1, 3])
     # Adjust layout to prevent overlap
-    plt.tight_layout()
-    fig.suptitle("t = " + str(t))
+    # plt.tight_layout()
+    fig.suptitle(cluster_variable_label+", t = " + str(t))
     unique_viscosity_values = set(df['viscosity'])
     #prepare labels
     viscosity_labels = {}
@@ -185,7 +193,11 @@ def plot_cluster_data(df,cluster_variable,cluster_variable_label):
     ax0.set_xscale('log')
 
     # Scatter plot for NaN values 
-    sns.scatterplot(data=df[mask], x='viscosity', y='melt_rate', color='gray',
+    sns.scatterplot(data=df[mask_nan], x='viscosity', y='melt_rate', color='gray',
+                    marker='s', s=square_size, ax=ax0)
+
+    # highlight big values
+    sns.scatterplot(data=df_big_values, x='viscosity', y='melt_rate', facecolors='none',edgecolor='black', hatch='\\',
                     marker='s', s=square_size, ax=ax0)
 
     # Top plot (Viscosity vs Average Size)
@@ -205,13 +217,55 @@ def plot_cluster_data(df,cluster_variable,cluster_variable_label):
     ax2.legend(title="$\mu_f$", fontsize=7, title_fontsize=9)
     ax2.yaxis.tick_right()
 
-
     # Show the plot
     # plt.show()
     plt.savefig("cluster_"+cluster_variable+"_"+str(t)+".png")
 
 
+
+
+def plot_pair_grid(df,t):
+    """
+    make a grid with plots for each variable pair.
+    Use melt rate and viscosity as hue (one figure for each hue)
+    """
+
+    fig_pair = plt.figure(figsize=(7, 7))
+    # plt.title("t = "+str(t))
+
+    # pairwise scatterplots in a grid
+    df_pair = df.drop(columns=['Unnamed: 0','average_angle'])   # keep only the columns that are useful for the grid plot
+    
+    # set which figure to use
+    plt.figure(fig_pair)
+
+    # hue is viscosity
+    grid_mu = sns.PairGrid(df_pair.drop(columns=['melt_rate']), hue='viscosity', palette="crest") # (df.dropna())
+    grid_mu = grid_mu.map_offdiag(sns.scatterplot)
+    grid_mu = grid_mu.map_diag(sns.histplot)
+    # plt.legend(title="$\mu_f$", fontsize=7, title_fontsize=9)
+    plt.savefig("cluster_grid_visc"+str(t)+".png")
+    plt.clf()  #  clear the figure, ready to be reused
+
+    # plt.title("t = "+str(t))
+
+    # hue is melt rate
+    grid_mr = sns.PairGrid(df_pair.drop(columns=['viscosity']), hue='melt_rate', palette="crest") # (df.dropna())
+    grid_mr = grid_mr.map_offdiag(sns.scatterplot)
+    grid_mr = grid_mr.map_diag(sns.histplot)
+    # plt.legend(title="Melt Rate", fontsize=7, title_fontsize=9)
+    plt.savefig("cluster_grid_mr"+str(t)+".png")
+
+    plt.close(fig_pair)  # we're done with the figures
+
+
+
 def cluster_analysis(t):
+    """
+    executed once for each t in time list
+    reads the cluster dataframe from a file or creates one
+    plots cluster analysis data
+    """
     df = pd.DataFrame()
 
     csv_name = 'cluster_data'+str(t)+'.csv'
@@ -226,9 +280,6 @@ def cluster_analysis(t):
                 x_value = float(getParameterFromLatte(x+'/baseFiles/input.txt','mu_f'))
             elif variab == "def_rate":
                 x_value = float(getParameterFromLatte(x+'/baseFiles/input.txt','defRate'))
-                # x_value = x.split('def')[1]  # take the second part of the string, the one that comes after def     -> from pdef1e8 to 1e8
-            # print(f'x {x}, x_value {x_value}')
-
 
             os.chdir(x)  # enter viscosity dir
             melt_labels = find_dirs()
@@ -268,14 +319,27 @@ def cluster_analysis(t):
     cluster_variables = {'cluster_n': "Number of Clusters",
             'average_size':"Average Cluster Size",
             'average_angle':"Average Angle",
+            'average_angle_from_90':"Average Deviation from 90 degrees",
             'average_elong':"Average Elongation"}
-
-    for cluster_variable in cluster_variables:
-        # print(f'cluster_variable {cluster_variable}, cluster_variables[cluster_variable] {cluster_variables[cluster_variable]}')
-        plot_cluster_data(df,cluster_variable,cluster_variables[cluster_variable])
 
     if plot_figures:
         plt.show()  # show all of them at the end
+
+    # prepare figure for plotting, only create these figures once
+    # fig = plt.figure(figsize=(8, 10))
+
+    # for cluster_variable in cluster_variables:
+    #     """
+    #     one big heatmap (scatterplot) for each variable 
+    #     """
+    #     # print(f'cluster_variable {cluster_variable}, cluster_variables[cluster_variable] {cluster_variables[cluster_variable]}')
+    #     plot_cluster_data(fig,df,cluster_variable,cluster_variables[cluster_variable])
+
+    # plt.close(fig)
+
+    # make a grid with plots for each variable pair
+    plot_pair_grid(df,t)
+
 
     if False:
         X = data[data['Broken Bonds'] > 0] # Only where there are bb 
@@ -304,3 +368,4 @@ os.chdir(parent_dir_path)
 
 for t in times:
     cluster_analysis(t)
+print("Done!")
