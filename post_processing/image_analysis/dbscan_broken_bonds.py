@@ -15,6 +15,8 @@ import pandas as pd
 import sys
 import os
 import matplotlib.gridspec as gridspec
+import statsmodels.api as sm
+from statsmodels.formula.api import ols
 
 sys.path.append('/home/home01/scgf/myscripts/post_processing')
 
@@ -22,7 +24,7 @@ from useful_functions import getSaveFreq,getParameterFromLatte
 from viz_functions import find_dirs,find_variab
 
 save_freq = int(getSaveFreq())
-no_margins = 0
+no_margins = 1
 
 # times = list(range(1, 20, 1)) + list(range(20, 141, 5)) + list(range(150, 501, 20)) + list(range(500, 801, 20)) + list(range(850, 1500, 40))
 times = [100]
@@ -81,9 +83,9 @@ def dbscan_and_plot(X,e,min_samples,df,variab,x_value,melt_value,no_margins):
                 scatter.legend(ncol=legend_columns,loc='center left',bbox_to_anchor=(1.05, 0.5))
                 
                 # Loop through the centroids to annotate the cluster number
-                for index, row in centroids.iterrows():
-                    plt.text(row['x coord'], row['y coord'], f"{int(index)}", horizontalalignment='center', size='medium', color='black', weight='semibold')
-
+                # for index, row in centroids.iterrows():
+                #     plt.text(row['x coord'], row['y coord'], f"{int(index)}", horizontalalignment='center', size='medium', color='black', weight='semibold')
+                # plt.show()
             # Moments analysis
             moments_of_inertia = {}
             all_eigenvectors = {}
@@ -114,6 +116,10 @@ def dbscan_and_plot(X,e,min_samples,df,variab,x_value,melt_value,no_margins):
                 ellipsis = (np.sqrt(eigenvalues_draw[None,:]) * eigenvectors_draw) @ [np.sin(theta), np.cos(theta)] # parametric form
                 if plot_figures:
                     plt.plot(ellipsis[0,:]+centroid['x coord'], ellipsis[1,:]+centroid['y coord'],'k')
+                    if no_margins:
+                        plt.savefig("../ellipses_x_v"+str(x_value)+"_mr"+str(melt_value)+"_"+str(t)+".png")  # show all of them at the end
+                    else:
+                        plt.savefig("../ellipses_v"+str(x_value)+"_mr"+str(melt_value)+"_"+str(t)+".png")  # show all of them at the end
 
                 # Store the eigenvalues in the dictionary
                 moments_of_inertia[cluster_label] = eigenvalues
@@ -122,6 +128,17 @@ def dbscan_and_plot(X,e,min_samples,df,variab,x_value,melt_value,no_margins):
                 all_angles[cluster_label] = angle_degrees
                 all_sizes[cluster_label] = len(cluster_points)+1
             
+            ellipses_df = pd.DataFrame({
+                "Moments_of_Inertia": pd.Series(moments_of_inertia),
+                "Eigenvectors": pd.Series(all_eigenvectors),
+                "Elongation": pd.Series(all_elong),
+                "Angle_Degrees": pd.Series(all_angles),
+                "Size": pd.Series(all_sizes)
+            })
+            # print(ellipses_df)
+            # if len(ellipses_df) > 2:
+            #     anova_analysis(ellipses_df)
+
             #compute some global data
             weighted_sum = sum(angle * all_sizes[cluster] for cluster, angle in all_angles.items())
             weighted_average_angle = weighted_sum / sum(all_sizes.values())
@@ -130,24 +147,26 @@ def dbscan_and_plot(X,e,min_samples,df,variab,x_value,melt_value,no_margins):
 
             cluster_data = {'cluster_n':len(all_sizes),'average_size':sum(all_sizes.values())/len(all_sizes),'average_angle':weighted_average_angle,
             'average_angle_from_90':abs(90-weighted_average_angle),'average_elong':weighted_average_elong,variab:x_value,'melt_rate':melt_value}
-            
+
         else:
             """ clusters were found, but they are too small: populate the dataframe with NaN """
             cluster_data = {'cluster_n':float('NaN'),'average_size':float('NaN'),'average_angle':float('NaN'),
             'average_angle_from_90':float('NaN'),'average_elong':float('NaN'),variab:x_value,'melt_rate':melt_value}
             print("Clusters are too small")
+            ellipses_df = {}
 
     else:
         """ no clusters were found: populate the dataframe with NaN """
         cluster_data = {'cluster_n':float('NaN'),'average_size':float('NaN'),'average_angle':float('NaN'),
             'average_angle_from_90':float('NaN'),'average_elong':float('NaN'),variab:x_value,'melt_rate':melt_value}
+        ellipses_df = {}
         print("No Clusters")
         
     # add the new data to the existing dataframe
     cluster_df = pd.DataFrame(cluster_data,index=[0])
     df = pd.concat([df,cluster_df], ignore_index=True) 
     
-    return df
+    return df,ellipses_df
 
 def plot_cluster_data(fig,df,cluster_variable,cluster_variable_label,no_margins):
     # set which figure to use
@@ -265,6 +284,25 @@ def plot_pair_grid(df,t,no_margins):
     
     plt.close(fig_pair)  # we're done with the figures
 
+    def anova_formula(df_pair,formula):
+        # calculate anova between viscosity or melt rate and the other variables
+        model = ols(formula, data=df_pair).fit()
+        anova_results = sm.stats.anova_lm(model, typ=2)
+
+        # Print the results
+        print(anova_results)
+
+    # create all combinations:
+    pairs = []
+    for var in ['melt_rate','viscosity']:
+        for column_2 in df_pair:
+            if var != column_2:
+
+                if [var,column_2] not in pairs:
+                    formula = f'{var} ~ {column_2}'
+                    print(formula)
+                    anova_formula(df_pair,formula)
+
 
 
 def cluster_analysis(t,no_margins):
@@ -312,14 +350,14 @@ def cluster_analysis(t,no_margins):
                     print("empty df") 
                     continue
                 X = data[data['Broken Bonds'] > 0] # Only where there are bb 
-                print(f'len X {len(X)}')
+                # print(f'len X {len(X)}')
                 #  if excluding margins:
                 if no_margins:
                     X = X[X['x coord'] > 0.02] # exclude the left margin
                     X = X[X['x coord'] < 0.98] # # exclude the right margin 
                 X = X[['x coord','y coord']] # Only x and y coordinates 
                 if len(X) > 0:
-                    df = dbscan_and_plot(X,0.0088,min_samples,df,variab,x_value,melt_value,no_margins)
+                    df,ellipses_df = dbscan_and_plot(X,0.0088,min_samples,df,variab,x_value,melt_value,no_margins)
             os.chdir('..')
 
             # now that it has read and calculated, save the data for next time
@@ -330,26 +368,21 @@ def cluster_analysis(t,no_margins):
         df = pd.read_csv(csv_name,index_col=0)
         print("reading")
         
-    
-    # cluster_variables = ['cluster_n','average_size','average_angle','average_elong']
-    # for i,cluster_variable in enumerate(cluster_variables):
-    #     plot_cluster_data(df,cluster_variable,cluster_variable_labels[i])
     cluster_variables = {'cluster_n': "Number of Clusters",
             'average_size':"Average Cluster Size",
             'average_angle':"Average Angle",
             'average_angle_from_90':"Average Deviation from 90 degrees",
             'average_elong':"Average Elongation"}
 
-    if plot_figures:
-        plt.show()  # show all of them at the end
+    # if plot_figures:
+    #     plt.show()  # show all of them at the end
 
+    
     # prepare figure for plotting, only create these figures once
     fig = plt.figure(figsize=(8, 10))
 
     for cluster_variable in cluster_variables:
-        """
-        one big heatmap (scatterplot) for each variable 
-        """
+    # one big heatmap (scatterplot) for each variable 
         plot_cluster_data(fig,df,cluster_variable,cluster_variables[cluster_variable],no_margins)
     # plot_cluster_data(fig,df,'cluster_n',"Number of Clusters")
 
@@ -357,7 +390,8 @@ def cluster_analysis(t,no_margins):
 
     # make a grid with plots for each variable pair
     plot_pair_grid(df,t,no_margins)
-
+    
+    
 
     if False:
         X = data[data['Broken Bonds'] > 0] # Only where there are bb 
