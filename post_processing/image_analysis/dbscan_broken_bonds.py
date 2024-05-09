@@ -17,6 +17,7 @@ import os
 import matplotlib.gridspec as gridspec
 import statsmodels.api as sm
 from statsmodels.formula.api import ols
+from scipy.stats import pearsonr
 
 sys.path.append('/home/home01/scgf/myscripts/post_processing')
 
@@ -297,13 +298,40 @@ def plot_pair_grid(df,t,no_margins):
     for var in ['melt_rate','viscosity']:
         for column_2 in df_pair:
             if var != column_2:
-
                 if [var,column_2] not in pairs:
                     formula = f'{var} ~ {column_2}'
                     print(formula)
                     anova_formula(df_pair,formula)
 
 
+    def plot_correl(df):
+        # correlation and p-values
+        corr = df.corr()
+        p_values = pd.DataFrame(data=[[pearsonr(df[col], df[col2])[1] for col2 in df.columns] for col in df.columns], columns=df.columns, index=df.columns)
+        print(p_values)
+        
+        plt.figure(figsize=(10, 8))
+        sns.heatmap(corr, annot=True, fmt=".2f", cmap="coolwarm", cbar=True)
+
+        # add the p-values to the heatmap
+        for i in range(len(corr.columns)):
+            for j in range(len(corr.columns)):
+                plt.text(i+0.5, j+0.1, 'p = {:.3f}'.format(p_values.iloc[i, j]),
+                        horizontalalignment='center',
+                        verticalalignment='center', 
+                        color="black" if corr.iloc[i, j] > 0 else "white")
+
+        plt.xticks(np.arange(0.5, len(df.columns), 1), df.columns, rotation=45, ha="right")
+        plt.yticks(np.arange(0.5, len(df.columns), 1), df.columns)
+        plt.title("Correlation Matrix with P-values")
+        plt.show()
+
+    df_pair = df.drop(columns=['melt_rate','viscosity','average_angle'])
+    df_pair = df_pair.dropna()
+    print(df_pair)
+    correlation_matrix = df_pair.corr(method='pearson')  # alternatives: 'spearman' or 'kendall'
+    print(correlation_matrix)
+    plot_correl(df_pair)
 
 def cluster_analysis(t,no_margins):
     """
@@ -378,15 +406,15 @@ def cluster_analysis(t,no_margins):
     #     plt.show()  # show all of them at the end
 
     
-    # prepare figure for plotting, only create these figures once
-    fig = plt.figure(figsize=(8, 10))
+    # # prepare figure for plotting, only create these figures once
+    # fig = plt.figure(figsize=(8, 10))
 
-    for cluster_variable in cluster_variables:
-    # one big heatmap (scatterplot) for each variable 
-        plot_cluster_data(fig,df,cluster_variable,cluster_variables[cluster_variable],no_margins)
-    # plot_cluster_data(fig,df,'cluster_n',"Number of Clusters")
+    # for cluster_variable in cluster_variables:
+    # # one big heatmap (scatterplot) for each variable 
+    #     plot_cluster_data(fig,df,cluster_variable,cluster_variables[cluster_variable],no_margins)
+    # # plot_cluster_data(fig,df,'cluster_n',"Number of Clusters")
 
-    plt.close(fig)
+    # plt.close(fig)
 
     # make a grid with plots for each variable pair
     plot_pair_grid(df,t,no_margins)
