@@ -59,7 +59,9 @@ if (var_is_visc){
     x_variable <- c('1e8','2e8','3e8','4e8','5e8','6e8','7e8','8e8','9e8')#,'5e3','1e4')#,'2e4','4e4')  # the values of the x variable to plot (e.g. def rate)
 }
 # melt_rate_list <- c('02','03','05','04','06','07','08','09')#,'1','2')
-melt_rate_list <- c('01','02','03','04','05','06','07','08','09')#,'08')#,'09')#,'1','2')
+# melt_rate_list <- c('01','02','03','04','05','06','07','08','09')#,'08')#,'09')#,'1','2')
+melt_rate_list <- find_dirs('melt_rate')  # the values of the y variable to plot (melt rate)
+# print(paste("melt_rate_list",melt_rate_list))
 
 # set some options automatically
 time = as.numeric(args[1])   # time for the 1st   (e.g. 60e6 = 60th file in mr_01). Don't use 6e7
@@ -138,8 +140,9 @@ build_branch_df <- function(x,m,time) {
             if (nrow(df_bi_t)>0){
                 # I,X,Y nodes
                 n_I <- df_bi_t$n_I
-                n_Y <- df_bi_t$n_2+df_bi_t$n_3
-                n_X <- df_bi_t$n_4+df_bi_t$n_4
+                # n_Y <- df_bi_t$n_2+df_bi_t$n_3  # including connectivity=2 in Y nodes
+                n_Y <- df_bi_t$n_3   # NOT including connectivity=2 in Y nodes
+                n_X <- df_bi_t$n_4+df_bi_t$n_5
 
                 CV_hor <- df_bi_t$CV_hor
                 CV_ver <- df_bi_t$CV_ver

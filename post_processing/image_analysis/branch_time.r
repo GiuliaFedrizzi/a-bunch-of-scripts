@@ -20,6 +20,9 @@
 # libraries
 library(tidyverse)
 library(patchwork)
+
+source("/home/home01/scgf/myscripts/post_processing/image_analysis/useful_functions.R")
+
 # first part of path
 base_path <- getwd( )
 
@@ -30,14 +33,15 @@ var_is_def = 0
 
 # list of viscosity and melt rate values 
 if (var_is_visc){
-    x_variable <- c('1e1','5e1','1e2','5e2','1e3','5e3','1e4') # the values of the x variable to plot (viscosity)
-    # x_variable <- c('1e1','1e2','5e2','1e3','5e3','1e4') # the values of the x variable to plot (viscosity)
+    x_variable <- find_dirs('visc')  # the values of the x variable to plot (viscosity)
 } else {
     x_variable <- c('1e8','2e8','3e8','4e8','5e8','6e8','7e8','8e8','9e8')  # the values of the x variable to plot (def rate)
 }
 # melt_rate_list <- c('01','02','03','04','05','06','07','08','09')#,'1','2')
-melt_rate_list <- c('02','04','06','08')#,'1','2')
-time_all <- c(20e6,30e6,40e6,50e6,60e6,70e6,80e6,90e6)
+# melt_rate_list <- c('02','04','06','08')#,'1','2')
+melt_rate_list <- find_dirs('melt_rate')  # the values of the y variable to plot (melt rate)
+# print(paste("melt_rate_list",melt_rate_list))
+time_all <- c(10000e6,10000e6,50000e6,100000e6)#,60e6,70e6,80e6,90e6)
 
 
 if (grepl("prod",base_path)){
@@ -57,6 +61,7 @@ open_file <- function(file_to_open,norm_time,df_m,x,m,true_m_rate,time) {
     if (nrow(df_bi_t)>0){
         # I,X,Y nodes
         n_I <- df_bi_t$n_I
+        # n_Y <- df_bi_t$n_2+df_bi_t$n_3  # including connectivity=2 in Y nodes
         n_Y <- df_bi_t$n_2+df_bi_t$n_3
         n_X <- df_bi_t$n_4+df_bi_t$n_4
 
@@ -84,7 +89,7 @@ open_file <- function(file_to_open,norm_time,df_m,x,m,true_m_rate,time) {
         }
     }
     else {
-        print(paste("no visc",x,", melt rate ",m," in ",file_to_open,sep=""))            
+        print(paste("no visc ",x,", melt rate ",m," in ",file_to_open,", at norm time ",norm_time,sep=""))            
     }
 
     return(df_m)
@@ -98,7 +103,8 @@ build_branch_df <- function(x,m,time) {
         var_is_visc <- 1
         var_is_def <- 0
         # to keep the amount of melt constant, we look at smaller times if melt rate is higher, later times if it's lower. This num will build the file name
-        norm_time = round(time/1e6/as.double(m))*1e6  # from accurate number, round so that it opens a file that exists
+        # norm_time = round(time/1e6/as.double(m))*1e6  # from accurate number, round so that it opens a file that exists
+        norm_time = round(time/1e9/as.double(m))*1e9  # from accurate number, round so that it opens a file that exists
 
         if (startsWith(m,'0'))
         {
@@ -110,7 +116,10 @@ build_branch_df <- function(x,m,time) {
         if (var_is_visc) {
             ##  build the path. unlist(strsplit(x,"e"))[2] splits '5e3' into 5 and 3 and takes the second (3)
             # file_to_open <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis',x,'_mR_',m,'/',csv_file_name,sep="")
-            potential_file_path <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis',x,'_mR_',m,'/',sep="")
+            full_exponent <- unlist(strsplit(x,"e"))[2]  # could be 1 or 15, because there is no point (1.5)
+            true_exponent <- unlist(strsplit(full_exponent,""))[1]  # takes the first character (1 in 1.5, 2 in 2.5 etc)
+            potential_file_path <- paste(base_path,'/visc_',true_exponent,'_',x,'/vis',x,'_mR_',m,'/',sep="")
+            # potential_file_path <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis',x,'_mR_',m,'/',sep="")
             if (dir.exists(potential_file_path)) {
             }else {   # try a different version
                 potential_file_path <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis1e2_mR_',m,'/',sep="")
@@ -129,9 +138,6 @@ build_branch_df <- function(x,m,time) {
         if (file.exists(file_to_open)) {    
             df_m <- open_file(file_to_open,norm_time,df_m,x,m,true_m_rate,time)
         }
-        # else if (file.exists(file_to_open_bot)){
-        #     df_m <- open_file(file_to_open_bot,norm_time,df_m,x,m,true_m_rate,time)
-        # }
         else {
             print(paste("file does not exist:",file_to_open))
         }
