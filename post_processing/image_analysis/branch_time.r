@@ -7,11 +7,7 @@
 # plot evolution with time
 
 # run in the conda environment "r_env"
-#   it contains tidyverse, patchwork
-# specify time as command line argument e.g.
-# > Rscript $MS/post_processing/image_analysis/branch_analysis.r 6e7 
-#
-# or submit a task array job from visc_*/vis*
+#   it contains tidyverse, patchwork etc
 #
 # Giulia April 2023
 # ------------------------------------------
@@ -41,7 +37,7 @@ if (var_is_visc){
 # melt_rate_list <- c('02','04','06','08')#,'1','2')
 melt_rate_list <- find_dirs('melt_rate')  # the values of the y variable to plot (melt rate)
 # print(paste("melt_rate_list",melt_rate_list))
-time_all <- c(10000e6,10000e6,50000e6,100000e6)#,60e6,70e6,80e6,90e6)
+time_all <- c(8000e6,24000e6,56000e6,128000e6)#,60e6,70e6,80e6,90e6)
 
 
 if (grepl("prod",base_path)){
@@ -54,7 +50,7 @@ if (grepl("prod",base_path)){
     csv_file_name <- "py_branch_info.csv"
 }
 
-open_file <- function(file_to_open,norm_time,df_m,x,m,true_m_rate,time) {
+open_file <- function(file_to_open,norm_time,df_m,x,m,true_m_rate,time,full_exponent) {
     df_bi <- read.csv(file=file_to_open)
     #print(paste("m rate",m,", file ",file_num))
     df_bi_t <- df_bi[df_bi$time == norm_time,]  # get the line that corresponds to the time
@@ -62,7 +58,7 @@ open_file <- function(file_to_open,norm_time,df_m,x,m,true_m_rate,time) {
         # I,X,Y nodes
         n_I <- df_bi_t$n_I
         # n_Y <- df_bi_t$n_2+df_bi_t$n_3  # including connectivity=2 in Y nodes
-        n_Y <- df_bi_t$n_2+df_bi_t$n_3
+        n_Y <- df_bi_t$n_3
         n_X <- df_bi_t$n_4+df_bi_t$n_4
 
         ## n of branches, n of lines
@@ -80,11 +76,22 @@ open_file <- function(file_to_open,norm_time,df_m,x,m,true_m_rate,time) {
         B_22 <- B_20 * (B_C)^2
         
         ## build dataframe
-        de <- list(viscosity=as.double(x),melt_rate=m,true_m_rate=true_m_rate,B_20=B_20,B_21=B_21,B_C=B_C,B_22=B_22,
-        n_I=n_I,n_Y=n_Y,n_X=n_X,n_B=n_B,n_L=n_L,time=time,norm_time=norm_time)
+        if (var_is_visc) {
+            if (nchar(x) == 4) {  # 1e15 -> 15 -> 1.5 -> 10^(1.5)
+                visc_value= 10^(as.double(full_exponent)/10)
 
-        # print("de")
-        # print(de)
+            } else {
+                visc_value= as.double(x)
+            }
+            de <- list(viscosity=x,true_viscosity=visc_value,melt_rate=m,true_m_rate=true_m_rate,B_20=B_20,B_21=B_21,B_C=B_C,B_22=B_22,
+                n_I=n_I,n_Y=n_Y,n_X=n_X,n_B=n_B,n_L=n_L,time=time,norm_time=norm_time)  
+            
+            } else if (var_is_def) {
+                x <- gsub("e+","e-", x)
+                de <- list(def_rate=as.double(x),melt_rate=m,true_m_rate=true_m_rate,B_20=B_20,B_21=B_21,B_C=B_C,B_22=B_22,
+                n_I=n_I,n_Y=n_Y,n_X=n_X,n_B=n_B,n_L=n_L,time=time,norm_time=norm_time) 
+            }
+
         df_m <- rbind(df_m,de)#,stringsAsFactors=FALSE)
         }
     }
@@ -136,7 +143,7 @@ build_branch_df <- function(x,m,time) {
             # file_to_open_bot <- paste(base_path,'/visc_',unlist(strsplit(x,"e"))[2],'_',x,'/vis',x,'_mR_',m,'/',csv_file_name,sep="")
         }
         if (file.exists(file_to_open)) {    
-            df_m <- open_file(file_to_open,norm_time,df_m,x,m,true_m_rate,time)
+            df_m <- open_file(file_to_open,norm_time,df_m,x,m,true_m_rate,time,full_exponent)
         }
         else {
             print(paste("file does not exist:",file_to_open))
@@ -210,43 +217,64 @@ if (FALSE) {
     ggsave(paste(base_path,"/branch_plots/br_ter_melt_time.png",sep=''), pt1, bg='transparent')
 }
 
-df_average <- data.frame(B_20=double(),B_21=double(),B_C=double(),B_22=double(),
-n_I=double(),n_Y=double(),n_X=double(),n_B=double(),n_L=double(),
-time=double(),norm_time=double())#,stringsAsFactors=FALSE)
 
-for (t in time_all)
-{
-    print(paste("time = ",t))
-    # condition: select all times that correspond to t
-    av_n_I <- mean(df_m[df_m$time==t,]$n_I)
-    av_n_Y <- mean(df_m[df_m$time==t,]$n_Y)
-    av_n_X <- mean(df_m[df_m$time==t,]$n_X)
-    print(paste("length of dataframe at this time step:",nrow(df_m[df_m$time==t,])))
-    ## build dataframe
-    df_av <- list(B_20=0.0,B_21=0.0,B_C=0.0,B_22=0.0,
-    n_I=av_n_I,n_Y=av_n_Y,n_X=av_n_X,n_B=0.0,n_L=0.0,
-    time=t,norm_time=0.0)
-    # add the new line to the dataframe
-    df_average <- rbind(df_average,df_av)#,stringsAsFactors=FALSE)
+# average quantities over all visc and mrate values
+#  so I end up with one value for each time value
+if (FALSE) {
+    df_average <- data.frame(B_20=double(),B_21=double(),B_C=double(),B_22=double(),
+    n_I=double(),n_Y=double(),n_X=double(),n_B=double(),n_L=double(),
+    time=double(),norm_time=double())#,stringsAsFactors=FALSE)
+
+    for (t in time_all)
+    {
+        print(paste("time = ",t))
+        # condition: select all times that correspond to t
+        av_n_I <- mean(df_m[df_m$time==t,]$n_I)
+        av_n_Y <- mean(df_m[df_m$time==t,]$n_Y)
+        av_n_X <- mean(df_m[df_m$time==t,]$n_X)
+        print(paste("length of dataframe at this time step:",nrow(df_m[df_m$time==t,])))
+        ## build dataframe
+        df_av <- list(B_20=0.0,B_21=0.0,B_C=0.0,B_22=0.0,
+        n_I=av_n_I,n_Y=av_n_Y,n_X=av_n_X,n_B=0.0,n_L=0.0,
+        time=t,norm_time=0.0)
+        # add the new line to the dataframe
+        df_average <- rbind(df_average,df_av)#,stringsAsFactors=FALSE)
+    }
+
+    df_average
+
+    if (TRUE) {
+        
+        # pt1 <- ggtern(data=df_m,aes(x=n_Y,y=n_I,z=n_X))+ geom_point(aes(fill=as.factor(true_m_rate)),shape = 21,stroke=2,size=2,colour="black")+ 
+        # pt1 <- ggtern(data=df_m[df_m$time == time_all[1],],aes(x=n_Y,y=n_I,z=n_X))+ geom_point(aes(color=as.factor(true_m_rate)))+ 
+        pt1 <- ggtern(data=df_average,aes(x=n_Y,y=n_I,z=n_X))+ geom_point(aes(color=as.factor(time)))+ 
+        scale_colour_brewer(palette='Blues')+
+        scale_fill_distiller(direction=+1)+
+        scale_fill_discrete(guide = guide_legend(reverse=TRUE))+    
+        labs(x = expression('N'[Y]),y = expression('N'[I]),z = expression('N'[X]),colour = "Time")+
+        guides(color = guide_legend(reverse=TRUE))+    # low at the bottom, high at the top
+        theme(plot.background = element_rect(fill='transparent', color=NA),
+            #panel.grid.major = element_line(linetype = "dotted",colour = "black"),
+            legend.background = element_rect(fill='transparent'),
+            panel.background = element_rect(fill = "#e6dbd5"),
+            legend.key = element_rect(fill = "#e6dbd5"),
+            legend.position = c(.85, .65))#,alpha=0.8))
+        ggsave(paste(base_path,"/branch_plots/br_ter_time_IXY.png",sep=''), pt1, bg='transparent')
+    }
+
 }
 
-df_average
+# select only two combinations of viscosity and melt rate and plot their evolution with time
+if (TRUE){
 
-if (TRUE) {
-    
-    # pt1 <- ggtern(data=df_m,aes(x=n_Y,y=n_I,z=n_X))+ geom_point(aes(fill=as.factor(true_m_rate)),shape = 21,stroke=2,size=2,colour="black")+ 
-    # pt1 <- ggtern(data=df_m[df_m$time == time_all[1],],aes(x=n_Y,y=n_I,z=n_X))+ geom_point(aes(color=as.factor(true_m_rate)))+ 
-    pt1 <- ggtern(data=df_average,aes(x=n_Y,y=n_I,z=n_X))+ geom_point(aes(color=as.factor(time)))+ 
-    scale_colour_brewer(palette='Blues')+
-    scale_fill_distiller(direction=+1)+
-    scale_fill_discrete(guide = guide_legend(reverse=TRUE))+    
-    labs(x = expression('N'[Y]),y = expression('N'[I]),z = expression('N'[X]),colour = "Time")+
-    guides(color = guide_legend(reverse=TRUE))+    # low at the bottom, high at the top
-    theme(plot.background = element_rect(fill='transparent', color=NA),
-        #panel.grid.major = element_line(linetype = "dotted",colour = "black"),
-        legend.background = element_rect(fill='transparent'),
-        panel.background = element_rect(fill = "#e6dbd5"),
-        legend.key = element_rect(fill = "#e6dbd5"),
-        legend.position = c(.85, .65))#,alpha=0.8))
-    ggsave(paste(base_path,"/branch_plots/br_ter_time_IXY.png",sep=''), pt1, bg='transparent')
+    df_filtered <- df_m %>%
+    filter(as.character(melt_rate) == "08" & viscosity == "1e3")
+    print(df_filtered)
+    ternary_plot <- ggtern(data = df_filtered, mapping = aes(x=n_Y,y=n_I,z=n_X)) +
+    geom_point(aes(color = as.factor(time)), size = 3) +
+        scale_fill_distiller(direction=+1)+
+    theme_bw() +
+    # labs(title = "Ternary Plot", color = "Time")
+    # print(ternary_plot)
+    ggsave(paste(base_path,"/branch_plots/br_ter_examples_time.png",sep=''), ternary_plot, bg='transparent')
 }
