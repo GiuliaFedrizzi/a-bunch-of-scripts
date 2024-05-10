@@ -37,7 +37,9 @@ if (var_is_visc){
 # melt_rate_list <- c('02','04','06','08')#,'1','2')
 melt_rate_list <- find_dirs('melt_rate')  # the values of the y variable to plot (melt rate)
 # print(paste("melt_rate_list",melt_rate_list))
-time_all <- c(8000e6,24000e6,56000e6,128000e6)#,60e6,70e6,80e6,90e6)
+
+#  list of times: first 4 values are for mu 1e3 mr 08, last 4 values are for mu1.5, mr03  
+time_all <- c(8000e6,24000e6,56000e6,128000e6,90000e6,150000e6,240000e6,300000e6)#,60e6,70e6,80e6,90e6)
 
 
 if (grepl("prod",base_path)){
@@ -172,12 +174,12 @@ df_m["n_B_n_L"] <- df_m$n_B/df_m$n_L
 df_m["C_L"] <- 2*(df_m$n_Y+df_m$n_X)/df_m$n_L
 df_m["n_XY"] <- df_m$n_Y+df_m$n_X
 
-df_m
+# df_m
 #df_m[df_m$time == time_all[1],]
 #  -------------------  ternary plots -------------------
 
 # import the library to create ternary plots
-# library("ggplot2")
+library("ggplot2")
 library("ggtern")
 
 if (FALSE) {
@@ -269,12 +271,41 @@ if (TRUE){
 
     df_filtered <- df_m %>%
     filter(as.character(melt_rate) == "08" & viscosity == "1e3")
+
+    df_filtered <- df_filtered %>%
+    filter(time == 8000e6 | time == 24000e6 | time == 56000e6 | time == 128000e6)
+    
     print(df_filtered)
-    ternary_plot <- ggtern(data = df_filtered, mapping = aes(x=n_Y,y=n_I,z=n_X)) +
+    ternary_plot_a <- ggtern(data = df_filtered, mapping = aes(x=n_Y,y=n_I,z=n_X)) +
     geom_point(aes(color = as.factor(time)), size = 3) +
-        scale_fill_distiller(direction=+1)+
+        scale_colour_brewer(palette='Blues')+
     theme_bw() +
-    # labs(title = "Ternary Plot", color = "Time")
-    # print(ternary_plot)
-    ggsave(paste(base_path,"/branch_plots/br_ter_examples_time.png",sep=''), ternary_plot, bg='transparent')
+    labs(x = expression('N'[Y]),y = expression('N'[I]),z = expression('N'[X]),colour = "Time")   # labels for the vertices
+
+    ternary_plot_a <- ternary_plot_a +
+    theme(
+        tern.axis.ticks = element_line(color = "gray30"),  # Color of ticks on the axes
+        tern.axis.ticks.length = unit(0.1, "cm"),          # Length of ticks
+        tern.grid.major = element_line(color = "gray80", linetype = "dotted", linewidth = 0.2),  # Grid line properties
+        tern.grid.minor = element_blank(),  # Hide minor grid lines if needed
+        legend.position = "right"
+    ) 
+
+
+    ggsave(paste(base_path,"/branch_plots/br_ter_mu3mr08_time.png",sep=''), ternary_plot_a, bg='transparent')
+
+    df_filtered2 <- df_m %>%
+    filter(as.character(melt_rate) == "03" & viscosity == "1e15")
+
+    df_filtered2 <- df_filtered2 %>%
+    filter(time == 90000e6 | time == 150000e6 | time == 240000e6 | time == 300000e6) # 90000e6,150000e6,240000e6,300000e6
+
+    print(df_filtered2)
+
+        ternary_plot_b <- ggtern(data = df_filtered2, mapping = aes(x=n_Y,y=n_I,z=n_X)) +
+    geom_point(aes(color = as.factor(time)), size = 3) +
+        scale_colour_brewer(palette='Reds')+
+    theme_bw() +
+    labs(x = expression('N'[Y]),y = expression('N'[I]),z = expression('N'[X]),colour = "Time")   # labels for the vertices
+    ggsave(paste(base_path,"/branch_plots/br_ter_mu15mr03_time.png",sep=''), ternary_plot_b, bg='transparent')
 }
