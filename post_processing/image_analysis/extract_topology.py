@@ -919,12 +919,12 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
     rose_hist_list = [] # empty list to temporarily save all the values to build the rose diagram. Will be normalised by the maximum length.
     out_paths = []
     all_angles = []
-    string_in_name = "py_bb_*[0-9].png"
+    string_in_name = "py_bb_*[0-9]00.png"
     # string_in_name = "py_bb_022000.png"
     curr_path = os.getcwd()
     if "field_im" in curr_path:
         string_in_name = "Long_drawn_OpeningInvert.png"
-    print(f'list of files {sorted(glob.glob(string_in_name))}')
+    # print(f'list of files {sorted(glob.glob(string_in_name))}')
 
     if part_to_analyse == 'w' or part_to_analyse == 'f': # whole domain
         csv_file_name = "py_branch_info.csv" 
@@ -943,6 +943,9 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
         out_paths.append(out_path)
         if f%10 == 0:   # checkpoint: write out what I have so far 
             write_to_csv_file(branch_info,csv_file_name)
+
+    # at the end of the file loop, write to the output file
+    write_to_csv_file(branch_info,csv_file_name)
     
     # save angle data in a json file
     with open('segments_angles.json', 'w') as file:
