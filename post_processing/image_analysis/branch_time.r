@@ -268,7 +268,24 @@ if (FALSE) {
 
 # select only two combinations of viscosity and melt rate and plot their evolution with time
 if (TRUE){
+    
+    # define a function to apply the same style to ternary plots
+    transparent_background_for_tern <- function() {
+        theme(
+            panel.background = element_rect(fill = "transparent", color = NA), 
+            panel.border = element_blank(),  # Remove panel border
+            plot.background = element_rect(fill = "transparent", color = NA),   
+            tern.panel.background = element_blank(), 
+            tern.axis.ticks = element_line(color = "gray10"),  # Color of ticks on the axes
+            axis.ticks.length = unit(0.0, "cm"),          # Length of ticks
+            # panel.grid.major = element_line(color = "gray10", linewidth = 0.5),
+            # panel.grid.minor = element_line(color = "gray10", linewidth = 0.1),
+            panel.grid = element_line(color = "gray10"),
+            legend.background = element_rect(fill='transparent'),
+            legend.position = "right"
+    ) 
 
+    }
     df_filtered <- df_m %>%
     filter(as.character(melt_rate) == "08" & viscosity == "1e3")
 
@@ -277,23 +294,17 @@ if (TRUE){
     
     print(df_filtered)
     ternary_plot_a <- ggtern(data = df_filtered, mapping = aes(x=n_Y,y=n_I,z=n_X)) +
-    geom_point(aes(color = as.factor(time)), size = 3) +
+    geom_point(aes(color = as.factor(time)), size = 3, stroke = 0.5) +
         scale_colour_brewer(palette='Blues')+
     theme_bw() +
     labs(x = expression('N'[Y]),y = expression('N'[I]),z = expression('N'[X]),colour = "Time")   # labels for the vertices
 
-    ternary_plot_a <- ternary_plot_a +
-    theme(
-        tern.axis.ticks = element_line(color = "gray30"),  # Color of ticks on the axes
-        tern.axis.ticks.length = unit(0.1, "cm"),          # Length of ticks
-        tern.grid.major = element_line(color = "gray80", linetype = "dotted", linewidth = 0.2),  # Grid line properties
-        tern.grid.minor = element_blank(),  # Hide minor grid lines if needed
-        legend.position = "right"
-    ) 
-
+    ternary_plot_a <- ternary_plot_a + transparent_background_for_tern()
 
     ggsave(paste(base_path,"/branch_plots/br_ter_mu3mr08_time.png",sep=''), ternary_plot_a, bg='transparent')
 
+
+    # second ternary plot
     df_filtered2 <- df_m %>%
     filter(as.character(melt_rate) == "03" & viscosity == "1e15")
 
@@ -307,5 +318,8 @@ if (TRUE){
         scale_colour_brewer(palette='Reds')+
     theme_bw() +
     labs(x = expression('N'[Y]),y = expression('N'[I]),z = expression('N'[X]),colour = "Time")   # labels for the vertices
+
+    ternary_plot_b <- ternary_plot_b + transparent_background_for_tern()
+
     ggsave(paste(base_path,"/branch_plots/br_ter_mu15mr03_time.png",sep=''), ternary_plot_b, bg='transparent')
 }
