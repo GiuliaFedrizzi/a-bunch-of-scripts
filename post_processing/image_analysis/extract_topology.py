@@ -696,7 +696,8 @@ def topo_analysis(g: nx.Graph,tstep_number: float) -> dict:
     n_of_branches = 0.5*(n_I+3*n_3+4*n_4+5*n_5) + n_2 + n_0
     # branches_to_line = n_of_branches / n_of_lines
     # print(f'branches/lines: {branches_to_line}')
-    branches_tot_length = sum(edge_lengths)- n_0  # remove isolated edges (nodes with 0 connections)
+    branches_tot_length = sum(edge_lengths)
+
     # print(f'branches tot length: {branches_tot_length}')
     branch_info = {"time":tstep_number*input_tstep,"n_0":n_0,"n_I":n_I,"n_2":n_2,"n_3":n_3,"n_4":n_4,"n_5":n_5,
                    "branches_tot_length":branches_tot_length} # dictionary with info that I just calculated
