@@ -9,7 +9,7 @@ find_dirs <- function(var_type) {
   # print(paste("items:", toString(items)))
   
   directories_list <- items[sapply(items, function(item) {
-    file.info(item)$isdir && !item %in% c("baseFiles", "images_in_grid", "branch_plots")  # ignore these directories
+    file.info(item)$isdir && !item %in% c("baseFiles", "images_in_grid", "branch_plots","branch_plots_x")  # ignore these directories
   })]
   
   directories_list <- sort(directories_list)
