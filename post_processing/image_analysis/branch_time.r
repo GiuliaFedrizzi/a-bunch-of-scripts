@@ -269,23 +269,8 @@ if (FALSE) {
 # select only two combinations of viscosity and melt rate and plot their evolution with time
 if (TRUE){
     
-    # define a function to apply the same style to ternary plots
-    transparent_background_for_tern <- function() {
-        theme(
-            panel.background = element_rect(fill = "transparent", color = NA), 
-            panel.border = element_blank(),  # Remove panel border
-            plot.background = element_rect(fill = "transparent", color = NA),   
-            tern.panel.background = element_blank(), 
-            tern.axis.ticks = element_line(color = "gray10"),  # Color of ticks on the axes
-            axis.ticks.length = unit(0.0, "cm"),          # Length of ticks
-            # panel.grid.major = element_line(color = "gray10", linewidth = 0.5),
-            # panel.grid.minor = element_line(color = "gray10", linewidth = 0.1),
-            panel.grid = element_line(color = "gray10"),
-            legend.background = element_rect(fill='transparent'),
-            legend.position = "right"
-    ) 
 
-    }
+
     df_filtered <- df_m %>%
     filter(as.character(melt_rate) == "08" & viscosity == "1e3")
 
@@ -293,13 +278,19 @@ if (TRUE){
     filter(time == 8000e6 | time == 24000e6 | time == 56000e6 | time == 128000e6)
     
     print(df_filtered)
+
+
+    my_colors_blues <- c("#c6dbef", "#9ecae1", "#6baed6","#3182bd") # "#eff3ff")
+
     ternary_plot_a <- ggtern(data = df_filtered, mapping = aes(x=n_Y,y=n_I,z=n_X)) +
-    geom_point(aes(color = as.factor(time)), size = 3, stroke = 0.5) +
-        scale_colour_brewer(palette='Blues')+
+    transparent_background_for_tern() +
+    geom_point(aes(color = as.factor(norm_time)), size = 3) +
+        scale_color_manual(values = my_colors_blues) +
+        # scale_colour_brewer(palette='Blues')+
     theme_bw() +
     labs(x = expression('N'[Y]),y = expression('N'[I]),z = expression('N'[X]),colour = "Time")   # labels for the vertices
 
-    ternary_plot_a <- ternary_plot_a + transparent_background_for_tern()
+    # ternary_plot_a <- ternary_plot_a + transparent_background_for_tern()
 
     ggsave(paste(base_path,"/branch_plots/br_ter_mu3mr08_time.png",sep=''), ternary_plot_a, bg='transparent')
 
@@ -313,10 +304,10 @@ if (TRUE){
 
     print(df_filtered2)
 
-        ternary_plot_b <- ggtern(data = df_filtered2, mapping = aes(x=n_Y,y=n_I,z=n_X)) +
-    geom_point(aes(color = as.factor(time)), size = 3) +
+    ternary_plot_b <- ggtern(data = df_filtered2, mapping = aes(x=n_Y,y=n_I,z=n_X)) +
+    geom_point(aes(color = as.factor(norm_time)), size = 3) +
         scale_colour_brewer(palette='Reds')+
-    theme_bw() +
+    # theme_bw() +
     labs(x = expression('N'[Y]),y = expression('N'[I]),z = expression('N'[X]),colour = "Time")   # labels for the vertices
 
     ternary_plot_b <- ternary_plot_b + transparent_background_for_tern()
