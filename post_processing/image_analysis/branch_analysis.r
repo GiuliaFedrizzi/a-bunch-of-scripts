@@ -1,16 +1,16 @@
 # ------------------------------------------
 # analyses py_branch_info.csv files
-# specify name of subdirectories (viscosity/def rate + melt rate)
+# 
 # plots parameters such as 'Frequency', 'Intensity', 'Dimensionless intensity'
 # imports and plots number and ratios of types of nodes: I, Y and X
 #
-# need to specify if the variable is viscosity or deformation rate (in 2 places!)
-#  and if there are 2 orders of subdirectories or just 1 
+# whether the variable is viscosity or deformation rate is determined automatically,
+#  but you need to specify if there are 2 orders of subdirectories or just 1 
 #
 # run in the conda environment "r_env"
 #   it contains tidyverse, patchwork
 # specify time as command line argument e.g.
-# > Rscript $MS/post_processing/image_analysis/branch_analysis.r 60e6 
+# > Rscript $MS/post_processing/image_analysis/branch_analysis.r 60e6   (remember: always format the number with e6, which means 10^6)
 #
 # or submit a task array job with sub_branchAn.sh from visc_*/vis*
 #
@@ -22,13 +22,26 @@
 # library(tidyverse)
 library(patchwork)
 library(plyr)
-# library('cowplot')
-# library(ggthemes)
 
 source("/home/home01/scgf/myscripts/post_processing/image_analysis/useful_functions.R")
 
 args <- commandArgs(trailingOnly = TRUE)  # store them as vectors
+time = as.numeric(args[1])   # time for the 1st   (e.g. 60e6 = 60th file in mr_01). Don't use 6e7
 
+# option: read the csv file that excludes the margins?
+#  + no_margins <- 0 : py_branch_info.csv,   use "branch_plots"
+#  + no_margins <- 1 : py_branch_info_x.csv, use "branch_plots_x"
+no_margins <- 0
+
+time_string <- sprintf("%02i",time/1e6)  # pad with zeros until string is 2 characters long
+time_string <- paste(time_string,"e6",sep="")
+
+if (no_margins) {
+    csv_time_name <- paste("branches_df_time_",time_string,"_x.csv",sep="")
+} else {
+    csv_time_name <- paste("branches_df_time_",time_string,".csv",sep="")
+
+}
 # some options for different sets of simulations
 two_subdirs <- TRUE  # is it visc_1_1e1/vis1e1_mR01 (TRUE)  or just vis1e2_mR_01  (FALSE)?
 
@@ -49,7 +62,6 @@ if (sum(grepl("visc",dirs), na.rm=TRUE)>0){  # count how many times it finds "vi
 
 if (var_is_visc){
     if (two_subdirs){
-        # x_variable <- c('1e1','5e1','1e2','5e2','1e3','5e3','1e4')  # the values of the x variable to plot (viscosity)
         # x_variable <- c('1e1','1e15','1e2','1e25','1e3','1e35','1e4')  # the values of the x variable to plot (viscosity)
         x_variable <- find_dirs('visc')  # the values of the x variable to plot (viscosity)
     } else {
@@ -63,15 +75,15 @@ if (var_is_visc){
 melt_rate_list <- find_dirs('melt_rate')  # the values of the y variable to plot (melt rate)
 # print(paste("melt_rate_list",melt_rate_list))
 
-# set some options automatically
-time = as.numeric(args[1])   # time for the 1st   (e.g. 60e6 = 60th file in mr_01). Don't use 6e7
-
 # first part of path
 base_path <- getwd( )
 
-if (grepl("prod",base_path)){
-    # prod zone, whole domain
-    csv_file_name <- "py_branch_info.csv"
+if (grepl("prod",base_path)){    # prod zone, whole domain
+    if (no_margins) {   # read py_branch_info_x, which excludes the margins (2% from each side)
+        csv_file_name <- "py_branch_info_x.csv"
+    } else {
+        csv_file_name <- "py_branch_info.csv"
+    }
 } else if (grepl("through",base_path)) {
     # through zone, only top
     csv_file_name <- "py_branch_info_top.csv"
@@ -137,6 +149,7 @@ build_branch_df <- function(x,m,time) {
             df_bi <- read.csv(file=file_to_open)
             print(paste("m rate",m,", norm time ",norm_time))
             df_bi_t <- df_bi[df_bi$time == norm_time,]  # get the line that corresponds to the time
+            # print(df_bi_t)
             if (nrow(df_bi_t)>0){
                 # I,X,Y nodes
                 n_I <- df_bi_t$n_I
@@ -153,34 +166,38 @@ build_branch_df <- function(x,m,time) {
 
                 ## B_20 'Frequency' 
                 B_20 <- sum(df_bi_t$n_I+df_bi_t$n_2+df_bi_t$n_3+df_bi_t$n_4+df_bi_t$n_5)
+                # if (B_20 > 0){     # if there are fractures                  
+                ## B_21  'Intensity'
+                B_21 <- df_bi_t$branches_tot_length
+                ## B_C  'Characteristic length'
                 if (B_20 > 0){     # if there are fractures                  
-                    ## B_21  'Intensity'
-                    B_21 <- df_bi_t$branches_tot_length
-                    ## B_C  'Characteristic length'
                     B_C <- B_21/B_20
-                    ## B_22  'Dimensionless intensity'
-                    B_22 <- B_20 * (B_C)^2
-                    
-                    ## build dataframe
-                    if (var_is_visc) {
-                        if (nchar(x) == 4) {  # 1e15 -> 15 -> 1.5 -> 10^(1.5)
-                            de <- list(viscosity=10^(as.double(full_exponent)/10),melt_rate=m,true_m_rate=true_m_rate,B_20=B_20,B_21=B_21,B_C=B_C,B_22=B_22,
-                        n_I=n_I,n_Y=n_Y,n_X=n_X,n_B=n_B,n_L=n_L,CV_hor=CV_hor,CV_ver=CV_ver,time=time,norm_time=norm_time)
-                            # visc <- 10^(as.double(full_exponent)/10)  
-                        } else {
-                            de <- list(viscosity=as.double(x),melt_rate=m,true_m_rate=true_m_rate,B_20=B_20,B_21=B_21,B_C=B_C,B_22=B_22,
-                        n_I=n_I,n_Y=n_Y,n_X=n_X,n_B=n_B,n_L=n_L,CV_hor=CV_hor,CV_ver=CV_ver,time=time,norm_time=norm_time)
-                            # visc <-as.double(x)
-                        }
-
-                    } else if (var_is_def) {
-                        x <- gsub("e+","e-", x)
-                        de <- list(def_rate=as.double(x),melt_rate=m,true_m_rate=true_m_rate,B_20=B_20,B_21=B_21,B_C=B_C,B_22=B_22,
-                        n_I=n_I,n_Y=n_Y,n_X=n_X,n_B=n_B,n_L=n_L,CV_hor=CV_hor,CV_ver=CV_ver,time=time,norm_time=norm_time)
-                    }
-                    de <- data.frame(de)
-                    df_m <- rbind.fill(df_m,de)#,stringsAsFactors=FALSE)
+                } else {
+                    B_C <- 0
                 }
+                ## B_22  'Dimensionless intensity'
+                B_22 <- B_20 * (B_C)^2
+                
+                ## build dataframe
+                if (var_is_visc) {
+                    if (nchar(x) == 4) {  # 1e15 -> 15 -> 1.5 -> 10^(1.5)
+                        de <- list(viscosity=10^(as.double(full_exponent)/10),melt_rate=m,true_m_rate=true_m_rate,B_20=B_20,B_21=B_21,B_C=B_C,B_22=B_22,
+                    n_I=n_I,n_Y=n_Y,n_X=n_X,n_B=n_B,n_L=n_L,CV_hor=CV_hor,CV_ver=CV_ver,time=time,norm_time=norm_time)
+                        # visc <- 10^(as.double(full_exponent)/10)  
+                    } else {
+                        de <- list(viscosity=as.double(x),melt_rate=m,true_m_rate=true_m_rate,B_20=B_20,B_21=B_21,B_C=B_C,B_22=B_22,
+                    n_I=n_I,n_Y=n_Y,n_X=n_X,n_B=n_B,n_L=n_L,CV_hor=CV_hor,CV_ver=CV_ver,time=time,norm_time=norm_time)
+                        # visc <-as.double(x)
+                    }
+
+                } else if (var_is_def) {
+                    x <- gsub("e+","e-", x)
+                    de <- list(def_rate=as.double(x),melt_rate=m,true_m_rate=true_m_rate,B_20=B_20,B_21=B_21,B_C=B_C,B_22=B_22,
+                    n_I=n_I,n_Y=n_Y,n_X=n_X,n_B=n_B,n_L=n_L,CV_hor=CV_hor,CV_ver=CV_ver,time=time,norm_time=norm_time)
+                }
+                de <- data.frame(de)
+                df_m <- rbind.fill(df_m,de)#,stringsAsFactors=FALSE)
+
                 print(paste("found ",x,", melt rate ",m," at time ",time,", norm time ",norm_time,sep=""))
 
                 # df_m <- rbind(df_m,de,stringsAsFactors=FALSE)
@@ -214,32 +231,36 @@ if (var_is_visc) {
         time=double(),norm_time=double())#,stringsAsFactors=FALSE)
     }
 
+if (file.exists(csv_time_name)) {
+    df_m <- read.csv(csv_time_name, header = TRUE, sep = ",")
+    print("file exists")
+} else {
+    print("file doesn't exist, reading all csvs from directories")
 
-for (x_var in x_variable) {
-    for (melt in melt_rate_list) {
-        df_m <- build_branch_df(x_var,melt,time)
-    }
-} 
+    for (x_var in x_variable) {
+        for (melt in melt_rate_list) {
+            df_m <- build_branch_df(x_var,melt,time)
+        }
+    } 
 
-# branches/lines
-df_m["n_B_n_L"] <- df_m$n_B/df_m$n_L
-df_m["C_L"] <- 2*(df_m$n_Y+df_m$n_X)/df_m$n_L
+    # branches/lines
+    df_m["n_B_n_L"] <- df_m$n_B/df_m$n_L
+    df_m["C_L"] <- 2*(df_m$n_Y+df_m$n_X)/df_m$n_L
+    df_m["viscosity_scaled"] <-df_m$viscosity * 1e3
+    write.csv(df_m, csv_time_name, row.names=FALSE)
 
+}
 df_m
 # warnings()
 
 # plot + save plot
 
-# time_string<-sprintf("%0.1e",time)  # to build png file, convert time to a format like 1e+06
-# time_string<-gsub("[+]","",time_string)  #  gsub(ch,new_ch, string) to remove '+'
-# print(time_string)
-
-# time_string = as.character(time/1e7)
-time_string <- sprintf("%02i",time/1e6)  # pad with zeros until string is 2 characters long
-time_string <- paste(time_string,"e6",sep="")
-
 # Define the directory name
-dir_name <- "branch_plots"
+if (no_margins){
+    dir_name <- "branch_plots_x"  # differentiate the plots
+} else {
+    dir_name <- "branch_plots"
+}
 
 # Check if the directory exists
 if (!dir.exists(dir_name)) {
@@ -249,12 +270,16 @@ if (!dir.exists(dir_name)) {
 }
 
 if (FALSE) {
-    write.csv(df_m, paste("p03_branches_df_",time_string,".csv",sep=""), row.names=FALSE)
+    write.csv(df_m, csv_time_name, row.names=FALSE)
 }
+
+# update base_path to be where I save figures:
+base_path <- paste(base_path,dir_name,sep='/')
+print(base_path)
 
 ## -------------------- Line plots ------------------------
 if (FALSE) {
-    png_name <- paste(base_path,"/branch_plots/br_B_t",time_string,".png",sep='')  # build name of png
+    png_name <- paste(base_path,"/br_B_t",time_string,".png",sep='')  # build name of png
     png(file=png_name,width = 1400,height = 1400,res=200)
     p1 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_20)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
     p2 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_21)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
@@ -265,7 +290,7 @@ if (FALSE) {
     dev.off()
 
     # make separate plots for each melt rate
-    png_name <- paste(base_path,"/branch_plots/br_B_sep_t",time_string,".png",sep='')  # build name of png
+    png_name <- paste(base_path,"/br_B_sep_t",time_string,".png",sep='')  # build name of png
     png(file=png_name,width = 1400,height = 1400,res=200)
     p1 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_20)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10') + facet_grid(rows=vars(melt_rate))
     p2 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_21)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10') + facet_grid(rows=vars(melt_rate))
@@ -276,7 +301,7 @@ if (FALSE) {
     dev.off()
 
     ## n_I, n_Y, n_X
-    png_name <- paste(base_path,"/branch_plots/br_n_t",time_string,".png",sep='')  # build name of png
+    png_name <- paste(base_path,"/br_n_t",time_string,".png",sep='')  # build name of png
     png(file=png_name,width = 1400,height = 1400,res=200)
     p1 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=n_I)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
     p2 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=n_Y)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
@@ -289,7 +314,7 @@ if (FALSE) {
 
 
 
-    png_name <- paste(base_path,"/branch_plots/br_bl_t",time_string,".png",sep='')  # build name of png
+    png_name <- paste(base_path,"/br_bl_t",time_string,".png",sep='')  # build name of png
     png(file=png_name,width = 1400,height = 1400,res=200)
     p1 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=n_B_n_L)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
     p2 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=C_L)) + geom_point(aes(color = melt_rate)) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10')
@@ -322,11 +347,12 @@ if (TRUE) {
     guides(color = guide_legend(reverse=TRUE))+    # low at the bottom, high at the top
     theme(plot.background = element_rect(fill='transparent', color=NA),
         #panel.grid.major = element_line(linetype = "dotted",colour = "black"),
-        legend.background = element_rect(fill='transparent'),
-        panel.background = element_rect(fill = "#e6dbd5"),
-        legend.key = element_rect(fill = "#e6dbd5"),
-        legend.position = c(.85, .65))#,alpha=0.8))
-    ggsave(paste(base_path,"/branch_plots/br_ter_melt_t",time_string,".png",sep=''), pt1, bg='transparent')
+        # legend.background = element_rect(fill='transparent'),
+        # panel.background = element_rect(fill = "#e6dbd5"),
+        # legend.key = element_rect(fill = "#e6dbd5"),
+        legend.position = c(.85, .65))+#,alpha=0.8))
+    transparent_background_for_tern()
+    ggsave(paste(base_path,"/br_ter_melt_t",time_string,".png",sep=''), pt1, bg='transparent')
 
     if (var_is_visc) {
         df_m$visc_factor <- factor(df_m$viscosity, ordered = TRUE)
@@ -337,12 +363,15 @@ if (TRUE) {
         scale_fill_discrete(guide = guide_legend(reverse=TRUE))+
         labs(x = expression('N'[Y]),y = expression('N'[I]),z = expression('N'[X]),colour = "Viscosity")+
         guides(color = guide_legend(reverse=TRUE)) +    # low at the bottom, high at the top
-        theme(plot.background = element_rect(fill='transparent', color=NA),
-        legend.background = element_rect(fill='transparent'),
-        panel.background = element_rect(fill = "#e6dbd5"),
-        legend.key = element_rect(fill = "#e6dbd5"),
-        legend.position = c(.85, .65))#,alpha=0.8))
-        ggsave(paste(base_path,"/branch_plots/br_ter_visc_t",time_string,"_trsp.png",sep=''), ptv, bg='transparent')
+        theme(
+            # plot.background = element_rect(fill='transparent', color=NA),
+            # legend.background = element_rect(fill='transparent'),
+            # panel.background = element_rect(fill = "#e6dbd5"),
+            # legend.key = element_rect(fill = "#e6dbd5"),
+            legend.position = c(.85, .65))+#,alpha=0.8))
+        transparent_background_for_tern()
+
+        ggsave(paste(base_path,"/br_ter_visc_t",time_string,"_trsp.png",sep=''), ptv, bg='transparent')
     } else if (var_is_def) {
         df_m$def_rate_factor <- factor(df_m$def_rate, ordered = TRUE)
         ptv <- ggtern(data=df_m,aes(x=n_Y,y=n_I,z=n_X))+
@@ -358,12 +387,12 @@ if (TRUE) {
         panel.background = element_rect(fill = "#e6dbd5"),
         legend.key = element_rect(fill = "#e6dbd5"),
         legend.position = c(.85, .65))#,alpha=0.8))  
-        ggsave(paste(base_path,"/branch_plots/br_ter_def_t",time_string,"_trsp_1.png",sep=""), ptv, bg='transparent')
-        # ggsave(paste(base_path,"/branch_plots/br_ter_def_t",time_string,"_trsp_1.png",sep=''), ptv, bg='transparent')
+        ggsave(paste(base_path,"/br_ter_def_t",time_string,"_trsp_1.png",sep=""), ptv, bg='transparent')
+        # ggsave(paste(base_path,"/br_ter_def_t",time_string,"_trsp_1.png",sep=''), ptv, bg='transparent')
     }
 }
 
-#png_name <- paste(base_path,"/branch_plots/br_ter_meltPanels_t",time_string,"e07.png",sep='')  # build name of png
+#png_name <- paste(base_path,"/br_ter_meltPanels_t",time_string,"e07.png",sep='')  # build name of png
 #png(file=png_name,width = 1400,height = 1400,res=200)
 #p <- ggtern(data=df_m,aes(x=n_Y,y=n_I,z=n_X))+ geom_point(aes(color = melt_rate))
 # p + facet_grid(rows = vars(melt_rate),cols = vars(viscosity))
@@ -374,7 +403,7 @@ if (TRUE) {
 # --------------------- heatmaps --------------------
 # heatmap for B20,B21,B_C,B22
 if (FALSE) {
-    #png_name <- paste(base_path,"/branch_plots/br_heat_B_",time_string,".png",sep='')  # build name of png
+    #png_name <- paste(base_path,"/br_heat_B_",time_string,".png",sep='')  # build name of png
     #png(file=png_name,width = 1400,height = 1400,res=200)
     if (var_is_visc){
         p1 <- ggplot(data=df_m,aes(factor(x=viscosity),melt_rate,fill=B_20)) + scale_fill_distiller(direction=+1) + geom_tile() # scale_fill_distiller's default is -1, which means higher values = lighter
@@ -398,8 +427,8 @@ if (FALSE) {
     if (var_is_def){
         labs(x = "Deformation Rate",y = "Melt Rate",fill = "Dimensionless \nintensity")
     }
-    # ggsave(paste(base_path,"/branch_plots/br_heat_B_",time_string,"_trsp.png",sep=''), phm, bg='transparent',dpi =100)
-    ggsave(paste(base_path,"/branch_plots/br_heat_B22_",time_string,".png",sep=''),p4,bg='transparent',dpi =200)
+    # ggsave(paste(base_path,"/br_heat_B_",time_string,"_trsp.png",sep=''), phm, bg='transparent',dpi =100)
+    ggsave(paste(base_path,"/br_heat_B22_",time_string,".png",sep=''),p4,bg='transparent',dpi =200)
     # p + facet_grid(rows = vars(melt_rate),cols = vars(viscosity))
     #print(phm)
     #dev.off()
@@ -419,26 +448,26 @@ plot_options <- theme(   # x and y here are not affected by flipping. Same AFTER
 # heatmaps combined with lineplots 
 if (TRUE) {
     # heatmaps
-    png_name <- paste(base_path,"/branch_plots/br_heat_B_",time_string,".png",sep='')  # build name of png
+    png_name <- paste(base_path,"/br_heat_B_",time_string,".png",sep='')  # build name of png
     png(file=png_name,width = 3000,height = 1800,res=100)
     if (var_is_visc){
-        p_heat1 <- ggplot(df_m,aes(factor(x=viscosity),factor(true_m_rate), fill=B_20))  + scale_fill_distiller(direction = +1,palette = 'Purples')+ geom_tile() + theme(legend.key.size = unit(0.5, 'cm'))+
-        labs(x = "Viscosity",y = "Melt Rate",fill =  expression('B'[20]))+
+        p_heat1 <- ggplot(df_m,aes(factor(x=viscosity_scaled),factor(true_m_rate), fill=B_20))  + scale_fill_distiller(direction = +1,palette = 'Purples')+ geom_tile() + theme(legend.key.size = unit(0.5, 'cm'))+
+        labs(x = "Viscosity",y = "Melt Rate",fill =  "Number of\nBranches")+
         scale_x_discrete(expand = c(0, 0)) + scale_y_discrete(expand = c(0, 0))+
         theme(axis.text.x=element_text(size=12))
 
-        p_heat2 <- ggplot(df_m,aes(factor(x=viscosity),factor(true_m_rate), fill=B_21))  + scale_fill_distiller(direction = +1,palette = 'BuGn')+ geom_tile()+ theme(legend.key.size = unit(0.5, 'cm'))+
-        labs(x = "Viscosity",y = "Melt Rate",fill =  expression('B'[21]))+
+        p_heat2 <- ggplot(df_m,aes(factor(x=viscosity_scaled),factor(true_m_rate), fill=B_21))  + scale_fill_distiller(direction = +1,palette = 'BuGn')+ geom_tile()+ theme(legend.key.size = unit(0.5, 'cm'))+
+        labs(x = "Viscosity",y = "Melt Rate",fill = "Total Branch\nLength")+
         scale_x_discrete(expand = c(0, 0)) + scale_y_discrete(expand = c(0, 0))+
         theme(axis.text.x=element_text(size=12))
 
-        p_heat3 <- ggplot(df_m,aes(factor(x=viscosity),factor(true_m_rate), fill=B_C))  + scale_fill_distiller(direction = +1,palette = 'Greys')+ geom_tile()+ theme(legend.key.size = unit(0.5, 'cm'))+
-        labs(x = "Viscosity",y = "Melt Rate",fill =  expression('B'[C]))+
+        p_heat3 <- ggplot(df_m,aes(factor(x=viscosity_scaled),factor(true_m_rate), fill=B_C))  + scale_fill_distiller(direction = +1,palette = 'Greys')+ geom_tile()+ theme(legend.key.size = unit(0.5, 'cm'))+
+        labs(x = "Viscosity",y = "Melt Rate",fill =  "Average Branch\nLength")+
         scale_x_discrete(expand = c(0, 0)) + scale_y_discrete(expand = c(0, 0))+
         theme(axis.text.x=element_text(size=12))
 
-        p_heat4 <- ggplot(df_m,aes(factor(x=viscosity),factor(true_m_rate), fill=B_22))  + scale_fill_distiller(direction = +1,,palette = 'Blues')+ geom_tile()+ theme(legend.key.size = unit(0.5, 'cm'))+
-        labs(x = "Viscosity",y = "Melt Rate",fill =  expression('B'[22]))+
+        p_heat4 <- ggplot(df_m,aes(factor(x=viscosity_scaled),factor(true_m_rate), fill=B_22))  + scale_fill_distiller(direction = +1,,palette = 'Blues')+ geom_tile()+ theme(legend.key.size = unit(0.5, 'cm'))+
+        labs(x = "Viscosity",y = "Melt Rate",fill =  "Dimensionless\nIntensity")+
         scale_x_discrete(expand = c(0, 0)) + scale_y_discrete(expand = c(0, 0))+
         theme(axis.text.x=element_text(size=12))
 
@@ -451,7 +480,7 @@ if (TRUE) {
     print(paste("min B20 =",min(df_m$B_20),"max = ",max(df_m$B_20)))
     # melt rate v B   lineplots
     if (var_is_visc){
-        pm1 <- ggplot(data=df_m,mapping = aes(x=true_m_rate,y=B_20)) + geom_point(aes(color = factor(x=viscosity)))+ geom_line(aes(color = factor(x=viscosity)))+ theme(legend.key.size = unit(0.5, 'cm')) #+ coord_flip() #,linetype = "dashed") #+ scale_x_continuous(trans='log10') 
+        pm1 <- ggplot(data=df_m,mapping = aes(x=true_m_rate,y=B_20)) + geom_point(aes(color = factor(x=viscosity_scaled)))+ geom_line(aes(color = factor(x=viscosity_scaled)))+ theme(legend.key.size = unit(0.5, 'cm')) #+ coord_flip() #,linetype = "dashed") #+ scale_x_continuous(trans='log10') 
         pm1 <- pm1 + labs(x ="Melt Rate",y =  expression('B'[20]),colour = "Viscosity")
         pm1 <- pm1  + plot_options + scale_colour_brewer(palette='Spectral')
         # scale_y_discrete(breaks =seq(200,500, by = 100)) +  # , expand = c(0, 0)
@@ -465,21 +494,21 @@ if (TRUE) {
         # pm1 <- pm1 + scale_x_discrete(breaks = seq(min(df_m$B_20), max(df_m$B_20), by = 10),expand = c(0, 0)) +   #  limits=factor(as.double(melt_rate_list)/1000)  didn't work
         # scale_y_discrete(breaks = seq(min(df_m$B_20), max(df_m$B_20), by = 10),expand = c(0, 0)) 
 
-        pm2 <- ggplot(data=df_m,mapping = aes(x=true_m_rate,y=B_21)) + geom_point(aes(color = factor(x=viscosity)))+ geom_line(aes(color = factor(x=viscosity)))+ theme(legend.key.size = unit(0.5, 'cm'))# + geom_line(aes(color = viscosity),linetype = "dashed") + scale_x_continuous(trans='log10')
+        pm2 <- ggplot(data=df_m,mapping = aes(x=true_m_rate,y=B_21)) + geom_point(aes(color = factor(x=viscosity_scaled)))+ geom_line(aes(color = factor(x=viscosity_scaled)))+ theme(legend.key.size = unit(0.5, 'cm'))# + geom_line(aes(color = viscosity),linetype = "dashed") + scale_x_continuous(trans='log10')
         # pm2 + theme_bw()
         pm2 <- pm2 + plot_options + scale_colour_brewer(palette='Spectral')# + theme(axis.title.y=element_blank())
         # pm2 <- pm2 + coord_flip()+  # rotate data by 90 degrees
         pm2 <- pm2 +labs(x = "Melt Rate",y = expression('B'[21]),colour = "Viscosity")#+
         # scale_x_discrete(expand = c(0, 0)) + scale_y_discrete(expand = c(0, 0))
 
-        pm3 <- ggplot(data=df_m,mapping = aes(x=true_m_rate,y=B_C)) + geom_point(aes(color = factor(x=viscosity)))+ geom_line(aes(color = factor(x=viscosity)))+ theme(legend.key.size = unit(0.5, 'cm')) #+ geom_line(aes(color = viscosity),linetype = "dashed") + scale_x_continuous(trans='log10')
+        pm3 <- ggplot(data=df_m,mapping = aes(x=true_m_rate,y=B_C)) + geom_point(aes(color = factor(x=viscosity_scaled)))+ geom_line(aes(color = factor(x=viscosity_scaled)))+ theme(legend.key.size = unit(0.5, 'cm')) #+ geom_line(aes(color = viscosity),linetype = "dashed") + scale_x_continuous(trans='log10')
         # pm3 + theme_bw()
         pm3 <- pm3 + plot_options + scale_colour_brewer(palette='Spectral') #+ theme(axis.title.y=element_blank())
         # pm3 <- pm3 + coord_flip()+  # rotate data by 90 degrees
         pm3 <- pm3 +labs(x = "Melt Rate",y = expression('B'[C]),colour = "Viscosity")   #  labels as they'd be before flipping
         #scale_x_discrete(expand = c(0, 0)) + scale_y_discrete(expand = c(0, 0))
         
-        pm4 <- ggplot(data=df_m,mapping = aes(x=true_m_rate,y=B_22)) + geom_point(aes(color = factor(x=viscosity)))+ geom_line(aes(color = factor(x=viscosity)))+ theme(legend.key.size = unit(0.5, 'cm'))# + geom_line(aes(color = viscosity),linetype = "dashed") + scale_x_continuous(trans='log10')
+        pm4 <- ggplot(data=df_m,mapping = aes(x=true_m_rate,y=B_22)) + geom_point(aes(color = factor(x=viscosity_scaled)))+ geom_line(aes(color = factor(x=viscosity_scaled)))+ theme(legend.key.size = unit(0.5, 'cm'))# + geom_line(aes(color = viscosity),linetype = "dashed") + scale_x_continuous(trans='log10')
         # pm4 + theme_bw()
         pm4 <- pm4 + plot_options + scale_colour_brewer(palette='Spectral') #+ theme(axis.title.y=element_blank())
         # pm4 <- pm4 + coord_flip()+  # rotate data by 90 degrees
@@ -496,27 +525,27 @@ if (TRUE) {
 
     # viscosity v B   lineplots
     if (var_is_visc){
-        pv1 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_20)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate)) + scale_x_continuous(trans='log10')+#,expand = c(0, 0)) +
+        pv1 <- ggplot(data=df_m,mapping = aes(x=viscosity_scaled,y=B_20)) + geom_point(aes(color = factor(true_m_rate)))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = factor(true_m_rate))) + scale_x_continuous(trans='log10')+#,expand = c(0, 0)) +
         labs(x = "Viscosity",y = expression('B'[20]),colour = "Melt Rate")
         pv1 <- pv1 + plot_options 
 
-        pv2 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_21)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate)) + scale_x_continuous(trans='log10',expand = c(0, 0))+
+        pv2 <- ggplot(data=df_m,mapping = aes(x=viscosity_scaled,y=B_21)) + geom_point(aes(color = factor(true_m_rate)))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = factor(true_m_rate))) + scale_x_continuous(trans='log10',expand = c(0, 0))+
         labs(x = "Viscosity",y = expression('B'[21]),colour = "Melt Rate")
         pv2 <- pv2 + plot_options 
 
-        pv3 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_C)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate)) + scale_x_continuous(trans='log10',expand = c(0, 0))+
+        pv3 <- ggplot(data=df_m,mapping = aes(x=viscosity_scaled,y=B_C)) + geom_point(aes(color = factor(true_m_rate)))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = factor(true_m_rate))) + scale_x_continuous(trans='log10',expand = c(0, 0))+
         labs(x = "Viscosity",y = expression('B'[C]),colour = "Melt Rate")
         pv3 <- pv3 + plot_options 
 
-        pv4 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_22)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate)) + scale_x_continuous(trans='log10',expand = c(0, 0))+
+        pv4 <- ggplot(data=df_m,mapping = aes(x=viscosity_scaled,y=B_22)) + geom_point(aes(color = factor(true_m_rate)))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = factor(true_m_rate))) + scale_x_continuous(trans='log10',expand = c(0, 0))+
         labs(x = "Viscosity",y = expression('B'[22]),colour = "Melt Rate")
         pv4 <- pv4 + plot_options 
 
     } else if (var_is_def){
-        pv1 <- ggplot(data=df_m,mapping = aes(x=def_rate,y=B_20)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate)) + scale_x_continuous(trans='log10') 
-        pv2 <- ggplot(data=df_m,mapping = aes(x=def_rate,y=B_21)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate)) + scale_x_continuous(trans='log10')
-        pv3 <- ggplot(data=df_m,mapping = aes(x=def_rate,y=B_C)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate)) + scale_x_continuous(trans='log10')
-        pv4 <- ggplot(data=df_m,mapping = aes(x=def_rate,y=B_22)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate)) + scale_x_continuous(trans='log10')
+        pv1 <- ggplot(data=df_m,mapping = aes(x=def_rate,y=B_20)) + geom_point(aes(color = factor(true_m_rate)))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = factor(true_m_rate))) + scale_x_continuous(trans='log10') 
+        pv2 <- ggplot(data=df_m,mapping = aes(x=def_rate,y=B_21)) + geom_point(aes(color = factor(true_m_rate)))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = factor(true_m_rate))) + scale_x_continuous(trans='log10')
+        pv3 <- ggplot(data=df_m,mapping = aes(x=def_rate,y=B_C)) + geom_point(aes(color = factor(true_m_rate)))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = factor(true_m_rate))) + scale_x_continuous(trans='log10')
+        pv4 <- ggplot(data=df_m,mapping = aes(x=def_rate,y=B_22)) + geom_point(aes(color = factor(true_m_rate)))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = factor(true_m_rate))) + scale_x_continuous(trans='log10')
     }
 
     if (FALSE){
@@ -548,7 +577,7 @@ if (TRUE) {
 #  ONE HEATMAP at a time, combined with its lineplots
 if(FALSE) {
     library(cowplot)
-    png_name <- paste(base_path,"/branch_plots/br_heat_B20_",time_string,".png",sep='')  # build name of png
+    png_name <- paste(base_path,"/br_heat_B20_",time_string,".png",sep='')  # build name of png
     png(file=png_name,width = 2800,height = 2800,res=500)
     if (var_is_visc){
     p_heat1 <- ggplot(df_m,aes(factor(x=viscosity),true_m_rate, fill=B_20))  + scale_fill_distiller(direction = +1)+ geom_tile() + theme(legend.key.size = unit(0.5, 'cm'))+
@@ -591,8 +620,8 @@ if(FALSE) {
 
 }
 
-if (TRUE) {
-    png_name <- paste(base_path,"/branch_plots/br_heat_nb_cl_",time_string,".png",sep='')  # build name of png
+if (FALSE) {
+    png_name <- paste(base_path,"/br_heat_nb_cl_",time_string,".png",sep='')  # build name of png
     png(file=png_name,width = 2800,height = 2800,res=100)
     p_heat1 <- ggplot(df_m,aes(factor(x=viscosity),melt_rate, fill=n_B_n_L))  + scale_fill_distiller(direction = +1)+ geom_tile() + theme(legend.key.size = unit(0.5, 'cm'))
     p_heat2 <- ggplot(df_m,aes(factor(x=viscosity),melt_rate, fill=C_L))  + scale_fill_distiller(direction = +1)+ geom_tile()+ theme(legend.key.size = unit(0.5, 'cm'))
@@ -616,11 +645,11 @@ if (TRUE) {
     dev.off()
 }
 
-if (TRUE) {   
+if (FALSE) {   
 
     df_CV_hor <- df_m[df_m$CV_hor != 0, ]  # filter out if CV_hor is 0
     df_CV_ver <- df_m[df_m$CV_ver != 0, ]  # filter out if CV_ver is 0
-    png_name <- paste(base_path,"/branch_plots/br_heat_CV_",time_string,".png",sep='')  # build name of png
+    png_name <- paste(base_path,"/br_heat_CV_",time_string,".png",sep='')  # build name of png
     png(file=png_name,width = 2800,height = 2800,res=100)
     p_heat1 <- ggplot(df_CV_hor,aes(factor(x=viscosity),melt_rate, fill=CV_hor))  + scale_fill_distiller(direction = +1)+ geom_tile() + theme(legend.key.size = unit(0.5, 'cm'))
     p_heat2 <- ggplot(df_CV_ver,aes(factor(x=viscosity),melt_rate, fill=CV_ver))  + scale_fill_distiller(direction = +1)+ geom_tile()+ theme(legend.key.size = unit(0.5, 'cm'))
