@@ -12,16 +12,16 @@ source of original script: https://github.com/danvk/extract-raster-network
 USAGE:
 python3 /path/to/extract_topology.py              (don't crop the image) 
 python3 /path/to/extract_topology.py w            (whole domain of images generated with python script save_bb_figure.py)
-or 
-python3 /path/to/extract_topology.py t
-python3 /path/to/extract_topology.py b            (top part or bottom part only)
+python3 /path/to/extract_topology.py t            (top part only)
+python3 /path/to/extract_topology.py b            (bottom part only)
+python3 /path/to/extract_topology.py x            (take away 2 % from each side, left and right)
 
 INPUT:
-reads all the images called "py_bb_*.png" in the directory it is run from
+reads all the images called "py_bb_*.png" in the directory it is run from.
 
 OUTPUT:
-"py_branch_info.csv", "py_branch_info_top.csv" or "py_branch_info_bot.csv", depending on which part was analysed (whole figure, top only or bottom only)
-which contains 
+"py_branch_info.csv", "py_branch_info_top.csv", "py_branch_info_bot.csv" or "py_branch_info_x.csv", depending on which part was analysed (whole figure, top only, bottom only)
+which contains the data in the dataframe about branch length, node types, CV parameter etc.
 
 Giulia's edits: 
 - use thin instead of skeletonize
@@ -32,7 +32,7 @@ Giulia's edits:
     3 = Y node
     4 = X node
 
-    2 = n_2
+    2 = n_2 (not included in the node classification)
     5 = n_5
 
 crop images:
@@ -804,6 +804,7 @@ def analyse_png(png_file: str, part_to_analyse: str, all_angles: list) -> dict:
 
         left = min(X)+5; top = min(Y)+7; right = max(X)-5; bottom = max(Y)-5 # auto from blue
         height = bottom - top
+        width = right - left
         print(left,top,right,bottom)
 
     crop_im = 1
@@ -825,6 +826,13 @@ def analyse_png(png_file: str, part_to_analyse: str, all_angles: list) -> dict:
     elif part_to_analyse == 'f': # full, or field = do not crop
         crop_im = 0  # in this case, do not crop 
         out_path = "p_"+png_file.replace('.png', '_nx')
+
+    elif part_to_analyse == 'x':  # remove the parts closest to the sides
+        left = left + int(0.02*width)  # take away 2 % from each side
+        right = right - int(0.02*width)
+        print(f'left {left} right {right}')
+        out_path = "p_x_"+png_file.replace('.png', '_nx')
+
 
     if crop_im:  # crop the image if flag is true
         # Cropped image of above dimension
@@ -933,6 +941,9 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
         csv_file_name = "py_branch_info_bot.csv" 
     elif part_to_analyse == 't':
         csv_file_name = "py_branch_info_top.csv" 
+    elif part_to_analyse == 'x': # remove the parts closest to the margins (in the x direction)
+        csv_file_name = "py_branch_info_x.csv" 
+
 
     for f,filename in enumerate(sorted(glob.glob(string_in_name))):
     # for f,filename in enumerate(sorted(glob.glob("Long_drawn_OpeningInvert*.png"))):
@@ -967,9 +978,10 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
 d = os.getcwd()  # save path to current directory (will be given as input to file_loop() function)
 if (len(sys.argv) == 1):
     part_to_analyse = 'f'  # if no command line argument is provided, set the option to "f". It means it won't crop the image.
+    print("No command line argument was provided, analysing the whole image")
 else:
     part_to_analyse = sys.argv[1]
-assert (part_to_analyse == 'w' or part_to_analyse == 't' or part_to_analyse == 'b' or part_to_analyse == 'f'), "Error: specify w for whole domain, b for bottom (melt zone), t for top (through zone), f for full (or field) for field images"
+assert (part_to_analyse == 'w' or part_to_analyse == 't' or part_to_analyse == 'b' or part_to_analyse == 'f' or part_to_analyse == 'x'), "Error: specify w for whole domain, b for bottom (melt zone), t for top (through zone), f for full (or field) for field images"
 
 print(f'Part to analyse: {part_to_analyse}')
 file_loop(d,part_to_analyse)
