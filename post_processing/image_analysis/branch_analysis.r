@@ -14,6 +14,8 @@
 #
 # or submit a task array job with sub_branchAn.sh from visc_*/vis*
 #
+# WARNING: delete the file called branches_df_time_*.csv if the data from extract_topology.py changed.
+#
 # Giulia March 2023
 # ------------------------------------------
 
@@ -31,7 +33,7 @@ time = as.numeric(args[1])   # time for the 1st   (e.g. 60e6 = 60th file in mr_0
 # option: read the csv file that excludes the margins?
 #  + no_margins <- 0 : py_branch_info.csv,   use "branch_plots"
 #  + no_margins <- 1 : py_branch_info_x.csv, use "branch_plots_x"
-no_margins <- 0
+no_margins <- 1
 
 time_string <- sprintf("%02i",time/1e6)  # pad with zeros until string is 2 characters long
 time_string <- paste(time_string,"e6",sep="")
@@ -330,9 +332,10 @@ if (FALSE) {
 # import the library to create ternary plots
 library("ggplot2")
 library("ggtern")
-if (TRUE) {
-    rows_to_keep <- !(df_m$n_Y == 0 & df_m$n_I == 0 & df_m$n_X == 0)  # remove rows if n_Y, n_I AND n_X are zero
-    df_no_zeros <- df_m[rows_to_keep, ]
+rows_to_keep <- !(df_m$n_Y == 0 & df_m$n_I == 0 & df_m$n_X == 0)  # remove rows if n_Y, n_I AND n_X are zero
+df_no_zeros <- df_m[rows_to_keep, ]
+if (FALSE) {
+
     # # connected-connected - isolated-connected - isolated-isolated
     # df_m["P_I"] <- df_m$N_I/(df_m$N_I+3*df_m$N_Y+4*df_m$N_X)   # probability of an I node
     # df_m["P_C"] <- (3*df_m$N_Y+4*df_m$N_X)/(df_m$N_I+3*df_m$N_Y+4*df_m$N_X)   # probability of a C node
@@ -342,16 +345,14 @@ if (TRUE) {
     
     # pt1 <- ggtern(data=df_m,aes(x=n_Y,y=n_I,z=n_X))+ geom_point(aes(fill=as.factor(true_m_rate)),shape = 21,stroke=2,size=2,colour="black")+ 
     pt1 <- ggtern(data=df_no_zeros,aes(x=n_Y,y=n_I,z=n_X))+ geom_point(aes(color=as.factor(true_m_rate)))+ 
-    scale_colour_brewer(palette='Blues')+
+    scale_colour_brewer(palette='YlGn')+
     scale_fill_distiller(direction=+1)+
     scale_fill_discrete(guide = guide_legend(reverse=TRUE))+    
     labs(x = expression('N'[Y]),y = expression('N'[I]),z = expression('N'[X]),colour = "Melt Rate")+   # labels for the vertices
     guides(color = guide_legend(reverse=TRUE))+    # low at the bottom, high at the top
     theme(plot.background = element_rect(fill='transparent', color=NA),
-        #panel.grid.major = element_line(linetype = "dotted",colour = "black"),
-        # legend.background = element_rect(fill='transparent'),
-        # panel.background = element_rect(fill = "#e6dbd5"),
-        # legend.key = element_rect(fill = "#e6dbd5"),
+        tern.panel.background = element_rect(fill = "#e6e6e6"),
+        legend.key = element_rect(fill = "#e6e6e6"),
         legend.position = c(.85, .65))+#,alpha=0.8))
     transparent_background_for_tern()
     ggsave(paste(base_path,"/br_ter_melt_t",time_string,".png",sep=''), pt1, bg='transparent')
@@ -372,15 +373,16 @@ if (TRUE) {
     # transparent_background_for_tern()
     # ggsave(paste(base_path,"/br_ter_meltVisc_t",time_string,".png",sep=''), pt_both, bg='transparent')
 
-    df_no_zeros["mu_mr"] = log10(df_no_zeros$viscosity_scaled)/(df_no_zeros$true_m_rate*1000)
-    print("df_no_zeros")
-    print(df_no_zeros)
-    pt_ratio <- ggtern(data=df_no_zeros,aes(x=n_Y,y=n_I,z=n_X))+ geom_point(aes(color=as.factor(mu_mr)))+ 
-    scale_colour_brewer(palette='Blues')+
-    scale_fill_distiller(direction=+1)+
-    scale_fill_discrete(guide = guide_legend(reverse=TRUE))+    
-    labs(x = expression('N'[Y]),y = expression('N'[I]),z = expression('N'[X]),colour = "Viscosity/Melt Rate")+   # labels for the vertices
-    guides(color = guide_legend(reverse=TRUE))+    # low at the bottom, high at the top
+    df_no_zeros["mu_mr"] = (df_no_zeros$true_m_rate*1000)/log10(df_no_zeros$viscosity_scaled)
+    print("df_no_zeros[mu_mr]")
+    print(df_no_zeros["mu_mr"])
+    pt_ratio <- ggtern(data=df_no_zeros,aes(x=n_Y,y=n_I,z=n_X))+ geom_point(aes(color=(mu_mr)))+ 
+    # scale_colour_brewer(palette='BuGn')+
+    scale_color_continuous(low="purple", high="orange") +
+    # scale_fill_distiller(direction=+1)+
+    # scale_fill_discrete(guide = guide_legend(reverse=TRUE))+    
+    labs(x = expression('N'[Y]),y = expression('N'[I]),z = expression('N'[X]),colour = "Melt Rate/log(Viscosity)")+   # labels for the vertices
+    # guides(color = guide_legend(reverse=TRUE))+    # low at the bottom, high at the top
     theme(plot.background = element_rect(fill='transparent', color=NA),
         #panel.grid.major = element_line(linetype = "dotted",colour = "black"),
         # legend.background = element_rect(fill='transparent'),
@@ -394,18 +396,19 @@ if (TRUE) {
         df_no_zeros$visc_factor <- factor(df_no_zeros$viscosity_scaled, ordered = TRUE)
         ptv <- ggtern(data=df_no_zeros,aes(x=n_Y,y=n_I,z=n_X)) + 
         geom_point(aes(color = visc_factor)) + 
-        scale_colour_brewer(palette='Blues')+
+        scale_colour_brewer(palette='YlGnBu')+
         scale_fill_distiller(direction=+1)+
         scale_fill_discrete(guide = guide_legend(reverse=TRUE))+
         labs(x = expression('N'[Y]),y = expression('N'[I]),z = expression('N'[X]),colour = "Viscosity")+
         guides(color = guide_legend(reverse=TRUE)) +    # low at the bottom, high at the top
+        transparent_background_for_tern()+
+
         theme(
             # plot.background = element_rect(fill='transparent', color=NA),
             # legend.background = element_rect(fill='transparent'),
-            # panel.background = element_rect(fill = "#e6dbd5"),
-            # legend.key = element_rect(fill = "#e6dbd5"),
-            legend.position = c(.85, .65))+#,alpha=0.8))
-        transparent_background_for_tern()
+            tern.panel.background = element_rect(fill = "#e6e6e6"),
+            legend.key = element_rect(fill = "#e6e6e6"),
+            legend.position = c(.85, .65))#,alpha=0.8))
 
         ggsave(paste(base_path,"/br_ter_visc_t",time_string,"_trsp.png",sep=''), ptv, bg='transparent')
     } else if (var_is_def) {
@@ -424,17 +427,68 @@ if (TRUE) {
         legend.key = element_rect(fill = "#e6dbd5"),
         legend.position = c(.85, .65))#,alpha=0.8))  
         ggsave(paste(base_path,"/br_ter_def_t",time_string,"_trsp_1.png",sep=""), ptv, bg='transparent')
-        # ggsave(paste(base_path,"/br_ter_def_t",time_string,"_trsp_1.png",sep=''), ptv, bg='transparent')
     }
 }
 
-#png_name <- paste(base_path,"/br_ter_meltPanels_t",time_string,"e07.png",sep='')  # build name of png
-#png(file=png_name,width = 1400,height = 1400,res=200)
-#p <- ggtern(data=df_m,aes(x=n_Y,y=n_I,z=n_X))+ geom_point(aes(color = melt_rate))
-# p + facet_grid(rows = vars(melt_rate),cols = vars(viscosity))
-#pt3 <- p + facet_grid(cols = vars(viscosity))
-#print(pt3)
-#dev.off()
+# TERNARY PLOTS: one for each mr (or mu), coloured by mu (or mr).
+if (TRUE){
+    library(dplyr)
+    # create a column with categories of viscosity
+    df_no_zeros <- df_no_zeros %>%
+    mutate(
+        viscosity_category = case_when(
+        viscosity_scaled < 1e5 ~ "1 - Low",
+        viscosity_scaled == 1e5 ~ "2 - Intermediate",
+        viscosity_scaled < 1e6 ~ "3 - High",
+        viscosity_scaled >= 1e6 ~ "4 - Very high",
+        TRUE ~ NA_character_  # This line handles any cases that don't match the above conditions
+        )
+    )
+    # create a column with categories of mr
+    df_no_zeros <- df_no_zeros %>%
+    mutate(
+        mr_category = case_when(
+        true_m_rate <= 0.002 ~ "1 - Low",
+        true_m_rate <= 0.004 ~ "2 - Intermediate",
+        true_m_rate <= 0.006  ~ "3 - High",
+        true_m_rate >= 0.007 ~ "4 - Very high",
+        TRUE ~ NA_character_  # This line handles any cases that don't match the above conditions
+        )
+    )
+    print(df_no_zeros)
+
+    # categories = viscosity   -  colour = melt rate
+
+    png_name <- paste(base_path,"/br_ter_viscPanels_t",time_string,".png",sep='')  # build name of png
+    # generate colours
+    colours_mr <- colorRampPalette(c("#c2823a", "#33231E"))(length(unique(df_no_zeros$true_m_rate)))
+    pt_pan_mr <- ggtern(data=df_no_zeros,aes(x=n_Y,y=n_I,z=n_X))+ geom_point(aes(color = as.factor(true_m_rate)))+
+        scale_color_manual(values = colours_mr)
+    pt_pan_mr1 <- pt_pan_mr + facet_grid(cols = vars(viscosity_category))+
+        transparent_background_for_tern()+
+        labs(x = expression('N'[Y]),y = expression('N'[I]),z = expression('N'[X]),colour = "Melt\nProduction\nRate")+
+        theme(
+        tern.panel.background = element_rect(fill = "#e6e6e6"),
+        legend.key = element_rect(fill = "#e6e6e6"))
+    ggsave(png_name, pt_pan_mr1, bg='transparent', width = 30, height = 8, units = "cm")
+
+
+    # categories = melt rate  -  colour = viscosity
+    png_name <- paste(base_path,"/br_ter_meltPanels_t",time_string,".png",sep='')  # build name of png
+    colours_mu <- colorRampPalette(c("#69C3C2","#397367", "#140021"))(length(unique(df_no_zeros$viscosity_scaled)))
+    pt_pan_mu <- ggtern(data=df_no_zeros,aes(x=n_Y,y=n_I,z=n_X))+ geom_point(aes(color = as.factor(viscosity_scaled)))+
+        labs(x = expression('N'[Y]),y = expression('N'[I]),z = expression('N'[X]),colour = "Melt\nViscosity")+
+        # scale_fill_distiller(direction=+1)+
+        scale_color_manual(values = colours_mu)
+        
+    pt_pan_mu1 <- pt_pan_mu + facet_grid(cols = vars(mr_category))+
+        transparent_background_for_tern() +
+        theme(
+        tern.panel.background = element_rect(fill = "#e6e6e6"),
+        legend.key = element_rect(fill = "#e6e6e6"))
+
+    ggsave(png_name, pt_pan_mu1, bg='transparent', width = 30, height = 8, units = "cm")
+}
 
 # --------------------- heatmaps --------------------
 # heatmap for B20,B21,B_C,B22
@@ -482,7 +536,7 @@ plot_options <- theme(   # x and y here are not affected by flipping. Same AFTER
     )
 
 # heatmaps combined with lineplots 
-if (TRUE) {
+if (FALSE) {
     # heatmaps
     png_name <- paste(base_path,"/br_heat_B_",time_string,".png",sep='')  # build name of png
     png(file=png_name,width = 3000,height = 1800,res=100)
