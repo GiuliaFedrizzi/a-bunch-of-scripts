@@ -1,3 +1,17 @@
+"""
+Read my_experiment*.csv corresponding to the (normalised) time
+perform DBSCAN analysis on fracture locations
+analysis on clusters:
+- elongation
+- number of clusters
+- cluster size
+- orientation
+
+To be run from outside of rt0.5/
+
+Giulia, May 2024
+"""
+
 # import pandas as pd
 import numpy as np
 from sklearn.cluster import DBSCAN
@@ -118,9 +132,9 @@ def dbscan_and_plot(X,e,min_samples,df,variab,x_value,melt_value,no_margins):
                 if plot_figures:
                     plt.plot(ellipsis[0,:]+centroid['x coord'], ellipsis[1,:]+centroid['y coord'],'k')
                     if no_margins:
-                        plt.savefig("../ellipses_x_v"+str(x_value)+"_mr"+str(melt_value)+"_"+str(t)+".png")  # show all of them at the end
+                        plt.savefig("../cluster/ellipses_x_v"+str(x_value)+"_mr"+str(melt_value)+"_"+str(t)+".png")  # show all of them at the end
                     else:
-                        plt.savefig("../ellipses_v"+str(x_value)+"_mr"+str(melt_value)+"_"+str(t)+".png")  # show all of them at the end
+                        plt.savefig("../cluster/ellipses_v"+str(x_value)+"_mr"+str(melt_value)+"_"+str(t)+".png")  # show all of them at the end
 
                 # Store the eigenvalues in the dictionary
                 moments_of_inertia[cluster_label] = eigenvalues
@@ -178,13 +192,13 @@ def plot_cluster_data(fig,df,cluster_variable,cluster_variable_label,no_margins)
     mask_nan = df[cluster_variable].isna()
 
     # prepare to highlight big values
-    smallest_value = df[cluster_variable].min()
-    big_value = (df[cluster_variable].max() - smallest_value) * 3/4 + smallest_value
-    print(f'{cluster_variable_label}: big_value {big_value}, max {df[cluster_variable].max()}, min {df[cluster_variable].min()}')
-    df_big_values_mask = df[cluster_variable] > big_value
+    # smallest_value = df[cluster_variable].min()
+    # big_value = (df[cluster_variable].max() - smallest_value) * 3/4 + smallest_value
+    # print(f'{cluster_variable_label}: big_value {big_value}, max {df[cluster_variable].max()}, min {df[cluster_variable].min()}')
+    # df_big_values_mask = df[cluster_variable] > big_value
 
 
-    gs = gridspec.GridSpec(2, 2, width_ratios=[5, 2], height_ratios=[2, 7])
+    gs = gridspec.GridSpec(2, 2, width_ratios=[4, 4], height_ratios=[2, 7])
     # Adjust layout to prevent overlap
     # plt.tight_layout()
     fig.suptitle(cluster_variable_label+", t = " + str(t))
@@ -197,7 +211,7 @@ def plot_cluster_data(fig,df,cluster_variable,cluster_variable_label,no_margins)
     df['melt_rate'] = df['melt_rate'].astype(str)
 
     # pseudo heatmap
-    square_size = 2800
+    square_size = 2600
     ax0 = plt.subplot(gs[1, 0])
     # sns.heatmap(heatmap_data, ax=ax0, cmap="viridis", cbar_kws={'label': 'Average Size'})
     sns.scatterplot(data=df, x='viscosity',y='melt_rate',hue=cluster_variable,
@@ -223,11 +237,13 @@ def plot_cluster_data(fig,df,cluster_variable,cluster_variable_label,no_margins)
     ax1.xaxis.tick_top()
 
     # Right plot (Melt Rate vs Average Size)
-    ax2 = plt.subplot(gs[1, 1], sharey=ax0)    # sharey  so they are aligned
-    sns.lineplot(data=df, x=cluster_variable, y="melt_rate",hue="viscosity_label", ax=ax2, palette="viridis")
-    ax2.set_ylabel("")
+    df = df.sort_values(by='melt_rate')
+
+    ax2 = plt.subplot(gs[1, 1])#, sharey=ax0)    # sharey  so they are aligned
+    sns.lineplot(data=df, x="melt_rate", y=cluster_variable,hue="viscosity_label", ax=ax2, palette="viridis")
+    ax2.set_xlabel("Melt Rate")
     # ax2.set_yticks("")  # no ticks - it removes them from the heatmap too
-    ax2.set_xlabel(cluster_variable_label)
+    ax2.set_ylabel(cluster_variable_label)
     ax2.legend(title="$\mu_f$", fontsize=7, title_fontsize=9)
     ax2.yaxis.tick_right()
 
@@ -235,9 +251,9 @@ def plot_cluster_data(fig,df,cluster_variable,cluster_variable_label,no_margins)
     # plt.show()
     
     if no_margins:  # excluding margins, use a different name
-        plt.savefig("cluster_x_"+cluster_variable+"_"+str(t)+".png")
+        plt.savefig("cluster/cluster_x_"+cluster_variable+"_"+str(t)+".png")
     else:
-        plt.savefig("cluster_"+cluster_variable+"_"+str(t)+".png")
+        plt.savefig("cluster/cluster_"+cluster_variable+"_"+str(t)+".png")
 
 
 
@@ -250,7 +266,7 @@ def plot_pair_grid(df,t,no_margins):
     fig_pair = plt.figure(figsize=(7, 7))
     # plt.title("t = "+str(t))
 
-    df_pair = df.drop(columns=['average_angle'])   # keep only the columns that are useful for the grid plot
+    df_pair = df.drop(columns=['average_angle','viscosity_label'])   # keep only the columns that are useful for the grid plot
     df_pair = df_pair.dropna()
 
     # set which figure to use
@@ -264,9 +280,9 @@ def plot_pair_grid(df,t,no_margins):
     
     #  if excluding margins:
     if no_margins:
-        plt.savefig("cluster_x_grid_visc"+str(t)+".png")
+        plt.savefig("cluster/cluster_x_grid_visc"+str(t)+".png")
     else:
-        plt.savefig("cluster_grid_visc"+str(t)+".png")
+        plt.savefig("cluster/cluster_grid_visc"+str(t)+".png")
     plt.clf()  #  clear the figure, ready to be reused
 
     # plt.title("t = "+str(t))
@@ -279,35 +295,39 @@ def plot_pair_grid(df,t,no_margins):
     
     #   if excluding margins:
     if no_margins:
-        plt.savefig("cluster_x_grid_mr"+str(t)+".png")
+        plt.savefig("cluster/cluster_x_grid_mr"+str(t)+".png")
     else:
-        plt.savefig("cluster_grid_mr"+str(t)+".png")
+        plt.savefig("cluster/cluster_grid_mr"+str(t)+".png")
     
     plt.close(fig_pair)  # we're done with the figures
 
-    def anova_formula(df_pair,formula):
-        # calculate anova between viscosity or melt rate and the other variables
-        model = ols(formula, data=df_pair).fit()
-        anova_results = sm.stats.anova_lm(model, typ=2)
+    # df_pair = 
+    print(f'df pair before correl')
+    print(df_pair)
 
-        # Print the results
-        print(anova_results)
+    # def anova_formula(df_pair,formula):
+    #     # calculate anova between viscosity or melt rate and the other variables
+    #     model = ols(formula, data=df_pair).fit()
+    #     anova_results = sm.stats.anova_lm(model, typ=2)
 
-    # create all combinations:
-    pairs = []
-    for var in ['melt_rate','viscosity']:
-        for column_2 in df_pair:
-            if var != column_2:
-                if [var,column_2] not in pairs:
-                    formula = f'{var} ~ {column_2}'
-                    print(formula)
-                    anova_formula(df_pair,formula)
+    #     # Print the results
+    #     print(anova_results)
+
+    # # create all combinations:
+    # pairs = []
+    # for var in ['melt_rate','viscosity']:
+    #     for column_2 in df_pair:
+    #         if var != column_2:
+    #             if [var,column_2] not in pairs:
+    #                 formula = f'{var} ~ {column_2}'
+    #                 print(formula)
+    #                 anova_formula(df_pair,formula)
 
 
-    def plot_correl(df):
+    def plot_correl(df_pair):
         # correlation and p-values
-        corr = df.corr()
-        p_values = pd.DataFrame(data=[[pearsonr(df[col], df[col2])[1] for col2 in df.columns] for col in df.columns], columns=df.columns, index=df.columns)
+        corr = df_pair.corr()
+        p_values = pd.DataFrame(data=[[pearsonr(df_pair[col], df_pair[col2])[1] for col2 in df_pair.columns] for col in df_pair.columns], columns=df_pair.columns, index=df_pair.columns)
         print(p_values)
         
         plt.figure(figsize=(10, 8))
@@ -321,15 +341,16 @@ def plot_pair_grid(df,t,no_margins):
                         verticalalignment='center', 
                         color="black" if corr.iloc[i, j] > 0 else "white")
 
-        plt.xticks(np.arange(0.5, len(df.columns), 1), df.columns, rotation=45, ha="right")
-        plt.yticks(np.arange(0.5, len(df.columns), 1), df.columns)
+        plt.xticks(np.arange(0.5, len(df_pair.columns), 1), df_pair.columns, rotation=45, ha="right")
+        plt.yticks(np.arange(0.5, len(df_pair.columns), 1), df_pair.columns)
         plt.title("Correlation Matrix with P-values")
         plt.show()
 
-    df_pair = df.drop(columns=['melt_rate','viscosity','average_angle'])
+    df_pair = df_pair.drop(columns=['melt_rate','viscosity'])#,'average_angle'])
     df_pair = df_pair.dropna()
     print(df_pair)
     correlation_matrix = df_pair.corr(method='pearson')  # alternatives: 'spearman' or 'kendall'
+    print("correlation_matrix")
     print(correlation_matrix)
     plot_correl(df_pair)
 
@@ -406,18 +427,18 @@ def cluster_analysis(t,no_margins):
     #     plt.show()  # show all of them at the end
 
     
-    # # prepare figure for plotting, only create these figures once
-    # fig = plt.figure(figsize=(8, 10))
+    # prepare figure for plotting, only create these figures once
+    fig = plt.figure(figsize=(11, 10))
 
-    # for cluster_variable in cluster_variables:
-    # # one big heatmap (scatterplot) for each variable 
-    #     plot_cluster_data(fig,df,cluster_variable,cluster_variables[cluster_variable],no_margins)
-    # # plot_cluster_data(fig,df,'cluster_n',"Number of Clusters")
+    for cluster_variable in cluster_variables:
+    # one big heatmap (scatterplot) for each variable 
+        plot_cluster_data(fig,df,cluster_variable,cluster_variables[cluster_variable],no_margins)
+    # plot_cluster_data(fig,df,'cluster_n',"Number of Clusters")
 
-    # plt.close(fig)
+    plt.close(fig)
 
     # make a grid with plots for each variable pair
-    plot_pair_grid(df,t,no_margins)
+    # plot_pair_grid(df,t,no_margins)
     
     
 
@@ -445,6 +466,9 @@ def cluster_analysis(t,no_margins):
 parent_dir_path = 'rt0.5/'
 # get the list of directories, viscosity dirs and melt rate dirs
 os.chdir(parent_dir_path)
+
+if not os.path.exists('cluster'):
+    os.makedirs('cluster')
 
 for t in times:
     cluster_analysis(t,no_margins)
