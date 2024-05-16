@@ -165,15 +165,14 @@ def dbscan_and_plot(X,e,min_samples,df,variab,x_value,melt_value,no_margins):
 
         else:
             """ clusters were found, but they are too small: populate the dataframe with NaN """
-            cluster_data = {'cluster_n':float('NaN'),'average_size':float('NaN'),'average_angle':float('NaN'),
-            'average_angle_from_90':float('NaN'),'average_elong':float('NaN'),variab:x_value,'melt_rate':melt_value}
+            cluster_data = fill_db_with_NaN(variab,x_value,melt_value)
             print("Clusters are too small")
             ellipses_df = {}
 
     else:
         """ no clusters were found: populate the dataframe with NaN """
-        cluster_data = {'cluster_n':float('NaN'),'average_size':float('NaN'),'average_angle':float('NaN'),
-            'average_angle_from_90':float('NaN'),'average_elong':float('NaN'),variab:x_value,'melt_rate':melt_value}
+        cluster_data = fill_db_with_NaN(variab,x_value,melt_value)
+
         ellipses_df = {}
         print("No Clusters")
         
@@ -182,6 +181,11 @@ def dbscan_and_plot(X,e,min_samples,df,variab,x_value,melt_value,no_margins):
     df = pd.concat([df,cluster_df], ignore_index=True) 
     
     return df,ellipses_df
+
+def fill_db_with_NaN(variab,x_value,melt_value):
+    cluster_data = {'cluster_n':float('NaN'),'average_size':float('NaN'),'average_angle':float('NaN'),
+        'average_angle_from_90':float('NaN'),'average_elong':float('NaN'),variab:x_value,'melt_rate':melt_value}
+    return cluster_data
 
 def plot_cluster_data(fig,df,cluster_variable,cluster_variable_label,no_margins):
     # set which figure to use
@@ -367,10 +371,10 @@ def cluster_analysis(t,no_margins):
         csv_name = 'cluster_data_x_'+str(t)+'.csv'
     else:
         csv_name = 'cluster_data_'+str(t)+'.csv'
+    variab = find_variab()
 
     # check if there is already a file with the data. If there isn't, read and calculate
     if not os.path.isfile(csv_name):
-        variab = find_variab()
         x_variable = find_dirs()  # viscosity dirs
 
         for x in x_variable:
@@ -407,16 +411,28 @@ def cluster_analysis(t,no_margins):
                 X = X[['x coord','y coord']] # Only x and y coordinates 
                 if len(X) > 0:
                     df,ellipses_df = dbscan_and_plot(X,0.0088,min_samples,df,variab,x_value,melt_value,no_margins)
+                else:
+                    # no fractures at all: we still need to have an entry in the dataframe, but it will be NaN
+                    cluster_data = fill_db_with_NaN(variab,x_value,melt_value)
+                    cluster_df = pd.DataFrame(cluster_data,index=[0])
+                    df = pd.concat([df,cluster_df], ignore_index=True) 
             os.chdir('..')
 
             # now that it has read and calculated, save the data for next time
-            df.to_csv(csv_name)
-            print("saving")
+        df.to_csv(csv_name)
+        print("saving")
 
     else:
         df = pd.read_csv(csv_name,index_col=0)
+
+            
         print("reading")
         
+    if variab == "viscosity":
+        df["viscosity"] = df["viscosity"]*1000
+
+    print(df)
+
     cluster_variables = {'cluster_n': "Number of Clusters",
             'average_size':"Average Cluster Size",
             'average_angle':"Average Angle",
