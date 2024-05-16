@@ -9,7 +9,7 @@ find_dirs <- function(var_type) {
   # print(paste("items:", toString(items)))
   
   directories_list <- items[sapply(items, function(item) {
-    file.info(item)$isdir && !item %in% c("baseFiles", "images_in_grid", "branch_plots","branch_plots_x")  # ignore these directories
+    file.info(item)$isdir && !item %in% c("baseFiles", "images_in_grid", "branch_plots","branch_plots_x","cluster")  # ignore these directories
   })]
   
   directories_list <- sort(directories_list)
@@ -50,16 +50,16 @@ transparent_background_for_tern <- function() {
         panel.border = element_rect(color = "gray10",linetype = "solid", linewidth = 0.5),
         # panel.border = element_blank(),  # Remove panel border
         plot.background = element_rect(fill = "transparent", color = NA),   
-        tern.panel.background = element_blank(), 
+        # tern.panel.background = element_blank(), 
         # tern.panel.grid.ontop = FALSE,
         tern.axis.ticks = element_line(color = "gray10"),  # Color of ticks on the axes
         axis.ticks.length = unit(0.0, "cm"),          # Length of ticks
         # panel.grid.major = element_line(color = "gray10", linewidth = 0.5),
         # panel.grid.minor = element_line(color = "gray10", linewidth = 0.1),
-        panel.grid = element_line(color = "gray10",linetype="dashed",linewidth=0.3),
+        panel.grid = element_line(color = "gray40",linetype="dashed",linewidth=0.3),
         legend.background = element_rect(fill='transparent'),
         panel.ontop = FALSE,  # send axes to the background (doesn't work)
         # tern.axis.ontop = FALSE,  
-        legend.position = "right"
+        # legend.position = "right"
 ) 
 }
