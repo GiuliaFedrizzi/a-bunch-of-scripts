@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 import csv
 from scipy.stats import gaussian_kde
 from scipy.spatial.distance import cdist
-from matplotlib.colors import ListedColormap
+from matplotlib.colors import ListedColormap,LinearSegmentedColormap, to_hex
 from matplotlib.patches import Ellipse
 from scipy.spatial.distance import pdist, squareform
 import seaborn as sns
@@ -219,7 +219,7 @@ def plot_cluster_data(fig,df,cluster_variable,cluster_variable_label,no_margins)
     ax0 = plt.subplot(gs[1, 0])
     # sns.heatmap(heatmap_data, ax=ax0, cmap="viridis", cbar_kws={'label': 'Average Size'})
     sns.scatterplot(data=df, x='viscosity',y='melt_rate',hue=cluster_variable,
-                    marker='s',s=square_size,edgecolor='none', ax=ax0, palette="crest")
+                    marker='s',s=square_size,edgecolor='none', ax=ax0, palette="flare")
     ax0.set_xlabel("Viscosity")
     ax0.set_ylabel("Melt Rate")
     ax0.set_xscale('log')
@@ -232,24 +232,46 @@ def plot_cluster_data(fig,df,cluster_variable,cluster_variable_label,no_margins)
     # sns.scatterplot(data=df[df_big_values_mask], x='viscosity', y='melt_rate',facecolors='none', hatch='///',
     #                 marker='s',edgecolor='black', s=square_size*0.6, ax=ax0)
 
+    df = df.sort_values(by=['melt_rate','viscosity'])
+
+
+    def create_palette(base_colors, n_colors):   # Function to create a color palette
+        colormap = LinearSegmentedColormap.from_list("custom_palette", base_colors, N=n_colors)
+        # Generate colors from the colormap
+        return [to_hex(colormap(i / (n_colors - 1))) for i in range(n_colors)]
+
+    palette_visc = create_palette(["#aae88e","#397367", "#140021"], len(df['viscosity_label'].unique()))
+    palette_visc_dict = dict(zip(df['viscosity_label'].unique(), palette_visc))
+
+    palette_mr = create_palette(["#c2823a", "#33231E"], len(df['melt_rate'].unique()))
+    palette_mr_dict = dict(zip(df['viscosity_label'].unique(), palette_mr))
+
     # Top plot (Viscosity vs Average Size)
     ax1 = plt.subplot(gs[0, 0], sharex=ax0)   # sharex  so they are aligned
-    sns.lineplot(data=df, x="viscosity", y=cluster_variable,hue="melt_rate", ax=ax1, palette="viridis")
+    sns.lineplot(data=df, x="viscosity", y=cluster_variable,hue="melt_rate", ax=ax1, palette=palette_mr)
+    sns.scatterplot(data=df, x="viscosity", y=cluster_variable,hue="melt_rate", ax=ax1, palette=palette_mr,legend='')
     ax1.set_xlabel("")
     ax1.set_ylabel(cluster_variable_label)
-    ax1.legend(title="Melt Rate",ncol=1, fontsize=7, title_fontsize=9)
+    # ax1.legend(title="Melt Rate",ncol=1, fontsize=7, title_fontsize=9)
     ax1.xaxis.tick_top()
+    # Invert the order in the legend (small at the bottom)
+    handles, labels = ax1.get_legend_handles_labels()
+    ax1.legend(handles[::-1], labels[::-1],title="Melt Rate",fontsize=7)
+
 
     # Right plot (Melt Rate vs Average Size)
-    df = df.sort_values(by='melt_rate')
 
     ax2 = plt.subplot(gs[1, 1])#, sharey=ax0)    # sharey  so they are aligned
-    sns.lineplot(data=df, x="melt_rate", y=cluster_variable,hue="viscosity_label", ax=ax2, palette="viridis")
+    sns.lineplot(data=df, x="melt_rate", y=cluster_variable,hue="viscosity_label", ax=ax2, palette=palette_visc_dict)
+    sns.scatterplot(data=df, x="melt_rate", y=cluster_variable,hue="viscosity_label", ax=ax2, palette=palette_visc_dict,legend='')
     ax2.set_xlabel("Melt Rate")
     # ax2.set_yticks("")  # no ticks - it removes them from the heatmap too
     ax2.set_ylabel(cluster_variable_label)
-    ax2.legend(title="$\mu_f$", fontsize=7, title_fontsize=9)
+    # ax2.legend(title="$\mu_f$", fontsize=7, title_fontsize=9)
     ax2.yaxis.tick_right()
+    # Invert the order in the legend (small at the bottom)
+    handles, labels = ax2.get_legend_handles_labels()
+    ax2.legend(handles[::-1], labels[::-1],title="$\mu_f$",fontsize=7)
 
     # Show or save the plot
     # plt.show()
