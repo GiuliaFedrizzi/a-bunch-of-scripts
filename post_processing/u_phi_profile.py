@@ -11,21 +11,22 @@ from pathlib import Path
 
 res = 200    # resolution in the x direction
 res_y = 230  # resolution in the y direction
-filename = "my_experiment32000.csv"
-first_part_of_path = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt41/rt0.5/visc_2_1e25/vis1e25_mR_05'
+filename = "my_experiment16000.csv"
+first_part_of_path = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_3_1e3/vis1e3_mR_08'
 
 
 dir = first_part_of_path
 
 # define the indexes for the two profiles, the first one is the start for the horizontal, the second for the vertical profile
-point_indexes = [res*res_y-res,res-1]   # X original: res*res_y/2+res, central: res*res_y/2 (?)
-
+# point_indexes = [res*res_y-res,5]   # X original: res*res_y/2+res, central: res*res_y/2 (?)
+point_indexes = [(res*res_y*0.75+res),5]   # 3/4 of the domain
+print(f'index for the horizontal profile: {point_indexes[0]}')
 def read_calculate_plot(filename, var_to_plot,point_indexes):
 
     myExp = pd.read_csv(filename, header=0)
     # df_v = myExp[50:len(myExp):res]    # dataframe only containing a vertical line. start from the 50th element and skip 2 rows of 200 elements
     df_v = myExp[int(point_indexes[1]):len(myExp):int(res)]    # dataframe only containing a vertical line. start from the n-th element and skip 2 rows of 200 elements
-    hor_index_start = int(point_indexes[0])  # y coordinate for the horizontal profile
+    hor_index_start = int(point_indexes[0])  # index for the horizontal profile (constant y)
     df_h = myExp[hor_index_start:hor_index_start+res:1]    # dataframe only containing a horizontal line. start from the left boundary, continue for 200 elements
     # print(len(df_v))
     variable_vals_v = df_v[var_to_plot].values
@@ -52,8 +53,8 @@ for v in vars_to_plot:
     (x_v, y_v), (x_h, y_h) = read_calculate_plot(filename, v,point_indexes)
     all_data_v[v] = (x_v, y_v)
     all_data_h[v] = (x_h, y_h)
-
-if True:
+# print(f'all_data_v \n{all_data_v}')
+if False:
     """
     plot velocity and porosity (2 lines) on the same plots, one horizontal, one vertical
     """
@@ -96,7 +97,7 @@ if True:
 
     plt.show()
 
-if False:
+if True:
     """
     plot the product: u*phi
     """
@@ -104,9 +105,13 @@ if False:
     x, y_poro = all_data_h[vars_to_plot[2]]
 
     line1_h, = ax1.plot(x, y_vel_y*y_poro)
+    ax1.set_xlabel('x') 
+    ax1.set_ylabel('$\phi * u_y$') 
 
     x_vel_x, y_vel_x = all_data_v[vars_to_plot[0]] 
     x, y_poro = all_data_v[vars_to_plot[2]]
 
     line1_v, = ax2.plot(y_vel_x*y_poro,x)
+    ax2.set_xlabel('$\phi * u_x$') 
+    ax2.set_ylabel('y') 
     plt.show()
