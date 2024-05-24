@@ -243,7 +243,7 @@ def find_dirs():
     # Iterate over the items in the current directory
     for item in os.listdir('.'):
         # Check if the item is a directory and not one of the excluded names
-        if os.path.isdir(item) and item not in ["baseFiles", "images_in_grid", "branch_plots"]:
+        if os.path.isdir(item) and item not in ["baseFiles", "images_in_grid", "branch_plots","branch_plots_x","cluster"]:
             directories_list.append(item)
     directories_list.sort()
     # Printing the list (optional)
