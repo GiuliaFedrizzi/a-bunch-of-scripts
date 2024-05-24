@@ -944,8 +944,11 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
     elif part_to_analyse == 'x': # remove the parts closest to the margins (in the x direction)
         csv_file_name = "py_branch_info_x.csv" 
 
-
-    for f,filename in enumerate(sorted(glob.glob(string_in_name))):
+    bb_files = sorted(glob.glob(string_in_name))
+    if len(bb_files) == 0:
+        print("No images to analyse")
+        sys.exit()
+    for f,filename in enumerate(bb_files):
     # for f,filename in enumerate(sorted(glob.glob("Long_drawn_OpeningInvert*.png"))):
         """ Get the file name, run 'analyse_png', get the info on the branches,
         save it into a csv   """
