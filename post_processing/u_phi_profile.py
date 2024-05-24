@@ -30,7 +30,7 @@ myfile = Path(os.getcwd()+'/'+filename)  # build file name including path
 
 fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2)
 
-vars_to_plot = ["x velocity","y velocity", "Porosity","x coord","y coord","id"]
+vars_to_plot = ["x velocity","y velocity", "Porosity","Broken Bonds"]
 
 
 # prepare to store vertical and horizontal data
@@ -49,11 +49,21 @@ if True:
     # Plotting on ax1: y velocity - horizontal profile of vertical velocity
     x_coord_vel_hor, y_vel_hor = all_data_h[vars_to_plot[1]]  # y velocity
     x_coord_poro_hor, poro_values_hor = all_data_h[vars_to_plot[2]]
+    x_coord_bb_hor, bb_values_hor = all_data_h[vars_to_plot[3]]
+
     ax1a = ax1.twinx()
     print(np.corrcoef(abs(y_vel_hor),poro_values_hor)) 
 
-    line1_h, = ax1.plot(x_coord_vel_hor, y_vel_hor)
+    line1_h, = ax1.plot(x_coord_vel_hor, abs(y_vel_hor))
     line2_h, = ax1a.plot(x_coord_poro_hor, poro_values_hor,'g')  # plot porosity in green
+
+    if False:
+        x_bb_on_vel = [x for x, bb in zip(x_coord_vel_hor, bb_values_hor) if bb != 0]   # points of x_coord_vel_hor that have at least a broken bond
+        bb_on_vel = [y for y, bb in zip(y_vel_hor, bb_values_hor) if bb != 0]  # points of y_vel_hor that have at least a broken bond
+        x_no_bb_on_vel = [x for x, bb in zip(x_coord_vel_hor, bb_values_hor) if bb == 0]   # points of x_coord_vel_hor that have at least a broken bond
+        no_bb_on_vel = [y for y, bb in zip(y_vel_hor, bb_values_hor) if bb == 0]  # points of y_vel_hor that have at least a broken bond
+        ax1.scatter(x_bb_on_vel, bb_on_vel, color='red', marker='x', s=50)  # plot bb
+        ax1.scatter(x_no_bb_on_vel, no_bb_on_vel, s=50,facecolors='none', edgecolors='silver' )  # plot no bb
 
     # Legend
     ax1.legend([line1_h, line2_h], 
@@ -61,6 +71,7 @@ if True:
 
     ax1.set_xlabel('x') 
     ax1.set_ylabel(vars_to_plot[1]) 
+    ax1.set_ylim([min(y_vel_hor),max(abs(y_vel_hor))])
     ax1a.set_ylabel(vars_to_plot[2], color='g')  # Setting color to match line color
     ax1a.yaxis.tick_right()  # Ensure the y-axis label is on the right
     # ax1a.set_ylim(top=0.1997)
@@ -71,11 +82,12 @@ if True:
     y_coord_poro_ver, poro_values_ver = all_data_v[vars_to_plot[2]]
     ax2a = ax2.twiny()
 
-    line1_v, = ax2.plot(x_vel_ver, y_coord_vel_ver, label=vars_to_plot[0])
+    line1_v, = ax2.plot(abs(x_vel_ver), y_coord_vel_ver, label=vars_to_plot[0])
     line2_v, = ax2a.plot(poro_values_ver, y_coord_poro_ver,'g', label=vars_to_plot[2])
 
     ax2.set_ylabel('y')
     ax2.set_xlabel(vars_to_plot[0])
+    ax2.set_xlim([min(x_vel_ver),max(abs(x_vel_ver))])
     ax2a.set_xlabel(vars_to_plot[2], color='g')  # Setting color to match line color
     ax2a.tick_params(axis='x', colors='g') 
 
@@ -101,40 +113,6 @@ if False:
     ax2.set_xlabel('$\phi * u_x$') 
     ax2.set_ylabel('y') 
 
-if False:
-    """
-    plot the coordinates
-    """
-    x_coord_x_coord, x_coord_value = all_data_h[vars_to_plot[4]] # y coord (not x)
-    # x, poro_values_hor = all_data_h[vars_to_plot[2]]
-
-    line1_h, = ax1.plot(x_coord_x_coord, x_coord_value)
-    ax1.set_xlabel('x') 
-    ax1.set_ylabel('y coord') 
-
-    y_coord_y_coord, y_coord_value = all_data_v[vars_to_plot[3]] 
-    # x, poro_values_hor = all_data_v[vars_to_plot[2]]
-
-    line1_v, = ax2.plot(y_coord_value,y_coord_y_coord)
-    ax2.set_xlabel('x coord') 
-    ax2.set_ylabel('y') 
-
-
-if False:
-    """ plot id """
-    x_coord_id_hor, id_hor = all_data_h[vars_to_plot[5]] 
-    print(f'len id_hor {len(id_hor)}')
-    ax1.scatter(x_coord_id_hor, id_hor)
-    ax1.set_xlabel('x') 
-    ax1.set_ylabel('id') 
-
-
-    y_coord_id_ver, id_ver = all_data_v[vars_to_plot[5]] 
-    # x, poro_values_hor = all_data_v[vars_to_plot[2]]
-
-    ax2.scatter(id_ver,y_coord_id_ver)
-    ax2.set_xlabel('id') 
-    ax2.set_ylabel('y') 
 
 plt.show()
 
