@@ -18,8 +18,9 @@ filename = "my_experiment16000.csv"
 dir_path = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_3_1e3/vis1e3_mR_08'
 
 # define the indexes for the two profiles, the first one is the start for the horizontal, the second for the vertical profile
-# point_indexes = [res*res_y-res,5]   # X original: res*res_y/2+res, central: res*res_y/2 (?)
-point_indexes = [(res*res_y*0.75+res),5]   # 3/4 of the domain
+# REMEMBER to remove 1 from the horizontal index
+point_indexes = [(res*res_y-(5*res))-1,5]   # top (horizontal) and left (vertical). X original: res*res_y/2+res, central: res*res_y/2 (?)
+# point_indexes = [(res*res_y*0.75+res),5]   # 3/4 of the domain
 print(f'index for the horizontal profile: {point_indexes[0]}')
 
 
@@ -29,7 +30,7 @@ myfile = Path(os.getcwd()+'/'+filename)  # build file name including path
 
 fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2)
 
-vars_to_plot = ["x velocity","y velocity", "Porosity"]
+vars_to_plot = ["x velocity","y velocity", "Porosity","x coord","y coord","id"]
 
 
 # prepare to store vertical and horizontal data
@@ -41,18 +42,18 @@ for v in vars_to_plot:
     all_data_v[v] = (x_v, y_v)
     all_data_h[v] = (x_h, y_h)
 # print(f'all_data_v \n{all_data_v}')
-if False:
+if True:
     """
     plot velocity and porosity (2 lines) on the same plots, one horizontal, one vertical
     """
     # Plotting on ax1: y velocity - horizontal profile of vertical velocity
-    x_vel_y, y_vel_y = all_data_h[vars_to_plot[1]]  # y velocity
-    x_poro, y_poro = all_data_h[vars_to_plot[2]]
+    x_coord_vel_hor, y_vel_hor = all_data_h[vars_to_plot[1]]  # y velocity
+    x_coord_poro_hor, poro_values_hor = all_data_h[vars_to_plot[2]]
     ax1a = ax1.twinx()
-    print(np.corrcoef(abs(y_vel_y),y_poro)) 
+    print(np.corrcoef(abs(y_vel_hor),poro_values_hor)) 
 
-    line1_h, = ax1.plot(x_vel_y, y_vel_y)
-    line2_h, = ax1a.plot(x_poro, y_poro,'g')  # plot porosity in green
+    line1_h, = ax1.plot(x_coord_vel_hor, y_vel_hor)
+    line2_h, = ax1a.plot(x_coord_poro_hor, poro_values_hor,'g')  # plot porosity in green
 
     # Legend
     ax1.legend([line1_h, line2_h], 
@@ -66,12 +67,12 @@ if False:
     ax1a.tick_params(axis='y', colors='g')
 
     # Plotting on ax2
-    x_vel_x, y_vel_x = all_data_v[vars_to_plot[0]]
-    x_poro, y_poro = all_data_v[vars_to_plot[2]]
+    y_coord_vel_ver, x_vel_ver = all_data_v[vars_to_plot[0]]  # y coordinate and x velocity for the vertical profile
+    y_coord_poro_ver, poro_values_ver = all_data_v[vars_to_plot[2]]
     ax2a = ax2.twiny()
 
-    line1_v, = ax2.plot(y_vel_x, x_vel_x, label=vars_to_plot[0])
-    line2_v, = ax2a.plot(y_poro, x_poro,'g', label=vars_to_plot[2])
+    line1_v, = ax2.plot(x_vel_ver, y_coord_vel_ver, label=vars_to_plot[0])
+    line2_v, = ax2a.plot(poro_values_ver, y_coord_poro_ver,'g', label=vars_to_plot[2])
 
     ax2.set_ylabel('y')
     ax2.set_xlabel(vars_to_plot[0])
@@ -82,24 +83,58 @@ if False:
     ax2.legend([line1_v, line2_v], 
             [vars_to_plot[0], vars_to_plot[2]],loc=(0.8, 0.9))
 
-if True:
+if False:
     """
     plot the product: u*phi
     """
-    x_vel_y, y_vel_y = all_data_h[vars_to_plot[1]] 
-    x, y_poro = all_data_h[vars_to_plot[2]]
+    x_coord_vel_hor, y_vel_hor = all_data_h[vars_to_plot[1]] 
+    x, poro_values_hor = all_data_h[vars_to_plot[2]]
 
-    line1_h, = ax1.plot(x, y_vel_y*y_poro)
+    line1_h, = ax1.plot(x, y_vel_hor*poro_values_hor)
     ax1.set_xlabel('x') 
     ax1.set_ylabel('$\phi * u_y$') 
 
-    x_vel_x, y_vel_x = all_data_v[vars_to_plot[0]] 
-    x, y_poro = all_data_v[vars_to_plot[2]]
+    y_coord_vel_ver, x_vel_ver = all_data_v[vars_to_plot[0]] 
+    x, poro_values_hor = all_data_v[vars_to_plot[2]]
 
-    line1_v, = ax2.plot(y_vel_x*y_poro,x)
+    line1_v, = ax2.plot(x_vel_ver*poro_values_hor,x)
     ax2.set_xlabel('$\phi * u_x$') 
     ax2.set_ylabel('y') 
 
+if False:
+    """
+    plot the coordinates
+    """
+    x_coord_x_coord, x_coord_value = all_data_h[vars_to_plot[4]] # y coord (not x)
+    # x, poro_values_hor = all_data_h[vars_to_plot[2]]
+
+    line1_h, = ax1.plot(x_coord_x_coord, x_coord_value)
+    ax1.set_xlabel('x') 
+    ax1.set_ylabel('y coord') 
+
+    y_coord_y_coord, y_coord_value = all_data_v[vars_to_plot[3]] 
+    # x, poro_values_hor = all_data_v[vars_to_plot[2]]
+
+    line1_v, = ax2.plot(y_coord_value,y_coord_y_coord)
+    ax2.set_xlabel('x coord') 
+    ax2.set_ylabel('y') 
+
+
+if False:
+    """ plot id """
+    x_coord_id_hor, id_hor = all_data_h[vars_to_plot[5]] 
+    print(f'len id_hor {len(id_hor)}')
+    ax1.scatter(x_coord_id_hor, id_hor)
+    ax1.set_xlabel('x') 
+    ax1.set_ylabel('id') 
+
+
+    y_coord_id_ver, id_ver = all_data_v[vars_to_plot[5]] 
+    # x, poro_values_hor = all_data_v[vars_to_plot[2]]
+
+    ax2.scatter(id_ver,y_coord_id_ver)
+    ax2.set_xlabel('id') 
+    ax2.set_ylabel('y') 
 
 plt.show()
 
