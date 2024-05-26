@@ -16,8 +16,9 @@ from useful_functions import extract_two_profiles,getResolution
 
 res = getResolution()    # resolution in the x direction
 res_y = int(res*1.15)  # resolution in the y direction
-# filename = "my_experiment16000.csv"
-filenames = ["my_experiment11000.csv", "my_experiment12000.csv", "my_experiment13000.csv","my_experiment14000.csv", "my_experiment15000.csv","my_experiment16000.csv"]
+
+file_tsteps = ['01','03','07','16']
+filenames = ["my_experiment"+i+"000.csv" for i in file_tsteps]# ["my_experiment01000.csv", "my_experiment03000.csv", "my_experiment07000.csv","my_experiment16000.csv"]
 dir_path = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_3_1e3/vis1e3_mR_08'
 
 
@@ -32,10 +33,14 @@ os.chdir(dir_path)
 
 
 fig, ax1 = plt.subplots(nrows=1, ncols=1)
+ax1a = ax1.twinx()
+
 
 vars_to_plot = ["x velocity","y velocity", "Porosity"]
 
 int_ratios = []
+int_hor_list = []
+int_vert_list = []
 
 for filename in filenames:
     print(filename)
@@ -52,20 +57,31 @@ for filename in filenames:
     x_coord_vel_hor, y_vel_hor = all_data_h[vars_to_plot[1]] 
     x, poro_values_hor = all_data_h[vars_to_plot[2]]
 
-    integral_hor = np.trapz(abs(y_vel_hor), x=x_coord_vel_hor)
+
+    integral_hor = np.trapz((y_vel_hor), x=x_coord_vel_hor)
     print(f'integral_hor {integral_hor}')
 
     y_coord_vel_ver, x_vel_ver = all_data_v[vars_to_plot[0]] 
     x, poro_values_ver = all_data_v[vars_to_plot[2]]
-    integral_ver =  np.trapz(abs(x_vel_ver*poro_values_ver), x = y_coord_vel_ver)
+    integral_ver =  np.trapz((x_vel_ver*poro_values_ver), x = y_coord_vel_ver)
 
     int_ratio = integral_hor/integral_ver
 
     print(f'integral_ver {integral_ver}')
     print(f'integral ratio {int_ratio}')
     int_ratios.append(int_ratio)
+    int_hor_list.append(integral_hor)
+    int_vert_list.append(integral_ver)
+    
+p1 = ax1.plot(file_tsteps,int_ratios,'o-',linewidth=2,color='black',label='Ratio')
+p2 = ax1a.plot(file_tsteps,int_hor_list,'o--',label='Horizontal Vol Flow Rate')
+p3 = ax1a.plot(file_tsteps,int_vert_list,'o--',label='Vertical Vol Flow Rate')
 
-ax1.plot(range(len(int_ratios)),int_ratios,'o-')
+plots = p1+p2+p3
+
+labs = [l.get_label() for l in plots]
+ax1.legend(plots, labs, loc=0)
+
 
 plt.show()
 
