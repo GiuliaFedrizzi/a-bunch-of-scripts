@@ -33,6 +33,7 @@ os.chdir(dir_path)
 
 
 fig, ax1 = plt.subplots(nrows=1, ncols=1)
+plt.yticks(fontweight='bold')
 ax1a = ax1.twinx()
 
 
@@ -73,9 +74,13 @@ for filename in filenames:
     int_hor_list.append(integral_hor)
     int_vert_list.append(integral_ver)
     
+ax1a.axhline(y=0.0,color='grey',linestyle=':',alpha=0.5)
 p1 = ax1.plot(file_tsteps,int_ratios,'o-',linewidth=2,color='black',label='Ratio')
-p2 = ax1a.plot(file_tsteps,int_hor_list,'o--',label='Horizontal Vol Flow Rate')
-p3 = ax1a.plot(file_tsteps,int_vert_list,'o--',label='Vertical Vol Flow Rate')
+p2 = ax1a.plot(file_tsteps,int_hor_list,'o--',label='Top Vol Flow Rate')
+p3 = ax1a.plot(file_tsteps,int_vert_list,'o--',label='Side Vol Flow Rate')
+ax1.set_xlabel("File Number")
+ax1.set_ylabel("$\mathbf{Q_{top}/Q_{side}}$ Ratio",fontweight='bold')
+ax1a.set_ylabel("$\phi u_i $")
 
 plots = p1+p2+p3
 
