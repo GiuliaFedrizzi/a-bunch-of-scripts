@@ -15,7 +15,7 @@ from useful_functions import extract_two_profiles,getResolution
 
 res = getResolution()    # resolution in the x direction
 res_y = int(res*1.15)  # resolution in the y direction
-filename = "my_experiment03000.csv"
+filename = "my_experiment01000.csv"
 dir_path = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_3_1e3/vis1e3_mR_08'
 
 # define the indexes for the two profiles, the first one is the start for the horizontal, the second for the vertical profile
@@ -29,7 +29,7 @@ os.chdir(dir_path)
 myfile = Path(os.getcwd()+'/'+filename)  # build file name including path
 
 
-fig, (ax1,ax2) = plt.subplots(nrows=1, ncols=2,figsize=(15, 8))
+fig, (ax1,ax2) = plt.subplots(nrows=1, ncols=2,figsize=(17, 8))
 
 vars_to_plot = ["Pressure","Porosity", "Permeability"]
 
@@ -60,9 +60,9 @@ ax1.legend([line1_h, line2_h, line3_h],
 
 ax1.set_xlabel('x') 
 ax1.set_ylabel(vars_to_plot[0]) 
-ax1.set_ylim([6.6e7,1.09e8])  # Pf
-ax1a.set_ylim([0.135,0.3])    # phi
-ax1b.set_ylim([7.37016e-19,1.66541e-16])    # k
+ax1.set_ylim([6.6e7,1.1e8])  # Pf
+ax1a.set_ylim([0.134,0.3])    # phi
+ax1b.set_ylim([7.22131e-19,1.66541e-16])    # k
 ax1a.set_ylabel(vars_to_plot[1], color='g')  # Setting color to match line color
 ax1a.yaxis.tick_right()  # Ensure the y-axis label is on the right
 ax1a.tick_params(axis='y', colors='g')
@@ -82,9 +82,12 @@ ax2a = ax2.twiny()
 ax2b = ax2.twiny()
 
 ax2.set_ylim([0,0.99])
-ax2.set_xlim([7.3e7,1.1e8])  # Pf
+ax2.set_xlim([6.6e7,1.1e8])  # Pf
 ax2a.set_xlim([0.134,0.30])  # phi
-ax2b.set_xlim([7.22131e-19,1.66186e-16])    # k
+ax2b.set_xlim([7.22131e-19,1.66541e-16])    # k
+ax2.yaxis.tick_right()
+ax2.yaxis.set_label_position("right")
+
 
 
 line1_v, = ax2.plot(all_data_v[vars_to_plot[0]][1], all_data_v[vars_to_plot[0]][0], label=vars_to_plot[0])
