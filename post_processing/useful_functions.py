@@ -1,6 +1,8 @@
 import os.path
 import re
 import glob
+import pandas as pd
+import numpy as np
 
 def getTimeStep(inputFile):
     with open(inputFile) as iFile:
@@ -93,7 +95,7 @@ def getFirstBrokenBond(lattefile):
 def getResolution():
     def extract_number_from_files():
         # List all files that start with "sub"
-        files = glob.glob("sub*.sh")
+        files = glob.glob("sub*.sh") + glob.glob("../sub*.sh")  # it could be one level of directories up
         for file_path in files:
             try:
                 with open(file_path, 'r') as file:
@@ -110,7 +112,7 @@ def getResolution():
     number, found_file = extract_number_from_files()
     if found_file:
         print(f"Number found: {number} in file: {found_file}")
-        return number
+        return int(number)
     else:
         print(number)
         return 200
@@ -139,3 +141,64 @@ def getSaveFreq():
     else:
         print(number)
         return 100  # just a default
+
+
+def extract_two_profiles(filename, var_to_plot,point_indexes):
+    """ open file (filename), extract two profiles of "var_to_plot" (e.g. porosity), returns their coordinates (x_v or x_h) and their values (variable_vals_v or variable_vals_h) """
+    if os.path.isfile(filename):
+    
+        res = getResolution()
+        myExp = pd.read_csv(filename, header=0)
+        # df_v = myExp[50:len(myExp):res]    # dataframe only containing a vertical line. start from the 50th element and skip 2 rows of 200 elements
+        df_v = myExp[int(point_indexes[1]):len(myExp):int(2*res)]    # dataframe only containing a vertical line. start from the n-th element and skip 2 rows of 200 elements
+        hor_index_start = int(point_indexes[0])  # index for the horizontal profile (constant y)
+        df_h = myExp[hor_index_start:hor_index_start+res:1]    # dataframe only containing a horizontal line. start from the left boundary, continue for 200 elements
+        variable_vals_v = df_v[var_to_plot].values
+        variable_vals_h = df_h[var_to_plot].values
+        x_v = np.arange(0,1,1/len(df_v))
+        x_h = np.arange(0,1,1/len(df_h))
+        return (x_v, variable_vals_v), (x_h, variable_vals_h)
+    else:
+        print("Problem! No file called "+str(filename)+"!")
+
+
+def average_flow_ratio(filename,ver_points,hor_points,vars_to_plot):
+    int_hor_for_average = []
+    int_ver_for_average = []
+    for ver_point in ver_points:
+        for hor_point in hor_points:
+            point_indexes = [hor_point,ver_point]
+
+            # prepare to store vertical and horizontal data
+            all_data_v = {}
+            all_data_h = {}
+
+            for v in vars_to_plot:
+                (x_v, y_v), (x_h, y_h) = extract_two_profiles(filename, v,point_indexes)
+                all_data_v[v] = (x_v, y_v)
+                all_data_h[v] = (x_h, y_h)
+                
+
+            x_coord_vel_hor, y_vel_hor = all_data_h[vars_to_plot[1]] 
+            x, poro_values_hor = all_data_h[vars_to_plot[2]]
+
+
+            integral_hor = np.trapz((y_vel_hor), x=x_coord_vel_hor)
+            print(f'integral_hor {integral_hor}')
+            int_hor_for_average.append(integral_hor)
+            
+        y_coord_vel_ver, x_vel_ver = all_data_v[vars_to_plot[0]] 
+        # x_vel_ver = -x_vel_ver
+        x, poro_values_ver = all_data_v[vars_to_plot[2]]
+        integral_ver =  np.trapz((x_vel_ver*poro_values_ver), x = y_coord_vel_ver)
+        print(f'integral_ver {integral_ver}')
+        int_ver_for_average.append(integral_ver)
+    average_ver = sum(int_ver_for_average)/len(int_ver_for_average)
+    average_hor = sum(int_hor_for_average)/len(int_hor_for_average)
+    print(f'average_hor {average_hor}')
+    print(f'average_ver {average_ver}')
+    # int_ratio = average_hor/abs(average_ver)
+    int_ratio = average_hor/average_ver
+
+    return average_hor,average_ver,int_ratio
+
