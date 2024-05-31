@@ -24,7 +24,7 @@ phi_axes_lim = [0.10,0.42]
 # k_axes_lim = [7.22131e-19,1.66541e-16]  # case A
 k_axes_lim = [-1e-18,3.2e-16]
 
-label_size = 13
+k_log = False
 
 os.chdir(dir_path)
 
@@ -48,12 +48,17 @@ for filenum in file_numbers:
         plt.rcParams['axes.labelsize'] = 20
         plt.rcParams['xtick.labelsize'] = 18
         plt.rcParams['ytick.labelsize'] = 18
+        plt.rcParams['xtick.major.size'] = 6
+        plt.rcParams['xtick.major.width'] = 2
+        plt.rcParams['ytick.major.size'] = 6
+        plt.rcParams['ytick.major.width'] = 2
+
 
         fig, (ax1,ax2) = plt.subplots(nrows=1, ncols=2,figsize=(17, 9))
         plt.setp(ax1.spines.values(), linewidth=3)  # #f56c42
         plt.setp(ax2.spines.values(), linewidth=3)  # #9ce35d
 
-        vars_to_plot = ["Pressure","Porosity", "Permeability"]
+        vars_to_plot = ["Pressure","Porosity", "Permeability","Broken Bonds"]
 
 
         # prepare to store vertical and horizontal data
@@ -74,12 +79,21 @@ for filenum in file_numbers:
         line3_h, = ax1b.plot(all_data_h[vars_to_plot[2]][0], all_data_h[vars_to_plot[2]][1],color='lightgray',alpha=0.3)  # plot permeability
 
         ax1b.fill_between(all_data_h[vars_to_plot[2]][0], all_data_h[vars_to_plot[2]][1],y2=0,color='lightgray',alpha=0.3)  # fill between 0 and permeability 
-        # ax1b.set_yscale('log')
+        
+        if k_log:
+                ax1b.set_yscale('log')
 
         # Legend
         # ax1.legend([line1_h, line2_h, line3_h], 
                 # [vars_to_plot[0], vars_to_plot[1],vars_to_plot[2]],loc=(0.6, 0.8))   # labels: y velocity and poro
 
+        #   add broken bonds
+        x_coord_bb_hor, bb_values_hor = all_data_h[vars_to_plot[3]]
+
+        bb_locations = [x for x, bb in zip(x_coord_bb_hor, bb_values_hor) if bb != 0]   # points of x_coord_vel_hor that have at least a broken bond
+        ax1.scatter(bb_locations, np.full((len(bb_locations),1), Pf_axes_lim[1]), color='red', marker='x', s=100)  # plot bb. array same length as bb_locations, full with the max range of Pf
+        
+        
         #   limits:
         # ax1.set_ylabel(vars_to_plot[0]) 
         ax1.set_ylim(Pf_axes_lim)  # Pf
@@ -90,7 +104,8 @@ for filenum in file_numbers:
         # ax1.set_xlabel('x') 
 
         #   options:
-        ax1a.yaxis.tick_right()  # Ensure the y-axis label is on the right
+        ax1a.yaxis.tick_right()  # Ensure the y-axis label is on the right (phi)
+        ax1b.yaxis.tick_left()  # Ensure the y-axis label is on the left (k)
         ax1.tick_params(axis='x')
         ax1.tick_params(axis='y', colors='#1f77b4')
         ax1.xaxis.set_major_locator(plt.MaxNLocator(4))
@@ -99,7 +114,7 @@ for filenum in file_numbers:
         ax1b.yaxis.set_major_locator(plt.MaxNLocator(4))
         ax1a.tick_params(axis='y', colors='g')
         ax1b.tick_params(axis='y', colors='darkgray') 
-        ax1b.spines['right'].set_position(('outward', 60))  # draw the axis for k further from the axis for phi
+        ax1b.spines['left'].set_position(('outward', 60))  # draw the axis for k further from the axis for phi
 
 
 
@@ -111,8 +126,8 @@ for filenum in file_numbers:
         ax2.set_xlim(Pf_axes_lim)  # Pf
         ax2a.set_xlim(phi_axes_lim)  # phi
         ax2b.set_xlim(k_axes_lim)    # k
-        ax2.yaxis.tick_right()
-        ax2.yaxis.set_label_position("right")
+        ax2.yaxis.tick_left()
+        # ax2.yaxis.set_label_position("right")
 
         print(f'max Pf {max(all_data_v[vars_to_plot[0]][1])/1e8}e8')
         print(f'max phi {max(all_data_v[vars_to_plot[1]][1])}')
@@ -141,6 +156,13 @@ for filenum in file_numbers:
         # ax2.legend([line1_v, line2_v,line3_v], 
                 # [vars_to_plot[0], vars_to_plot[1],vars_to_plot[2]],loc=(0.7, 0.8))
 
+
+        #   add broken bonds
+        y_coord_bb_ver, bb_values_ver = all_data_v[vars_to_plot[3]]
+
+        bb_locations = [x for x, bb in zip(y_coord_bb_ver, bb_values_ver) if bb != 0]   # points of x_coord_vel_hor that have at least a broken bond
+        ax2.scatter(np.full((len(bb_locations),1), Pf_axes_lim[1]),bb_locations, color='red', marker='x', s=100)  # plot bb. array same length as bb_locations, full with the max range of Pf
+        
         fig.tight_layout()  # must go before fill_between
 
         # fill between phi and Pf
@@ -160,7 +182,11 @@ for filenum in file_numbers:
         # print(f'horizontal min {min(all_data_h[vars_to_plot[2]][1])}, max {max(all_data_h[vars_to_plot[2]][1])}, \nvertical min {min(all_data_v[vars_to_plot[2]][1])}, max {max(all_data_v[vars_to_plot[2]][1])}')
 
         # fig.suptitle(str(myfile))
-        plt.savefig("phi_Pf_"+str(filenum)+".png")
+        if k_log:
+                fig_name = "phi_Pf_"+str(filenum)+"_log.png"
+        else:
+                fig_name = "phi_Pf_"+str(filenum)+".png"
+        plt.savefig(fig_name)
 print("Done :)")
 # plt.show()
 
