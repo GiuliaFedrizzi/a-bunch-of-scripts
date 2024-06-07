@@ -14,7 +14,7 @@ from useful_functions import extract_two_profiles,getResolution
 
 res = getResolution()    # resolution in the x direction
 res_y = int(res*1.15)  # resolution in the y direction
-filename = "my_experiment16000.csv"
+filename = "my_experiment03000.csv"
 dir_path = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_3_1e3/vis1e3_mR_08'
 
 # define the indexes for the two profiles, the first one is the start for the horizontal, the second for the vertical profile
@@ -52,9 +52,9 @@ if True:
     x_coord_bb_hor, bb_values_hor = all_data_h[vars_to_plot[3]]
 
     ax1a = ax1.twinx()
-    print(np.corrcoef(abs(y_vel_hor),poro_values_hor)) 
+    # print(np.corrcoef(abs(y_vel_hor),poro_values_hor)) 
 
-    line1_h, = ax1.plot(x_coord_vel_hor, abs(y_vel_hor))
+    line1_h, = ax1.plot(x_coord_vel_hor, (y_vel_hor))
     line2_h, = ax1a.plot(x_coord_poro_hor, poro_values_hor,'g')  # plot porosity in green
 
     if False:
@@ -82,7 +82,7 @@ if True:
     y_coord_poro_ver, poro_values_ver = all_data_v[vars_to_plot[2]]
     ax2a = ax2.twiny()
 
-    line1_v, = ax2.plot(abs(x_vel_ver), y_coord_vel_ver, label=vars_to_plot[0])
+    line1_v, = ax2.plot((x_vel_ver), y_coord_vel_ver, label=vars_to_plot[0])
     line2_v, = ax2a.plot(poro_values_ver, y_coord_poro_ver,'g', label=vars_to_plot[2])
 
     ax2.set_ylabel('y')
