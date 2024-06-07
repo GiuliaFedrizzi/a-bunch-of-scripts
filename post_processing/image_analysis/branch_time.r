@@ -35,7 +35,8 @@ if (var_is_visc){
 }
 # melt_rate_list <- c('01','02','03','04','05','06','07','08','09')#,'1','2')
 # melt_rate_list <- c('02','04','06','08')#,'1','2')
-melt_rate_list <- find_dirs('melt_rate')  # the values of the y variable to plot (melt rate)
+melt_rate_list <- c('03','08') # the values of the y variable to plot (melt rate)
+# melt_rate_list <- find_dirs('melt_rate')  # the values of the y variable to plot (melt rate)
 # print(paste("melt_rate_list",melt_rate_list))
 
 #  list of times: first 4 values are for mu 1e3 mr 08, last 4 values are for mu1.5, mr03  
@@ -44,7 +45,7 @@ time_all <- c(8000e6,24000e6,56000e6,128000e6,90000e6,150000e6,240000e6,300000e6
 
 if (grepl("prod",base_path)){
     # prod zone, whole domain
-    csv_file_name <- "py_branch_info.csv"
+    csv_file_name <- "py_branch_info_x.csv"
 } else if (grepl("through",base_path)) {
     # through zone, only top
     csv_file_name <- "py_branch_info_top.csv"
@@ -284,7 +285,7 @@ if (TRUE){
 
     ternary_plot_a <- ggtern(data = df_filtered, mapping = aes(x=n_Y,y=n_I,z=n_X)) +
     transparent_background_for_tern() +
-    geom_point(aes(color = as.factor(norm_time)), size = 3) +
+    geom_point(aes(color = as.factor(time)), size = 3) +
         scale_color_manual(values = my_colors_blues) +
         # scale_colour_brewer(palette='Blues')+
     theme_bw() +
@@ -299,13 +300,15 @@ if (TRUE){
     df_filtered2 <- df_m %>%
     filter(as.character(melt_rate) == "03" & viscosity == "1e15")
 
+    print(df_filtered2)
+
     df_filtered2 <- df_filtered2 %>%
     filter(time == 90000e6 | time == 150000e6 | time == 240000e6 | time == 300000e6) # 90000e6,150000e6,240000e6,300000e6
 
     print(df_filtered2)
 
     ternary_plot_b <- ggtern(data = df_filtered2, mapping = aes(x=n_Y,y=n_I,z=n_X)) +
-    geom_point(aes(color = as.factor(norm_time)), size = 3) +
+    geom_point(aes(color = as.factor(time)), size = 3) +
         scale_colour_brewer(palette='Reds')+
     # theme_bw() +
     labs(x = expression('N'[Y]),y = expression('N'[I]),z = expression('N'[X]),colour = "Time")   # labels for the vertices
