@@ -143,11 +143,11 @@ def getSaveFreq():
         return 100  # just a default
 
 
-def extract_two_profiles(filename, var_to_plot,point_indexes):
+def extract_two_profiles(filename, var_to_plot,point_indexes,res):
     """ open file (filename), extract two profiles of "var_to_plot" (e.g. porosity), returns their coordinates (x_v or x_h) and their values (variable_vals_v or variable_vals_h) """
     if os.path.isfile(filename):
     
-        res = getResolution()
+        # res = getResolution()
         myExp = pd.read_csv(filename, header=0)
         # df_v = myExp[50:len(myExp):res]    # dataframe only containing a vertical line. start from the 50th element and skip 2 rows of 200 elements
         df_v = myExp[int(point_indexes[1]):len(myExp):int(2*res)]    # dataframe only containing a vertical line. start from the n-th element and skip 2 rows of 200 elements
@@ -188,7 +188,7 @@ def average_flow_ratio(filename,ver_points,hor_points,vars_to_plot):
             int_hor_for_average.append(integral_hor)
             
         y_coord_vel_ver, x_vel_ver = all_data_v[vars_to_plot[0]] 
-        # x_vel_ver = -x_vel_ver
+        x_vel_ver = -x_vel_ver
         x, poro_values_ver = all_data_v[vars_to_plot[2]]
         integral_ver =  np.trapz((x_vel_ver*poro_values_ver), x = y_coord_vel_ver)
         print(f'integral_ver {integral_ver}')
