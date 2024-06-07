@@ -17,9 +17,11 @@ from useful_functions import extract_two_profiles,getResolution,average_flow_rat
 res = getResolution()    # resolution in the x direction
 res_y = int(res*1.15)  # resolution in the y direction
 
-file_tsteps = ['01','03','07','16']
+# file_tsteps = ['01','03','07','16']
+file_tsteps = ['30','50','80','100']
 filenames = ["my_experiment"+i+"000.csv" for i in file_tsteps]# ["my_experiment01000.csv", "my_experiment03000.csv", "my_experiment07000.csv","my_experiment16000.csv"]
-dir_path = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_3_1e3/vis1e3_mR_08'
+# dir_path = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_3_1e3/vis1e3_mR_08'
+dir_path = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_1_1e15/vis1e15_mR_03'
 
 
 # define the indexes for the two profiles, the first one is the start for the horizontal, the second for the vertical profile
