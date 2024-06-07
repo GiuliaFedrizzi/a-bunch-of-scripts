@@ -12,15 +12,19 @@ sys.path.append('/home/home01/scgf/myscripts/post_processing')
 from useful_functions import extract_two_profiles,getResolution
 
 
-file_numbers = ["01000","03000","07000","16000"]
-# dir_path = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_1_1e15/vis1e15_mR_03'
-dir_path = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_3_1e3/vis1e3_mR_08'
+# file_numbers = ["01000","03000","07000","16000"]
+file_numbers = ["30000","50000","80000","100000"]
+# file_numbers = ["11000"]
+# file_numbers = ["100000"]
+dir_path = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_1_1e15/vis1e15_mR_03'
+# dir_path = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt46/rt0.5/visc_3_1e3/vis1e3_mR_08'
 
 
 # Pf_axes_lim = [6.6e7,1.1e8]  # case A  
 Pf_axes_lim = [6.6e7,1.6e8]  
 # phi_axes_lim = [0.134,0.30]  # case A
 phi_axes_lim = [0.10,0.42]
+# phi_axes_lim = [0.10,0.45]  # layer
 # k_axes_lim = [7.22131e-19,1.66541e-16]  # case A
 k_axes_lim = [-1e-18,3.2e-16]
 
@@ -107,7 +111,7 @@ for filenum in file_numbers:
         ax1a.yaxis.tick_right()  # Ensure the y-axis label is on the right (phi)
         ax1b.yaxis.tick_left()  # Ensure the y-axis label is on the left (k)
         ax1.tick_params(axis='x')
-        ax1.tick_params(axis='y', colors='#1f77b4')
+        ax1.tick_params(axis='y', colors='#1f77b4') # blue
         ax1.xaxis.set_major_locator(plt.MaxNLocator(4))
         ax1.yaxis.set_major_locator(plt.MaxNLocator(4))
         ax1a.yaxis.set_major_locator(plt.MaxNLocator(4))
@@ -137,7 +141,8 @@ for filenum in file_numbers:
         line3_v, = ax2b.plot(all_data_v[vars_to_plot[2]][1], all_data_v[vars_to_plot[2]][0],color='lightgray',alpha=0.3)
 
         ax2b.fill_betweenx(all_data_v[vars_to_plot[2]][0], all_data_v[vars_to_plot[2]][1],x2=0,color='lightgray',alpha=0.3)  # y,x1,x2    between 0 and permeability 
-        # ax2b.set_xscale('log')
+        if k_log:
+                ax2b.set_xscale('log')
         ax2b.spines['top'].set_position(('outward', 30))  # draw the axis for k further from the axis for phi
 
         # ax2.set_ylabel('y')
