@@ -103,13 +103,13 @@ def dbscan_and_plot(X,variab,x_value,melt_value,no_margins,plot_figures,t):
                 all_angles[cluster_label] = angle_degrees
                 all_sizes[cluster_label] = len(cluster_points)+1
             
-            # ellipses_df = pd.DataFrame({
-            #     "Moments_of_Inertia": pd.Series(moments_of_inertia),
-            #     "Eigenvectors": pd.Series(all_eigenvectors),
-            #     "Elongation": pd.Series(all_elong),
-            #     "Angle_Degrees": pd.Series(all_angles),
-            #     "Size": pd.Series(all_sizes)
-            # })
+            ellipses_df = pd.DataFrame({
+                "Moments_of_Inertia": pd.Series(moments_of_inertia),
+                "Eigenvectors": pd.Series(all_eigenvectors),
+                "Elongation": pd.Series(all_elong),
+                "Angle_Degrees": pd.Series(all_angles),
+                "Size": pd.Series(all_sizes)
+            })
             # print(ellipses_df)
             # if len(ellipses_df) > 2:
             #     anova_analysis(ellipses_df)
@@ -127,23 +127,78 @@ def dbscan_and_plot(X,variab,x_value,melt_value,no_margins,plot_figures,t):
             """ clusters were found, but they are too small: populate the dataframe with NaN """
             cluster_data = fill_db_with_NaN(variab,x_value,melt_value)
             print("Clusters are too small")
-            # ellipses_df = {}
+            ellipses_df = {}
 
     else:
         """ no clusters were found: populate the dataframe with NaN """
         cluster_data = fill_db_with_NaN(variab,x_value,melt_value)
 
-        # ellipses_df = {}
+        ellipses_df = {}
         print("No Clusters")
         
     # add the new data to the existing dataframe
     cluster_df = pd.DataFrame(cluster_data,index=[0])
     # df = pd.concat([df,cluster_df], ignore_index=True) 
     
-    return cluster_df
+    return cluster_df,ellipses_df
 
 
 def fill_db_with_NaN(variab,x_value,melt_value):
     cluster_data = {'cluster_n':float('NaN'),'average_size':float('NaN'),'average_angle':float('NaN'),
         'average_angle_from_90':float('NaN'),'average_elong':float('NaN'),variab:x_value,'melt_rate':melt_value}
     return cluster_data
+
+def draw_rose_ellipse(ellipses_df):
+    """
+    get the orientations from the ellipse dataframe and plot them in a rose diagram
+    proportional = if it should use weights when building the rose diagram
+    """
+    angles =  ellipses_df['Angle_Degrees']
+    
+    bins = np.arange(-5, 366, 10)
+    lengths =  ellipses_df['Size']
+        # print(f'lengths: {lengths}\nmin: {np.min(lengths)}, max: {np.max(lengths)}')
+    if np.max(lengths)-np.min(lengths) != 0:
+        # normalise lengths so that they go from 0 to 1
+        lengths_norm = (lengths-np.min(lengths))/(np.max(lengths)-np.min(lengths))
+    else:
+        # if they are all the same length, or if there is only one, 
+        # the normalised version of the array is 1 over their number (e.g. 1 in the case of 1 edge)
+        lengths_norm = np.ones(len(lengths))/len(lengths) 
+    # use lengths as weights for the histogram
+    angles_in_bins, bins = np.histogram(angles, bins,weights=lengths_norm)
+
+
+    # Sum the last value with the first value.
+    angles_in_bins[0] += angles_in_bins[-1]
+
+    # shouldn't be necessary, but in case there are angles > 180, sum them to their corresponding 
+    # angle between 0 and 180. This way the result is symmetric: bottom half is the same 
+    # as top half but mirrored
+    single_half = np.sum(np.split(angles_in_bins[:-1], 2), 0)
+    full_range = np.concatenate([single_half,single_half])  # repeat the sequence twice
+    ax = plot_rose(full_range)
+
+    return ax
+
+
+def plot_rose(full_range: np.ndarray):
+    # make plot
+    fig = plt.figure(figsize=(8,8))
+    ax = fig.add_subplot(111, projection='polar')
+
+    ax.set_theta_zero_location('E') # zero starts at East
+    # ax.set_theta_direction(-1)
+    tens=np.arange(0, 360, 10)
+    labels=[i if i%30==0 else '' for i in tens]
+    ax.set_thetagrids(tens, labels=labels,weight='bold')
+    ax.tick_params(axis="y", labelsize=11)
+    ax.tick_params(axis="x", labelsize=13)
+    ax.grid(linewidth=1.5)
+    # ax.set_rgrids(np.arange(1, full_range.max() + 1, 2), angle=0, weight= 'black')
+    # the height of each bar is the number of angles in that bin
+    # ax.grid(False)
+    ax.bar(np.deg2rad(np.arange(0, 360, 10)), full_range, 
+        width=np.deg2rad(10), bottom=0.0, color=(0.5, 0.5, 0.5, 0.5), edgecolor='k')
+        # width=np.deg2rad(10), bottom=0.0, color=(1, 0, 0), edgecolor='r')
+    return ax
