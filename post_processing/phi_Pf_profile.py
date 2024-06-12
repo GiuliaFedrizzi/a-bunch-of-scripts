@@ -95,7 +95,7 @@ for filenum in file_numbers:
         x_coord_bb_hor, bb_values_hor = all_data_h[vars_to_plot[3]]
 
         bb_locations = [x for x, bb in zip(x_coord_bb_hor, bb_values_hor) if bb != 0]   # points of x_coord_vel_hor that have at least a broken bond
-        ax1.scatter(bb_locations, np.full((len(bb_locations),1), Pf_axes_lim[1]), color='red', marker='x', s=100)  # plot bb. array same length as bb_locations, full with the max range of Pf
+        ax1.scatter(bb_locations, np.full((len(bb_locations),1), Pf_axes_lim[1]), color='red', marker='x', s=150)  # plot bb. array same length as bb_locations, full with the max range of Pf
         
         
         #   limits:
@@ -119,7 +119,13 @@ for filenum in file_numbers:
         ax1a.tick_params(axis='y', colors='g')
         ax1b.tick_params(axis='y', colors='darkgray') 
         ax1b.spines['left'].set_position(('outward', 60))  # draw the axis for k further from the axis for phi
-
+        if True:  # hide ticks
+            ax1.set_yticklabels([])
+            ax1a.set_yticklabels([])
+            ax1b.set_yticklabels([])
+            ax1.tick_params(axis='y', which='both', length=0) # remove the ticks themselves
+            ax1a.tick_params(axis='y', which='both', length=0) # remove the ticks themselves
+            ax1b.tick_params(axis='y', which='both', length=0) # remove the ticks themselves
 
 
         # Plotting on ax2 -- vertical profile ---
@@ -166,7 +172,7 @@ for filenum in file_numbers:
         y_coord_bb_ver, bb_values_ver = all_data_v[vars_to_plot[3]]
 
         bb_locations = [x for x, bb in zip(y_coord_bb_ver, bb_values_ver) if bb != 0]   # points of x_coord_vel_hor that have at least a broken bond
-        ax2.scatter(np.full((len(bb_locations),1), Pf_axes_lim[1]),bb_locations, color='red', marker='x', s=100)  # plot bb. array same length as bb_locations, full with the max range of Pf
+        ax2.scatter(np.full((len(bb_locations),1), Pf_axes_lim[1]),bb_locations, color='red', marker='x', s=150)  # plot bb. array same length as bb_locations, full with the max range of Pf
         
         fig.tight_layout()  # must go before fill_between
 
