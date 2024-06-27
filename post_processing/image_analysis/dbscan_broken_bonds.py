@@ -43,7 +43,7 @@ no_margins = 1
 
 # times = list(range(1, 20, 1)) + list(range(20, 141, 5)) + list(range(150, 501, 20)) + list(range(500, 801, 20)) + list(range(850, 1500, 40))
 # times = [88,100,300]
-times = [79]
+times = [100]
 times = [i*save_freq for i in times]   # convert to timestep
 
 
@@ -53,7 +53,7 @@ plot_figures = True  # if I want to visualise clusters, ellipses etc
 
 
 
-def plot_cluster_data(fig,df,cluster_variable,cluster_variable_label,no_margins):
+def plot_cluster_data(fig,df,cluster_variable,cluster_variable_label,no_margins,variab):
     # set which figure to use
     plt.figure(fig)
     plt.clf()
@@ -72,33 +72,42 @@ def plot_cluster_data(fig,df,cluster_variable,cluster_variable_label,no_margins)
     # Adjust layout to prevent overlap
     # plt.tight_layout()
     fig.suptitle(cluster_variable_label+", t = " + str(t))
-    unique_viscosity_values = set(df['viscosity'])
-    #prepare labels
-    viscosity_labels = {}
-    for v in unique_viscosity_values:
-        viscosity_labels[v] = "$10^{"+str(np.log10(v))+"}$"
-    df['viscosity_label'] = df['viscosity'].map(viscosity_labels)
+    print(f'cluster_variable_label {cluster_variable_label}')
+    ax0 = plt.subplot(gs[1, 0])
+     
+    if variab == "viscosity":
+        unique_viscosity_values = set(df['viscosity'])
+        ax0.set_xlabel("Viscosity")
+
+
+        #prepare labels
+        viscosity_labels = {}
+        for v in unique_viscosity_values:
+            viscosity_labels[v] = "$10^{"+str(np.log10(v))+"}$"
+            df['viscosity_label'] = df['viscosity'].map(viscosity_labels)
+            variable_labels = 'viscosity_label'
+        ax0.set_xscale('log')
+    else:
+        ax0.set_xlabel("Deformation Rate")
+        variable_labels = 'def_rate'
     df['melt_rate'] = df['melt_rate'].astype(str)
 
     # pseudo heatmap
     square_size = 2600
-    ax0 = plt.subplot(gs[1, 0])
     # sns.heatmap(heatmap_data, ax=ax0, cmap="viridis", cbar_kws={'label': 'Average Size'})
-    sns.scatterplot(data=df, x='viscosity',y='melt_rate',hue=cluster_variable,
+    sns.scatterplot(data=df, x=variab,y='melt_rate',hue=cluster_variable,
                     marker='s',s=square_size,edgecolor='none', ax=ax0, palette="flare")
-    ax0.set_xlabel("Viscosity")
     ax0.set_ylabel("Melt Rate")
-    ax0.set_xscale('log')
 
     # Scatter plot for NaN values 
-    sns.scatterplot(data=df[mask_nan], x='viscosity', y='melt_rate', color='gray',
+    sns.scatterplot(data=df[mask_nan], x=variab, y='melt_rate', color='gray',
                     marker='s', s=square_size,edgecolor='none', ax=ax0)
 
     # # highlight big values
     # sns.scatterplot(data=df[df_big_values_mask], x='viscosity', y='melt_rate',facecolors='none', hatch='///',
     #                 marker='s',edgecolor='black', s=square_size*0.6, ax=ax0)
 
-    df = df.sort_values(by=['melt_rate','viscosity'])
+    df = df.sort_values(by=['melt_rate',variab])
 
 
     def create_palette(base_colors, n_colors):   # Function to create a color palette
@@ -106,16 +115,16 @@ def plot_cluster_data(fig,df,cluster_variable,cluster_variable_label,no_margins)
         # Generate colors from the colormap
         return [to_hex(colormap(i / (n_colors - 1))) for i in range(n_colors)]
 
-    palette_visc = create_palette(["#aae88e","#397367", "#140021"], len(df['viscosity_label'].unique()))
-    palette_visc_dict = dict(zip(df['viscosity_label'].unique(), palette_visc))
+    palette_visc = create_palette(["#aae88e","#397367", "#140021"], len(df[variable_labels].unique()))
+    palette_visc_dict = dict(zip(df[variable_labels].unique(), palette_visc))
 
     palette_mr = create_palette(["#c2823a", "#33231E"], len(df['melt_rate'].unique()))
-    palette_mr_dict = dict(zip(df['viscosity_label'].unique(), palette_mr))
+    palette_mr_dict = dict(zip(df[variable_labels].unique(), palette_mr))
 
     # Top plot (Viscosity vs Average Size)
     ax1 = plt.subplot(gs[0, 0], sharex=ax0)   # sharex  so they are aligned
-    sns.lineplot(data=df, x="viscosity", y=cluster_variable,hue="melt_rate", ax=ax1, palette=palette_mr)
-    sns.scatterplot(data=df, x="viscosity", y=cluster_variable,hue="melt_rate", ax=ax1, palette=palette_mr,legend='')
+    sns.lineplot(data=df, x=variab, y=cluster_variable,hue="melt_rate", ax=ax1, palette=palette_mr)
+    sns.scatterplot(data=df, x=variab, y=cluster_variable,hue="melt_rate", ax=ax1, palette=palette_mr,legend='')
     ax1.set_xlabel("")
     ax1.set_ylabel(cluster_variable_label)
     # ax1.legend(title="Melt Rate",ncol=1, fontsize=7, title_fontsize=9)
@@ -128,8 +137,8 @@ def plot_cluster_data(fig,df,cluster_variable,cluster_variable_label,no_margins)
     # Right plot (Melt Rate vs Average Size)
 
     ax2 = plt.subplot(gs[1, 1])#, sharey=ax0)    # sharey  so they are aligned
-    sns.lineplot(data=df, x="melt_rate", y=cluster_variable,hue="viscosity_label", ax=ax2, palette=palette_visc_dict)
-    sns.scatterplot(data=df, x="melt_rate", y=cluster_variable,hue="viscosity_label", ax=ax2, palette=palette_visc_dict,legend='')
+    sns.lineplot(data=df, x="melt_rate", y=cluster_variable,hue=variable_labels, ax=ax2, palette=palette_visc_dict)
+    sns.scatterplot(data=df, x="melt_rate", y=cluster_variable,hue=variable_labels, ax=ax2, palette=palette_visc_dict,legend='')
     ax2.set_xlabel("Melt Rate")
     # ax2.set_yticks("")  # no ticks - it removes them from the heatmap too
     ax2.set_ylabel(cluster_variable_label)
@@ -137,7 +146,12 @@ def plot_cluster_data(fig,df,cluster_variable,cluster_variable_label,no_margins)
     ax2.yaxis.tick_right()
     # Invert the order in the legend (small at the bottom)
     handles, labels = ax2.get_legend_handles_labels()
-    ax2.legend(handles[::-1], labels[::-1],title="$\mu_f$",fontsize=7)
+    if variab == "viscosity":
+        legend_title = "$\mu_f$"
+    else:
+        legend_title = "Def rate"
+
+    ax2.legend(handles[::-1], labels[::-1],title=legend_title,fontsize=7)
 
     # Show or save the plot
     # plt.show()
@@ -164,11 +178,18 @@ def plot_pair_grid(df,t,no_margins):
     # set which figure to use
     plt.figure(fig_pair)
 
-    # hue is viscosity
-    grid_mu = sns.PairGrid(df_pair.drop(columns=['melt_rate']), hue='viscosity', palette="crest") # (df.dropna())
+    if 'viscosity' in df.columns:
+        visc_or_def = 'viscosity'
+    elif 'def_rate' in df.columns:
+        visc_or_def = 'def_rate'
+    # hue is viscosity or melt rate
+    grid_mu = sns.PairGrid(df_pair.drop(columns=['melt_rate']), hue=visc_or_def, palette="crest") # (df.dropna())
     grid_mu = grid_mu.map_offdiag(sns.scatterplot)
     grid_mu = grid_mu.map_diag(sns.histplot)
-    grid_mu.add_legend(title="Viscosity")
+    if visc_or_def == 'viscosity':
+        grid_mu.add_legend(title="Viscosity")
+    elif visc_or_def == 'def_rate':
+        grid_mu.add_legend(title="Deformation Rate")
     
     #  if excluding margins:
     if no_margins:
@@ -298,11 +319,12 @@ def cluster_analysis(t,no_margins):
                     X = X[X['x coord'] < 0.98] # # exclude the right margin 
                 X = X[['x coord','y coord']] # Only x and y coordinates 
                 if len(X) > 0:
-                    cluster_df = dbscan_and_plot(X,variab,x_value,melt_value,no_margins,plot_figures,t)
+                    cluster_df,ellipses_df = dbscan_and_plot(X,variab,x_value,melt_value,no_margins,plot_figures,t)
                 else:
                     # no fractures at all: we still need to have an entry in the dataframe, but it will be NaN
                     cluster_data = fill_db_with_NaN(variab,x_value,melt_value)
                     cluster_df = pd.DataFrame(cluster_data,index=[0])
+                print(cluster_df)
                 df = pd.concat([df,cluster_df], ignore_index=True) 
             os.chdir('..')
 
@@ -336,7 +358,9 @@ def cluster_analysis(t,no_margins):
 
     for cluster_variable in cluster_variables:
     # one big heatmap (scatterplot) for each variable 
-        plot_cluster_data(fig,df,cluster_variable,cluster_variables[cluster_variable],no_margins)
+        print(f'cluster_variable {cluster_variable}')
+        plot_cluster_data(fig,df,cluster_variable,cluster_variables[cluster_variable],no_margins,variab)
+        plt.clf()
     # plot_cluster_data(fig,df,'cluster_n',"Number of Clusters")
 
     plt.close(fig)
