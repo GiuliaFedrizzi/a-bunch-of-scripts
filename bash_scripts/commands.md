@@ -32,3 +32,7 @@ print out time and date:
 ## replace recursively
 
 > for t in visc_*; do sed -i -e 's/replPresse3/replPresse1/g' $t/baseFiles/input.txt; done 
+
+## get memory usage and number of files on ARC
+
+> lfs quota -h /nobackup
