@@ -54,11 +54,14 @@ def build_array(big_array,variab,x,x_val,melt_rate,file_number,row,cols,rose):
         # poro_file = 'vis'+x_val+'_mR_'+melt_rate+'/a_porosity_'+file_number+'.png' 
         # bb_file = 'vis'+x_val+'_mR_'+melt_rate+'/a_brokenBonds_'+file_number+'.png'
     elif variab == "def_rate":
+        x_val = x_val.replace("-0","") # now it has the correct value -> bring it back to the dir name
+
         potential_file_path = 'thdef'+x_val+'/vis1e2_mR_'+ melt_rate   # transfer zone
         if os.path.isdir(potential_file_path) == False:
             potential_file_path ='pdef'+x_val+'/vis1e2_mR_'+ melt_rate#+'/'  # production zone
             if os.path.isdir(potential_file_path) == False:
                 potential_file_path ='pdef'+x_val+'/vis1e2_mR'+ melt_rate#+'/'  # production zone
+        print(f'potential_file_path {potential_file_path}')
     # now we have the path, choose if I open "poro_file" and "bb_file" or "rose_file"
     if rose == False:
         """ "poro_file" and "bb_file"  """
@@ -125,6 +128,8 @@ def set_ax_options(ax,variab,x_variable,melt_labels,t,im_length,rose):
     """
     set ticks, labels, title etc for the final plot
     """
+    x_variable = [str(i) for i in x_variable]   # convert to list of strings
+
     if rose:
         ax.set_xticks(np.arange(im_length/2,im_length*len(x_variable),im_length)) #  position and values of ticks on the x axis. Start: 437 (half width of an image) End: length of image times num of images in one row, Step: 883 (legth of image)
     else:
@@ -178,7 +183,7 @@ def setup_array(x_variable,melt_labels,t,im_length,im_height,variab,rose,save_fr
         if rose:
             file_number = str(round(int(file_number)/1000)*1000).zfill(6)
         for x,x_val in enumerate(x_variable):
-            big_array = build_array(big_array,variab,x,x_val,melt_rate,file_number,row,cols,rose)   # fill the array with data from images!
+            big_array = build_array(big_array,variab,x,str(x_val),melt_rate,file_number,row,cols,rose)   # fill the array with data from images!
             # ----------------------------------
         melt_labels_t[row] = build_melt_labels_t(melt_labels,t,file_number,row)
         print(melt_labels_t[row])
@@ -187,7 +192,7 @@ def setup_array(x_variable,melt_labels,t,im_length,im_height,variab,rose,save_fr
     # return np.array([bb,poro,bb,poro])
 
 
-def setup_array_const_strain(x_variable,melt_labels,t,target_mr_def_ratios,im_length,im_height,variab,rose):
+def setup_array_const_strain(x_variable,melt_labels,t,target_mr_def_ratios,im_length,im_height,variab,rose,save_freq):
     """ setup the 'big array' with dimensions:
          - rows*cols, 
          - length and 
@@ -209,24 +214,27 @@ def setup_array_const_strain(x_variable,melt_labels,t,target_mr_def_ratios,im_le
 
     for melt_rate in melt_labels:
         melt_rate = melt_rate.replace("0.0","")   # e.g. from 0.001 to 01, or from 0.02 to 2
-        norm_time = t/(float(melt_rate))
+        # norm_time = t/(float(melt_rate))
         # print(f'norm time: {norm_time}')
-        file_number = str(round(norm_time)).zfill(6)  # normalise t by the melt rate.  .zfill(6) fills the string with 0 until it's 6 characters long
+        file_number = str(round(t/(int(melt_rate))/save_freq)*save_freq).zfill(6)   # normalise t by the melt rate.  .zfill(6) fills the string with 0 until it's 6 characters long
         if rose:
             file_number = str(round(int(file_number)/1000)*1000).zfill(6)
         # print(f'file n {file_number}')
         # if float(melt_rate)/
 
         for x,x_val in enumerate(x_variable):
-            real_mr_def_ratio = float(melt_rate)/(float(x_val)*1e-8)  # def rate is still in the 1e08 form (exp is actually negative)
-            # print(f'melt_rate: {melt_rate}, def rate: {x_val}, ratio {real_mr_def_ratio}')
-            for n,current_mr_def_ratio in enumerate(target_mr_def_ratios):
+            real_mr_def_ratio = float(melt_rate)/(float(x_val)*1e+8)  # now def rate has the true value (e.g. 1e-8)
+            print(f'melt_rate: {melt_rate}, def rate: {x_val}, ratio {real_mr_def_ratio}')
+            for n,current_target_mr_def_ratio in enumerate(target_mr_def_ratios):
+                # print(f'target: {current_target_mr_def_ratio}')
                 # to have the same strain, we need the melt rate/defRate ratio to be fixed
                 # n is the row number, one per target melt ratio
 
-                if math.isclose(real_mr_def_ratio, current_mr_def_ratio, rel_tol=0.1):
-                    print(f'-  real: {real_mr_def_ratio}, current ideal: {current_mr_def_ratio}, diff {real_mr_def_ratio-current_mr_def_ratio}')
-                    big_array = build_array(big_array,variab,x,x_val,melt_rate,file_number,n,cols,rose)   # fill the array with data from images!
+                if math.isclose(real_mr_def_ratio, current_target_mr_def_ratio, rel_tol=0.167):
+                    # print(f'- {melt_rate}, {x_val} real: {real_mr_def_ratio}, current ideal: {current_target_mr_def_ratio}, diff {real_mr_def_ratio-current_target_mr_def_ratio}')
+                    big_array = build_array(big_array,variab,x,str(x_val),melt_rate,file_number,n,cols,rose)   # fill the array with data from images!
+                else:
+                    print(f'Not close enough:  real: {real_mr_def_ratio}, current ideal: {current_target_mr_def_ratio}, diff {real_mr_def_ratio-current_target_mr_def_ratio}')
                 # otherwise skip it
                 # ----------------------------------
         print("mrate ",melt_rate,"\n")
@@ -243,7 +251,7 @@ def find_dirs():
     # Iterate over the items in the current directory
     for item in os.listdir('.'):
         # Check if the item is a directory and not one of the excluded names
-        if os.path.isdir(item) and item not in ["baseFiles", "images_in_grid", "branch_plots","branch_plots_x","cluster"]:
+        if os.path.isdir(item) and item not in ["baseFiles", "images_in_grid", "branch_plots","branch_plots_x","cluster", 'rt0.5']:
             directories_list.append(item)
     directories_list.sort()
     # Printing the list (optional)
