@@ -17,6 +17,7 @@ import sys
 from matplotlib.lines import Line2D
 from matplotlib.colors import LinearSegmentedColormap, to_rgb, Normalize
 from matplotlib.cm import ScalarMappable
+import matplotlib.cm as cm
 from matplotlib.colorbar import ColorbarBase
 import colorsys
 
@@ -71,7 +72,7 @@ def read_calculate_plot(filename,palette_option_bb,porosity_cmap,poro_range):
     timestep_number = int(re.findall(r'\d+',filename)[0])   # regex to find numbers in string. Then convert to float. Will be used to get "time" once multiplied by timestep.
 
     bb_df = pd.read_csv(filename, header=0)  # build the dataframe from the csv file
-
+    
     # broken bonds
     sns.scatterplot(data=bb_df,x="x coord",y="y coord",hue="Broken Bonds",marker='h',s=4,palette=palette_option_bb,linewidth=0,legend=False).set_aspect('equal') # I've stopped saving "Fractures"
     
@@ -80,17 +81,27 @@ def read_calculate_plot(filename,palette_option_bb,porosity_cmap,poro_range):
     plt.clf()
     
     # porosity
-    sns.scatterplot(data=bb_df,x="x coord",y="y coord",vmin=poro_range[0],vmax=poro_range[1], hue='Porosity', palette=porosity_cmap,marker='h',s=4,linewidth=0,legend=False).set_aspect('equal') # I've stopped saving "Fractures"
-
-    plt.axis('off')
-    # colormap options:
     norm = Normalize(vmin=poro_range[0], vmax=poro_range[1])
+    sm = plt.cm.ScalarMappable(cmap=porosity_cmap, norm=norm)
+    sm.set_array([])
+    # Calculate the colors for each point based on 'Porosity'
+
+    # bb_df['colors'] = bb_df['Porosity'].apply(lambda x: cmap.to_rgba(x))
+
+    sns.scatterplot(data=bb_df,x="x coord",y="y coord", hue='Porosity',
+        palette=porosity_cmap,marker='h',s=4,linewidth=0,hue_norm=(poro_range[0],poro_range[1]),legend=False).set_aspect('equal') # I've stopped saving "Fractures"
+    # sns.scatterplot(data=bb_df,x="x coord",y="y coord", hue='Porosity', palette=porosity_cmap,marker='h',s=4,linewidth=0,vmin=poro_range[0],vmax=poro_range[1],legend=False).set_aspect('equal') # I've stopped saving "Fractures"
+    # plt.colorbar(sm, label='Porosity')
+    plt.axis('off')
+    
+    # colormap options:
     mapper = ScalarMappable(norm=norm, cmap=porosity_cmap)
     cbar = plt.colorbar(mapper, fraction=0.05, pad=0.02)
     cbar.set_label('Porosity (Melt Fraction)', rotation=270, labelpad=15)
     # colorbar = ColorbarBase(ax, cmap=porosity_cmap, norm=norm, orientation='vertical')
     cbar.set_ticks([poro_range[0],(poro_range[0]+poro_range[1])/2,poro_range[1]])
     # cbar.set_ticks([poro_range[0],(poro_range[0]+poro_range[1])/4, (poro_range[0]+poro_range[1])/2,(poro_range[0]+poro_range[1])*3/4, poro_range[1]])
+    
     plt.savefig("viz_por_"+str(timestep_number).zfill(6)+".png",dpi=150, bbox_inches='tight', pad_inches=0)
     plt.clf()
     # plt.show()
@@ -107,12 +118,28 @@ print(os.getcwd())
 # default
 poro_range = [0, 0]
 
-poro_range_read = [] # the porosity range read from a file
-if os.path.isfile('global_porosity_range.txt'):
-    with open('global_porosity_range.txt') as f:
+def try_to_read_poro_file(poro_range_file):
+    print(f'reading file: {poro_range_file}')
+    with open(poro_range_file) as f:
         for l in f: 
             poro_range_read.append(float(l))
-    poro_range = poro_range_read
+    return poro_range_read
+
+poro_range_read = [] # the porosity range read from a file
+
+# try a few paths:
+if os.path.isfile('global_porosity_range.txt'):
+    poro_range_file = 'global_porosity_range.txt'
+    poro_range = try_to_read_poro_file(poro_range_file)
+elif os.path.isfile('../global_porosity_range.txt'):
+    poro_range_file = '../global_porosity_range.txt'
+    poro_range = try_to_read_poro_file(poro_range_file)
+elif os.path.isfile('../../global_porosity_range.txt'):
+    poro_range_file = '../../global_porosity_range.txt'
+    poro_range = try_to_read_poro_file(poro_range_file)
+elif os.path.isfile('../../../global_porosity_range.txt'):
+    poro_range_file = '../../../global_porosity_range.txt'
+    poro_range = try_to_read_poro_file(poro_range_file)
 else:
     poro_range = [0, 0]
 
@@ -122,6 +149,7 @@ if len(poro_range) != 2 or poro_range[0] >= 1.0 or poro_range[1] >= 1.0 or poro_
     print(f'problem! range is {poro_range}')
     poro_range = [0, 0]
 
+print(f'poro range: {poro_range}')
 
 for filename in sorted(glob.glob("my_experiment*.csv"),key=extract_number, reverse=True):
     """ loop through files"""
