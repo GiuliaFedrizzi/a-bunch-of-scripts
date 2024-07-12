@@ -569,8 +569,8 @@ def draw_nx_graph(im: Image, g: nx.Graph) -> None:
     plt.imshow(im)
     return ax
     # plt.gca().invert_xaxis()
-    #plt.savefig(out_path)  
-    # plt.show()
+
+
 def get_timestep():
     """ check if there is an input.txt file. If there is, look for the timestep.
     If not, return 0 """
@@ -839,7 +839,7 @@ def analyse_png(png_file: str, part_to_analyse: str, all_angles: list) -> dict:
         im = im.crop((left, top, right, bottom))
     
     # Apply median filter to smooth the edges
-    im = im.filter(ImageFilter.ModeFilter(size=9)) # https://stackoverflow.com/questions/62078016/smooth-the-edges-of-binary-images-face-using-python-and-open-cv 
+    im = im.filter(ImageFilter.ModeFilter(size=12)) # https://stackoverflow.com/questions/62078016/smooth-the-edges-of-binary-images-face-using-python-and-open-cv 
     # out_path_med = png_file.replace('.png', '_median.png')
     # im.save(out_path_med)
     # im.show()   DO NOT DO im.show() ON BOLT/OFFICE COMPUTER OR IT WILL OPEN FIREFOX AND CRASH EVERYTHING
@@ -945,6 +945,8 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
         csv_file_name = "py_branch_info_x.csv" 
 
     bb_files = sorted(glob.glob(string_in_name))
+    # bb_files = ["py_bb_012000.png"]
+    
     if len(bb_files) == 0:
         print("No images to analyse")
         sys.exit()
@@ -956,7 +958,7 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
         branch_info.append(branch_dict)  # build the list of dictionaries
         rose_hist_list.append(rose_hist)
         out_paths.append(out_path)
-        if f%10 == 0:   # checkpoint: write out what I have so far 
+        if f%4 == 0:   # checkpoint: write out what I have so far 
             write_to_csv_file(branch_info,csv_file_name)
 
     # at the end of the file loop, write to the output file
