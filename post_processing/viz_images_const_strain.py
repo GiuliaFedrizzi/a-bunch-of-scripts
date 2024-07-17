@@ -22,16 +22,26 @@ rose = False
 im_length = 500 # was 875
 im_height = 506 # was 883
 
-target_mr_def_ratios = [3.0,2.5,2.0,1.5,1.0,1/2,1/3,1/5,1/6,1/7]  # save figures with this melt rate - deformation rate ratio (= constant strain)
+# def rate directories
+x_variable_dir_names = find_dirs()  # the name of the directories with the def rate values
+x_variable = []   # initialise: will be the list of values like '1e8','2e8','3e8','4e8' etc
+
+# melt rate directories
+os.chdir(x_variable_dir_names[0])
+melt_labels = find_dirs()
+melt_labels = [i.replace('vis1e2_mR0','0.00') for i in melt_labels]  # go from 'vis1e2_mR01' to '0.001'
+melt_labels.reverse()
+os.chdir('..')
+print(f'melt_labels {melt_labels}')
+
+if melt_labels == ['0.000']:  # if no melt production
+    target_mr_def_ratios = [0.0]
+else:
+    target_mr_def_ratios = [3.0,2.5,2.0,1.5,1.0,1/2,1/3,1/5,1/6,1/7]  # save figures with this melt rate - deformation rate ratio (= constant strain)
+
 times = list(range(50, 141, 5)) + list(range(150, 501, 20)) #+ list(range(500, 801, 20)) #+ list(range(850, 1500, 40))  # (start, end, step)
 times = [i*save_freq for i in times] 
 
-melt_labels = ['0.009','0.007','0.005','0.004','0.003','0.002','0.001'] 
-# melt_labels = ['0.009','0.008','0.007','0.006','0.005','0.004','0.003','0.002','0.001'] 
-# melt_labels = ['0.008','0.006','0.004','0.002'] 
-# x_variable = ['1e8','2e8','3e8','4e8','5e8','6e8','7e8','8e8','9e8']  # the values of the x variable to plot (e.g. def rate)
-x_variable_dir_names = find_dirs()  # the name of the directories with the def rate values
-x_variable = []   # initialise: will be the list of values like '1e8','2e8','3e8','4e8' etc
 
 for x in x_variable_dir_names:
     x_value = float(getParameterFromLatte(x+'/baseFiles/input.txt','defRate'))
