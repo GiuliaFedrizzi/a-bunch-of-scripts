@@ -202,6 +202,8 @@ def setup_array_const_strain(x_variable,melt_labels,t,target_mr_def_ratios,im_le
 
          calls build_array(), which populates the big array """
     print(melt_labels)
+    print(f'x_variable {x_variable}')
+
     melt_labels_t = [None] * len(melt_labels) # labels with extra term for time. Empty string list, same size as melt_labels
     rows = len(target_mr_def_ratios)  # how many values of ratios: it's the number of rows
     if rose==False:
@@ -216,7 +218,10 @@ def setup_array_const_strain(x_variable,melt_labels,t,target_mr_def_ratios,im_le
         melt_rate = melt_rate.replace("0.0","")   # e.g. from 0.001 to 01, or from 0.02 to 2
         # norm_time = t/(float(melt_rate))
         # print(f'norm time: {norm_time}')
-        file_number = str(round(t/(int(melt_rate))/save_freq)*save_freq).zfill(6)   # normalise t by the melt rate.  .zfill(6) fills the string with 0 until it's 6 characters long
+        if int(melt_rate) != 0:
+            file_number = str(round(t/(int(melt_rate))/save_freq)*save_freq).zfill(6)   # normalise t by the melt rate.  .zfill(6) fills the string with 0 until it's 6 characters long
+        else:
+            file_number = -1  # placeholder
         if rose:
             file_number = str(round(int(file_number)/1000)*1000).zfill(6)
         # print(f'file n {file_number}')
@@ -229,13 +234,19 @@ def setup_array_const_strain(x_variable,melt_labels,t,target_mr_def_ratios,im_le
                 # print(f'target: {current_target_mr_def_ratio}')
                 # to have the same strain, we need the melt rate/defRate ratio to be fixed
                 # n is the row number, one per target melt ratio
-
-                if math.isclose(real_mr_def_ratio, current_target_mr_def_ratio, rel_tol=0.167):
-                    # print(f'- {melt_rate}, {x_val} real: {real_mr_def_ratio}, current ideal: {current_target_mr_def_ratio}, diff {real_mr_def_ratio-current_target_mr_def_ratio}')
-                    big_array = build_array(big_array,variab,x,str(x_val),melt_rate,file_number,n,cols,rose)   # fill the array with data from images!
+                if int(melt_rate) != 0:
+                    if math.isclose(real_mr_def_ratio, current_target_mr_def_ratio, rel_tol=0.167):
+                        # print(f'- {melt_rate}, {x_val} real: {real_mr_def_ratio}, current ideal: {current_target_mr_def_ratio}, diff {real_mr_def_ratio-current_target_mr_def_ratio}')
+                        
+                        big_array = build_array(big_array,variab,x,str(x_val),melt_rate,file_number,n,cols,rose)   # fill the array with data from images!
+                    else:
+                        print(f'Not close enough:  real: {real_mr_def_ratio}, current ideal: {current_target_mr_def_ratio}, diff {real_mr_def_ratio-current_target_mr_def_ratio}')
+                    # otherwise skip it
                 else:
-                    print(f'Not close enough:  real: {real_mr_def_ratio}, current ideal: {current_target_mr_def_ratio}, diff {real_mr_def_ratio-current_target_mr_def_ratio}')
-                # otherwise skip it
+                    file_number = str(round(t/(int(x_val*1e8))/save_freq)*save_freq).zfill(6) # normalise time by def rate
+                    print(f'file_number {file_number}')
+                    # no need to check the ratio bc it should be 0
+                    big_array = build_array(big_array,variab,x,str(x_val),melt_rate,file_number,n,cols,rose)   # fill the array with data from images!
                 # ----------------------------------
         print("mrate ",melt_rate,"\n")
         # end of viscosity/deformation loop
