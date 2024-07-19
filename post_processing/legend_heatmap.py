@@ -14,12 +14,12 @@ ratio_grid = np.zeros((len(y), len(x)))
 
 for i, y_val in enumerate(y):
     for j, x_val in enumerate(x):
-        ratio_grid[i, j] = np.log10(y_val / x_val)
+        ratio_grid[i, j] = np.log10(x_val/y_val)
 
 
 # List of all colormaps
 colormaps = ['twilight_shifted','BrBG', 
-    'PRGn', 'PiYG', 'PuOr', 'RdBu_r', 'RdGy', 
+    'PRGn', 'PiYG', 'PuOr_r', 'RdBu_r', 'RdGy', 
     'RdYlBu', 'RdYlGn', 
     'coolwarm']
 print(f'len: {len(colormaps)},colormaps {colormaps}')
