@@ -65,6 +65,7 @@ def dbscan_and_plot(X,variab,x_value,melt_value,no_margins,plot_figures,t):
             moments_of_inertia = {}
             all_eigenvectors = {}
             all_elong = {}
+            all_elong_log = {}
             all_angles = {}
             all_sizes = {}
             for cluster_label, centroid in centroids.iterrows():
@@ -97,6 +98,7 @@ def dbscan_and_plot(X,variab,x_value,melt_value,no_margins,plot_figures,t):
                 moments_of_inertia[cluster_label] = eigenvalues
                 all_eigenvectors[cluster_label] = eigenvectors
                 all_elong[cluster_label] = eigenvalues[0]/eigenvalues[1]
+                all_elong_log[cluster_label] = np.log1p(all_elong[cluster_label])  # will be the weight for the average orientation
                 all_angles[cluster_label] = angle_degrees
                 all_sizes[cluster_label] = len(cluster_points)+1
             if plot_figures:
@@ -113,13 +115,13 @@ def dbscan_and_plot(X,variab,x_value,melt_value,no_margins,plot_figures,t):
                 "Angle_Degrees": pd.Series(all_angles),
                 "Size": pd.Series(all_sizes)
             })
-            print(ellipses_df)
+            # print(ellipses_df)
             # if len(ellipses_df) > 2:
             #     anova_analysis(ellipses_df)
 
             #compute some global data
-            weighted_sum = sum(angle * all_sizes[cluster] for cluster, angle in all_angles.items())
-            weighted_average_angle = weighted_sum / sum(all_sizes.values())
+            weighted_sum = sum(angle * all_sizes[cluster] * all_elong_log[cluster]  for cluster, angle, in all_angles.items())  #  two weights for the average: the size and the elongation
+            weighted_average_angle = weighted_sum / (sum(all_sizes.values()) * sum(all_elong_log.values()) )
             weighted_elong = sum(elong * all_sizes[cluster] for cluster, elong in all_elong.items())
             weighted_average_elong = weighted_elong / sum(all_sizes.values())
 
@@ -159,17 +161,26 @@ def draw_rose_ellipse(ellipses_df):
     angles =  ellipses_df['Angle_Degrees']
     
     bins = np.arange(-5, 366, 10)
+
+    # weights for the bins: the orientation 'counts more' if the blob's size and elongation are large.
+    #    it counts less if the blob is small and round
     lengths =  ellipses_df['Size']
+    elongs = ellipses_df['Elongation']
         # print(f'lengths: {lengths}\nmin: {np.min(lengths)}, max: {np.max(lengths)}')
     if np.max(lengths)-np.min(lengths) != 0:
         # normalise lengths so that they go from 0 to 1
         lengths_norm = (lengths-np.min(lengths))/(np.max(lengths)-np.min(lengths))
+        elongs = np.log1p(elongs)  # apply log transformation to reduce impact of extremely long ellipses
+        elong_norm = (elongs-np.min(elongs))/(np.max(elongs)-np.min(elongs))
+        weigths = lengths_norm*elong_norm
     else:
         # if they are all the same length, or if there is only one, 
         # the normalised version of the array is 1 over their number (e.g. 1 in the case of 1 edge)
         lengths_norm = np.ones(len(lengths))/len(lengths) 
+        elong_norm = np.ones(len(elongs))/len(elongs) 
+        weigths = lengths_norm*elong_norm
     # use lengths as weights for the histogram
-    angles_in_bins, bins = np.histogram(angles, bins,weights=lengths_norm)
+    angles_in_bins, bins = np.histogram(angles, bins,weights=weigths)
 
 
     # Sum the last value with the first value.
