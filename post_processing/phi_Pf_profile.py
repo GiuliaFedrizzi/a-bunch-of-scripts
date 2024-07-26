@@ -40,6 +40,7 @@ point_indexes = [(res*res_y-(5*res))-1,5]   # top (horizontal) and left (vertica
 # point_indexes = [(res*res_y*0.75+res),5]   # 3/4 of the domain
 # print(f'index for the horizontal profile: {point_indexes[0]}')
 
+blue_hex = '#1f77b4'  # colour for pressure
 
 for filenum in file_numbers:
         filename = "my_experiment"+filenum+".csv"
@@ -48,19 +49,19 @@ for filenum in file_numbers:
 
         plt.rcParams["font.weight"] = "bold"
         plt.rcParams['lines.linewidth'] = 4
-        plt.rcParams['axes.linewidth'] = 2
+        plt.rcParams['axes.linewidth'] = 4
         plt.rcParams['axes.labelsize'] = 20
-        plt.rcParams['xtick.labelsize'] = 18
-        plt.rcParams['ytick.labelsize'] = 18
-        plt.rcParams['xtick.major.size'] = 6
-        plt.rcParams['xtick.major.width'] = 2
-        plt.rcParams['ytick.major.size'] = 6
-        plt.rcParams['ytick.major.width'] = 2
+        plt.rcParams['xtick.labelsize'] = 25
+        plt.rcParams['ytick.labelsize'] = 25
+        plt.rcParams['xtick.major.size'] = 10
+        plt.rcParams['xtick.major.width'] = 6
+        plt.rcParams['ytick.major.size'] = 10
+        plt.rcParams['ytick.major.width'] = 6
 
 
         fig, (ax1,ax2) = plt.subplots(nrows=1, ncols=2,figsize=(17, 9))
-        plt.setp(ax1.spines.values(), linewidth=3)  # #f56c42
-        plt.setp(ax2.spines.values(), linewidth=3)  # #9ce35d
+        # plt.setp(ax1.spines.values(), linewidth=3)  # #f56c42
+        # plt.setp(ax2.spines.values(), linewidth=3)  # #9ce35d
 
         vars_to_plot = ["Pressure","Porosity", "Permeability","Broken Bonds"]
 
@@ -111,18 +112,20 @@ for filenum in file_numbers:
         ax1a.yaxis.tick_right()  # Ensure the y-axis label is on the right (phi)
         ax1b.yaxis.tick_left()  # Ensure the y-axis label is on the left (k)
         ax1.tick_params(axis='x')
-        ax1.tick_params(axis='y', colors='#1f77b4') # blue
+        ax1.tick_params(axis='y', colors=blue_hex) # blue
         ax1.xaxis.set_major_locator(plt.MaxNLocator(4))
-        ax1.yaxis.set_major_locator(plt.MaxNLocator(4))
-        ax1a.yaxis.set_major_locator(plt.MaxNLocator(4))
-        ax1b.yaxis.set_major_locator(plt.MaxNLocator(4))
+        ax1.yaxis.set_major_locator(plt.MaxNLocator(3))
+        ax1a.yaxis.set_major_locator(plt.MaxNLocator(3))
+        ax1b.yaxis.set_major_locator(plt.MaxNLocator(3))
         ax1a.tick_params(axis='y', colors='g')
         ax1b.tick_params(axis='y', colors='darkgray') 
         ax1b.spines['left'].set_position(('outward', 60))  # draw the axis for k further from the axis for phi
         if True:  # hide ticks
+            ax1.set_xticklabels([])
             ax1.set_yticklabels([])
             ax1a.set_yticklabels([])
             ax1b.set_yticklabels([])
+        #     ax1.tick_params(axis='x', which='both', length=0) # remove the ticks themselves
             ax1.tick_params(axis='y', which='both', length=0) # remove the ticks themselves
             ax1a.tick_params(axis='y', which='both', length=0) # remove the ticks themselves
             ax1b.tick_params(axis='y', which='both', length=0) # remove the ticks themselves
@@ -148,21 +151,46 @@ for filenum in file_numbers:
 
         ax2b.fill_betweenx(all_data_v[vars_to_plot[2]][0], all_data_v[vars_to_plot[2]][1],x2=0,color='lightgray',alpha=0.3)  # y,x1,x2    between 0 and permeability 
         if k_log:
-                ax2b.set_xscale('log')
-        ax2b.spines['top'].set_position(('outward', 30))  # draw the axis for k further from the axis for phi
+            ax2b.set_xscale('log')
 
         # ax2.set_ylabel('y')
         # ax2.set_xlabel(vars_to_plot[0])
         # ax2a.set_xlabel(vars_to_plot[1], color='g')  # Setting color to match line color
-        ax2.tick_params(axis='x', colors='#1f77b4')
+        ax2.tick_params(axis='x', colors=blue_hex)
         ax2.tick_params(axis='y') 
         ax2.tick_params(axis='x') 
         ax2a.tick_params(axis='x', colors='g') 
         ax2b.tick_params(axis='x', colors='darkgray') 
         ax2.xaxis.set_major_locator(plt.MaxNLocator(4))
-        ax2.yaxis.set_major_locator(plt.MaxNLocator(4))
+        ax2.yaxis.set_major_locator(plt.MaxNLocator(3))
         ax2a.xaxis.set_major_locator(plt.MaxNLocator(4))
-        ax2b.xaxis.set_major_locator(plt.MaxNLocator(4))
+        ax2b.xaxis.set_major_locator(plt.MaxNLocator(3))
+
+        if False:  # to create the legend for the axes (only 1 for all of the figures)
+            # move all the ticks to the bottom
+            ax2.xaxis.tick_bottom()
+            ax2a.xaxis.tick_bottom()
+            ax2b.xaxis.tick_bottom()
+            ax2.spines['bottom'].set_position(('outward', 40)) 
+            plt.setp(ax2.spines.values(), color=blue_hex)
+            ax2b.spines['bottom'].set_position(('outward', 110))  # draw the axis for k further away from the axis for phi
+            plt.setp(ax2b.spines.values(), color='lightgray')
+            ax2a.spines['bottom'].set_position(('outward', 0)) 
+            plt.setp(ax2a.spines.values(), color='g')
+            ax2b.spines['left'].set_color('g')
+            ax2b.spines['right'].set_color('g')
+            ax2a.spines['bottom'].set_color('g')
+
+        if True:  # hide ticks
+            ax2.set_yticklabels([])
+            ax2.set_xticklabels([])
+            ax2a.set_xticklabels([])
+            ax2b.set_xticklabels([])
+        #     ax2.tick_params(axis='y', which='both', length=0) # remove the ticks themselves
+            ax2.tick_params(axis='x', which='both', length=0) # remove the ticks themselves
+            ax2a.tick_params(axis='x', which='both', length=0) # remove the ticks themselves
+            ax2b.tick_params(axis='x', which='both', length=0) # remove the ticks themselves
+
         # Legend
         # ax2.legend([line1_v, line2_v,line3_v], 
                 # [vars_to_plot[0], vars_to_plot[1],vars_to_plot[2]],loc=(0.7, 0.8))
@@ -172,7 +200,7 @@ for filenum in file_numbers:
         y_coord_bb_ver, bb_values_ver = all_data_v[vars_to_plot[3]]
 
         bb_locations = [x for x, bb in zip(y_coord_bb_ver, bb_values_ver) if bb != 0]   # points of x_coord_vel_hor that have at least a broken bond
-        ax2.scatter(np.full((len(bb_locations),1), Pf_axes_lim[1]),bb_locations, color='red', marker='x', s=150)  # plot bb. array same length as bb_locations, full with the max range of Pf
+        ax2.scatter(np.full((len(bb_locations),1), Pf_axes_lim[1]),bb_locations, color='red', marker='x', s=200)  # plot bb. array same length as bb_locations, full with the max range of Pf
         
         fig.tight_layout()  # must go before fill_between
 
@@ -194,10 +222,15 @@ for filenum in file_numbers:
 
         # fig.suptitle(str(myfile))
         if k_log:
-                fig_name = "phi_Pf_"+str(filenum)+"_log.png"
+                fig_name = "phi_Pf_"+str(filenum)+"_log_1.png"
         else:
-                fig_name = "phi_Pf_"+str(filenum)+".png"
+                fig_name = "phi_Pf_"+str(filenum)+"_1.png"
+        # plt.tight_layout()
         plt.savefig(fig_name)
+        # plt.savefig("phi_Pf_vert_ticks.png")
+        # plt.show()
+        # break
+
 print("Done :)")
 # plt.show()
 
