@@ -68,12 +68,12 @@ if (var_is_visc){
     }
 } else if (var_is_def) {
     # x_variable <- c('1e8','2e8','3e8','4e8','5e8','6e8','7e8','8e8','9e8')#,'5e3','1e4')#,'2e4','4e4')  # the values of the x variable to plot (e.g. def rate)
-    x_variable <- c('1e8','2e8','3e8','4e8','5e8','6e8','7e8','8e8','9e8')#,'5e3','1e4')#,'2e4','4e4')  # the values of the x variable to plot (e.g. def rate)
+    x_variable <- c('2e8','3e8','4e8','5e8','6e8','7e8','8e8','9e8')#,'5e3','1e4')#,'2e4','4e4')  # the values of the x variable to plot (e.g. def rate)
 }
 
-melt_rate_list <- c('01','03','05','07','09')
+melt_rate_list <- c('01','02','03','04','05','06','07','08','09')
 
-target_mr_def_ratios <- c(3.0,2.5,2.0,1.5,1.0,1/2,1/3,1/5,1/6,1/7)  # save figures with this melt rate - deformation rate ratio (= constant strain)
+target_mr_def_ratios <- c(1/3,1/2,1.0,1.5,2.0,2.5,3.0)  # save figures with this melt rate - deformation rate ratio (= constant strain)
 
 # first part of path
 base_path <- getwd( )
@@ -204,7 +204,7 @@ n_I=double(),n_Y=double(),n_X=double(),n_B=double(),n_L=double(),CV_hor=double()
 norm_time=double(),mr_def_ratio=double())#,stringsAsFactors=FALSE)
 
 # Define a function to find the closest target mr/def ratio using a relative threshold
-find_closest <- function(x, targets, relative_threshold = 0.5) {
+find_closest <- function(x, targets, relative_threshold = 0.8) {
   distances <- abs(targets - x)
   relative_distances <- distances / targets
   min_relative_distance <- min(relative_distances)
@@ -230,33 +230,41 @@ if (file.exists(csv_time_name)) {
     } 
     write.csv(df_m, csv_time_name, row.names=FALSE)  # here it saves df to a file to save time
 }
-    # assign closest target
-    df_m <- df_m %>%
-        dplyr::mutate(closest_target = purrr::map_dbl(mr_def_ratio, ~find_closest(.x, target_mr_def_ratios, relative_threshold = 0.1)))
-    
-    # Filter out rows with no close target value
-    # df_m <- df_m %>%
-    # dplyr::filter(!is.na(closest_target))
 
-    # Calculate the absolute difference between mr_def_ratio and closest_target
-    df_m <- df_m %>%
-    dplyr::mutate(diff = abs(mr_def_ratio - closest_target))
+# save original dataframe
+df_original <- df_m
 
-    # Group by closest_target and keep the row with the minimum difference
-    df_m <- df_m %>%
-    dplyr::group_by(closest_target) %>%
-    dplyr::filter(diff == min(diff)) %>%
-    dplyr::ungroup()
+# assign closest target
+df_m <- df_m %>%
+    dplyr::mutate(closest_target = purrr::map_dbl(mr_def_ratio, ~find_closest(.x, target_mr_def_ratios, relative_threshold = 0.8)))
 
-    # # Drop the diff column - no longer needed
-    # df_m <- df_m %>%
-    # select(-diff)
-    
-    
-    # branches/lines
-    df_m["n_B_n_L"] <- df_m$n_B/df_m$n_L
-    df_m["C_L"] <- 2*(df_m$n_Y+df_m$n_X)/df_m$n_L
-    # write.csv(df_m, csv_time_name, row.names=FALSE)  # here it saves df to a file to save time
+# Filter out rows with no close target value
+# df_m <- df_m %>%
+# dplyr::filter(!is.na(closest_target))
+
+# Calculate the absolute difference between mr_def_ratio and closest_target
+df_m <- df_m %>%
+dplyr::mutate(diff = abs(mr_def_ratio - closest_target))
+
+# Group by closest_target and keep the row with the minimum difference
+df_m <- df_m %>%
+dplyr::group_by(closest_target) %>%
+dplyr::filter(diff == min(diff)) %>%
+dplyr::ungroup()
+
+# # Drop the diff column - no longer needed
+# df_m <- df_m %>%
+# select(-diff)
+
+rows_to_keep <- !(df_m$B_20 == 0 & df_m$B_21 == 0 & df_m$B_C == 0)  # remove rows if B_20, B_21 AND B_C are zero
+df_m <- df_m[rows_to_keep, ]
+
+df_m$formatted_mr_def_ratio <- sprintf("%.2f", df_m$mr_def_ratio)
+
+# branches/lines
+df_m["n_B_n_L"] <- df_m$n_B/df_m$n_L
+df_m["C_L"] <- 2*(df_m$n_Y+df_m$n_X)/df_m$n_L
+# write.csv(df_m, csv_time_name, row.names=FALSE)  # here it saves df to a file to save time
 
 # }
 print(df_m, width = Inf)
@@ -290,12 +298,16 @@ print(base_path)
 # import the library to create ternary plots
 library("ggplot2")
 library("ggtern")
-rows_to_keep <- !(df_m$n_Y == 0 & df_m$n_I == 0 & df_m$n_X == 0)  # remove rows if n_Y, n_I AND n_X are zero
-df_no_zeros <- df_m[rows_to_keep, ]
+
+df_original$true_mr_def_ratio <- as.double(df_original$true_m_rate)/as.double(df_original$def_rate)*1e-5
+
+rows_to_keep <- !(df_original$n_Y == 0 & df_original$n_I == 0 & df_original$n_X == 0)  # remove rows if n_Y, n_I AND n_X are zero
+df_no_zeros <- df_original[rows_to_keep, ]
+
 
 
 # TERNARY PLOTS: one for each mr (or mu) category, coloured by mu (or mr).
-if (FALSE){
+if (TRUE){
     library(dplyr)
     if (var_is_visc){
         visc_or_def <- "viscosity_scaled"
@@ -331,19 +343,21 @@ if (FALSE){
     # create a column with categories of mr
     df_no_zeros <- df_no_zeros %>%
     mutate(
-        mr_category = case_when(
-        true_m_rate <= 0.002 ~ "1 - Low",
-        true_m_rate <= 0.004 ~ "2 - Intermediate",
-        true_m_rate <= 0.006  ~ "3 - High",
-        true_m_rate >= 0.007 ~ "4 - Very high",
+        mr_def_category = case_when(
+        true_mr_def_ratio <= 0.25 ~ "1 - 0.25 and lower",
+        true_mr_def_ratio <= 0.75 ~ "2 - between 0.25 and 0.75",
+        true_mr_def_ratio <= 1.25  ~ "3 - around 1.0",
+        true_mr_def_ratio > 1.25 ~ "4 - Greater than 1.25",
         TRUE ~ NA_character_  # This line handles any cases that don't match the above conditions
         )
     )
-    print(df_no_zeros)
+    # print(df_no_zeros)
+    print(df_no_zeros[c('true_m_rate','def_rate','true_mr_def_ratio','mr_def_category')]) 
+    
 
     # categories = viscosity   -  colour = melt rate
 
-    png_name <- paste(base_path,"/br_ter_viscPanels_t",time_string,".png",sep='')  # build name of png
+    png_name <- paste(base_path,"/br_ter_defPanels_t",time_string,".png",sep='')  # build name of png
     # generate colours
     colours_mr <- colorRampPalette(c("#c2823a", "#33231E"))(length(unique(df_no_zeros$true_m_rate)))
     pt_pan_mr <- ggtern(data=df_no_zeros,aes(x=n_Y,y=n_I,z=n_X))+ geom_point(aes(color = as.factor(true_m_rate)))+
@@ -373,7 +387,7 @@ if (FALSE){
         # scale_fill_distiller(direction=+1)+
         scale_color_manual(values = colours_mu)
         
-    pt_pan_mu1 <- pt_pan_mu + facet_grid(cols = vars(mr_category))+
+    pt_pan_mu1 <- pt_pan_mu + facet_grid(cols = vars(mr_def_category))+
         transparent_background_for_tern() +
         theme(
         tern.panel.background = element_rect(fill = "#e6e6e6"),
@@ -386,7 +400,8 @@ if (FALSE){
 plot_options <- theme(   # x and y here are not affected by flipping. Same AFTER flipping.
     plot.background = element_blank(),
     panel.background = element_blank(),
-    # panel.grid.major = element_line(color = "#8ccde3",linewidth = 0.5,linetype = 2),
+    panel.grid.major = element_line(color = "#7d7d7d",linewidth = 0.3,linetype = 2),
+    panel.grid.minor = element_line(color = "#7d7d7d",linewidth = 0.1,linetype = 2),
     legend.key=element_blank(),
     # axis.title.y=element_blank(),
 	# axis.text.x=element_blank(),
@@ -395,7 +410,7 @@ plot_options <- theme(   # x and y here are not affected by flipping. Same AFTER
     )
 
 # heatmaps combined with lineplots 
-if (TRUE) {
+if (FALSE) {
     # heatmaps
     png_name <- paste(base_path,"/br_heat_B_const_str_",time_string,".png",sep='')  # build name of png
     png(file=png_name,width = 3000,height = 1800,res=100)
@@ -420,24 +435,21 @@ if (TRUE) {
 
     # def rate v B   lineplots
 
-    pv1 <- ggplot(data=df_m,mapping = aes(x=def_rate,y=B_20)) + geom_point(aes(color = factor(mr_def_ratio)))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = factor(mr_def_ratio)))+
-        labs(x = "Def Rate",y = "Number of\nBranches",colour = "Melt Rate/Def Rate")
-    pv2 <- ggplot(data=df_m,mapping = aes(x=def_rate,y=B_21)) + geom_point(aes(color = factor(mr_def_ratio)))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = factor(mr_def_ratio)))+
-        labs(x = "Def Rate",y = "Total Branch\nLength",colour = "Melt Rate/Def Rate")
-    pv3 <- ggplot(data=df_m,mapping = aes(x=def_rate,y=B_C)) + geom_point(aes(color = factor(mr_def_ratio)))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = factor(mr_def_ratio)))+
-        labs(x = "Def Rate",y = "Average Branch\nLength",colour = "Melt Rate/Def Rate")
-    pv4 <- ggplot(data=df_m,mapping = aes(x=def_rate,y=B_22)) + geom_point(aes(color = factor(mr_def_ratio)))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = factor(mr_def_ratio)))+
-        labs(x = "Def Rate",y = "Dimensionless\nIntensity",colour = "Melt Rate/Def Rate")
-    if (FALSE){
-    # define the layout
-        hlay <- rbind(c(1,1,1,NA,NA,NA, 2,2,2, NA,NA),  # NA means empty
-                c(3,3,3, 4,4,   NA,  5,5,5,  6,6),
-                c(3,3,3, 4,4,   NA,  5,5,5,  6,6),
-                c(NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA),
-                c(7,7,7,NA,NA,  NA,  8,8,8, NA,NA),
-                c(9,9,9,10,10,  NA,  11,11,11,12,12),
-                c(9,9,9,10,10,  NA,  11,11,11,12,12))
-    }
+    pv1 <- ggplot(data=df_m,mapping = aes(x=def_rate,y=B_20)) + geom_point(aes(color = factor(formatted_mr_def_ratio)))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = factor(formatted_mr_def_ratio)))+
+        labs(x = "Deformation Rate",y = "Number of\nBranches",colour = "Melt Rate/Deformation \nRate")
+    pv1 <- pv1 + plot_options 
+
+    pv2 <- ggplot(data=df_m,mapping = aes(x=def_rate,y=B_21)) + geom_point(aes(color = factor(formatted_mr_def_ratio)))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = factor(formatted_mr_def_ratio)))+
+        labs(x = "Deformation Rate",y = "Total Branch\nLength",colour = "Melt Rate/Deformation \nRate")
+    pv2 <- pv2 + plot_options 
+
+    pv3 <- ggplot(data=df_m,mapping = aes(x=def_rate,y=B_C)) + geom_point(aes(color = factor(formatted_mr_def_ratio)))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = factor(formatted_mr_def_ratio)))+
+        labs(x = "Deformation Rate",y = "Average Branch\nLength",colour = "Melt Rate/Deformation \nRate")
+    pv3 <- pv3 + plot_options 
+
+    pv4 <- ggplot(data=df_m,mapping = aes(x=def_rate,y=B_22)) + geom_point(aes(color = factor(formatted_mr_def_ratio)))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = factor(formatted_mr_def_ratio)))+
+        labs(x = "Deformation Rate",y = "Dimensionless\nIntensity",colour = "Melt Rate/Deformation \nRate")
+    pv4 <- pv4 + plot_options 
     if(TRUE){
         hlay <- rbind(     # NA means empty
                 c(3,3, 1,1,  5,5,  2,2),
@@ -453,52 +465,6 @@ if (TRUE) {
 }
 
 
-
-#  ONE HEATMAP at a time, combined with its lineplots
-if(FALSE) {
-    library(cowplot)
-    png_name <- paste(base_path,"/br_heat_B20_",time_string,".png",sep='')  # build name of png
-    png(file=png_name,width = 2800,height = 2800,res=500)
-    if (var_is_visc){
-        p_heat1 <- ggplot(df_m,aes(factor(x=viscosity),true_m_rate, fill=B_20))  + scale_fill_distiller(direction = +1)+ geom_tile() + theme(legend.key.size = unit(0.5, 'cm'))+
-        labs(x = "Viscosity",y = "Melt Rate",fill =  expression('B'[20]))
-    } else if (var_is_def){
-        p_heat1 <- ggplot(df_m,aes(factor(x=def_rate),true_m_rate, fill=B_20))  + scale_fill_distiller(direction = +1)+ geom_tile() + theme(legend.key.size = unit(0.5, 'cm'))
-    }
-
-    # melt rate v B   lineplots
-    if (var_is_visc){
-        pm1 <- ggplot(data=df_m,mapping = aes(x=true_m_rate,y=B_20)) + geom_point(aes(color = factor(x=viscosity)))+ geom_line(aes(color = factor(x=viscosity)))+ theme(legend.key.size = unit(0.5, 'cm')) #+ coord_flip() #,linetype = "dashed") #+ scale_x_continuous(trans='log10') 
-        # labs(x = "Melt Rate",y = expression('B'[20]),colour = "Viscosity")
-    } else if (var_is_def){
-        pm1 <- ggplot(data=df_m,mapping = aes(x=true_m_rate,y=B_20)) + geom_point(aes(color = factor(x=def_rate)))+ geom_line(aes(color = factor(x=def_rate)))+ theme(legend.key.size = unit(0.5, 'cm')) #+ coord_flip() #,linetype = "dashed") #+ scale_x_continuous(trans='log10') 
-    }
-    pm1 <- pm1 + coord_flip()  # rotate data by 90 degrees
-    pm1 <- pm1 + plot_options
-    
-    # viscosity v B   lineplots
-    if (var_is_visc){
-        pv1 <- ggplot(data=df_m,mapping = aes(x=viscosity,y=B_20)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10') +
-        labs(x = "Viscosity",y = expression('B'[20]),colour = "Melt Rate")
-    } else if (var_is_def){
-        pv1 <- ggplot(data=df_m,mapping = aes(x=def_rate,y=B_20)) + geom_point(aes(color = melt_rate))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = melt_rate),linetype = "dashed") + scale_x_continuous(trans='log10') 
-    }
-
-    # change margins 
-    p_heat1 <- p_heat1  + theme(plot.margin = unit(c(0, 0, 0.5, 0.5), "cm"))  #   top, right, bottom, left
-    pm1 <- pm1 + theme(plot.margin = unit(c(0.5, 0, 0, 0.7), "cm"))
-    pv1 <- pv1 + theme(plot.margin = unit(c(0, 0.5, 0.5, 0.5), "cm"))
-
-    # combine plots together in a grid
-    first_col = plot_grid(pv1, p_heat1, ncol = 1, rel_heights = c(1, 3))
-    second_col = plot_grid(NULL, pm1, ncol = 1, rel_heights = c(1, 3))
-    full_plot = plot_grid(first_col, second_col, ncol = 2, rel_widths = c(3, 1))
-    
-    print(full_plot)
-    dev.off()
-
-
-}
 
 if (FALSE) {
     png_name <- paste(base_path,"/br_heat_nb_cl_",time_string,".png",sep='')  # build name of png
