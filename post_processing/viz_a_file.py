@@ -7,6 +7,7 @@ builds matrix:
 
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 import numpy as np
 import math
 import os
@@ -22,18 +23,20 @@ from useful_functions import *
 plot_figure = 1
 dir_label = ''
 res = 200
-filename = "my_experiment32000.csv"
-first_part_of_path = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt41/rt0.5/visc_2_1e25/vis1e25_mR_05/'  # remember the slash (/) at the end
+filename = "my_experiment110000.csv"
+first_part_of_path = '/nobackup/scgf/myExperiments/threeAreas/prod/pdef/pd19/rt0.5/pdef9e8/vis1e2_mR01/'  # remember the slash (/) at the end
 
 #dir = first_part_of_path+'size'+str(dir_label)        # res200
 dir = first_part_of_path
 
 
-def read_calculate_plot(filename,scale_factor,res):
+def read_calculate_plot(filename,scale_factor,res,var_plot):
     """
     read the csv file, plot
     """
-    variable_hue = "x velocity"
+    variable_hue = var_plot 
+    threshold = 4e6
+
     myExp_all = pd.read_csv(filename, header=0)
 
     mask = myExp_all['y coord'] < 1    # create a mask: use these values to identify which rows to keep
@@ -42,22 +45,52 @@ def read_calculate_plot(filename,scale_factor,res):
     mask = myExp1['x coord'] < 1    # create a mask: use these values to identify which rows to keep
     myExp = myExp1[mask].copy()  # keep only the rows found by mask
 
-    mask = myExp['x velocity'] == 0    # create a mask: where the horizontal velocity is 0
-    x_vel_zero = myExp[mask].copy()  # keep only the rows found by mask
+    mask = abs(myExp[var_plot]) > threshold     # create a mask: where the stress is big enough
+    filtered = myExp[mask].copy()  # keep only the rows found by mask
+
+    mask_bg = abs(myExp[var_plot]) <= threshold     # create a mask: where the stress is small (background)
+    background = myExp[mask_bg].copy()  # keep only the rows found by mask
+
+    filtered[var_plot]=abs(filtered[var_plot])
+
+    max_legend = filtered[variable_hue].max()
+    if var_plot == "Fracture normal stress":
+        max_legend = 1.5e7
+    # else:
+    #     max_legend = filtered[variable_hue].max()
+    # max_legend = 3e7
+    min_legend = min(filtered[var_plot])
+    
 
     if plot_figure:
-        ssize = scale_factor/70.0 #scaled size for markers. 70 had a good size so 70/70 = 1 should be good
-        # sns.scatterplot(data=myExp,x="x coord",y="y coord",hue=variable_hue,linewidth=0,alpha=0.8,marker="h",size=ssize,palette='Paired').set_aspect('equal') #legend='full'
-        sns.scatterplot(data=myExp,x="x coord",y="y coord",hue=variable_hue,linewidth=0,alpha=0.8,marker="h",size=ssize).set_aspect('equal') #legend='full'
-        # highlight the points where the x velocity is zero in yellow
-        sns.scatterplot(data=x_vel_zero,x="x coord",y="y coord",color='yellow',linewidth=0,alpha=0.8,marker="h",size=ssize).set_aspect('equal') #legend='full'
-        #   vmin=0, vmax=6   set ranges for broken bonds values: 0 min, 6 max
+        plt.figure()
+        ssize = 3 #scaled size for markers. Worked for plt.show 
+        # ssize = 4 #scaled size for markers
+        
+        scatter = sns.scatterplot(data=filtered,x="x coord",y="y coord",hue=variable_hue,hue_norm=(min_legend,max_legend),
+            linewidth=0,alpha=0.8,marker="h",s=ssize,palette="rocket_r",legend=False).set_aspect('equal') #legend='full'
+        # scatter = sns.scatterplot(data=filtered,x="x coord",y="y coord",hue=variable_hue,linewidth=0,alpha=0.8,marker="h",s=ssize,palette="rocket_r",legend=False).set_aspect('equal') #legend='full'
+
         # upper left = the point that I am setting wiht the second argument
         # plt.legend(loc='upper left',bbox_to_anchor=(0,-0.5),fancybox=True, ncol=20,prop={'size': 5.5})  
+
+        ax = plt.gca()
+        # norm = mcolors.Normalize(vmin=filtered[variable_hue].min(), vmax=filtered[variable_hue].max())
+        norm = mcolors.Normalize(vmin=min_legend, vmax=max_legend)
+        print(f'min max {min_legend}, {max_legend}')
+        sm = plt.cm.ScalarMappable(cmap="rocket_r", norm=norm)
+        sm.set_array([])  # Only needed for matplotlib < 3.1
+        ax.figure.colorbar(sm, ax=ax)
         plt.legend(loc='upper left',bbox_to_anchor=(1.05,0.9))  
+
+        sns.scatterplot(data=background,x="x coord",y="y coord",color='whitesmoke',linewidth=0,alpha=0.8,marker="h",s=ssize).set_aspect('equal') #legend='full'
 
         plt.xlabel('x')
         plt.ylabel('y')
+        stress_type = variable_hue.split(" ")[1]
+        
+        plt.savefig('stress_'+stress_type+'_'+ '{:.0e}'.format(threshold)+'.png',dpi=400)
+        # plt.clf()
     return variable_hue
 
 
@@ -80,7 +113,8 @@ scale_factor = float(1)  # factor for scaling the axes
 
 myfile = Path(os.getcwd()+'/'+filename)  # build file name including path
 if myfile.is_file():
-    variable_hue = read_calculate_plot(filename,scale_factor,res)
+    variable_hue = read_calculate_plot(filename,scale_factor,res,"Fracture shear stress")
+    variable_hue = read_calculate_plot(filename,scale_factor,res,"Fracture normal stress")
     
 
 #  some options for plotting
