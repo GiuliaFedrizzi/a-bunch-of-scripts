@@ -15,14 +15,14 @@ from sklearn.neighbors import NearestNeighbors
 no_margins = 1
 plot_figures = 1
 # t = 100000
-t = 11000 # true time?
-os.chdir("rt0.5/pdef9e8/")
+t =25000 # true time
+os.chdir("rt0.5/pdef0e8/")
 # os.chdir("rt0.5/visc_1_1e15/")  # change  x_value and melt_value too
 file_to_read = "my_experiment"+str(t)+".csv"
-x_value = "9e8"      # <----------
-melt_value = 0.009    # <----------
+x_value = "0e8"      # <----------
+melt_value = 0.008    # <----------
 # data = read_bb_data_from_csv("vis1e3_mR_08/"+file_to_read)
-data = read_bb_data_from_csv("vis1e2_mR09/"+file_to_read)
+data = read_bb_data_from_csv("vis1e2_mR08/"+file_to_read)
 
 if data.empty:
     print("empty df") 
@@ -33,19 +33,23 @@ X = data[data['Broken Bonds'] > 0] # Only where there are bb
 
 if no_margins:
     X = X[X['x coord'] > 0.02] # exclude the left margin
+    X = X[X['y coord'] > 0.02] # exclude the bottom margin
     X = X[X['x coord'] < 0.98] # # exclude the right margin 
+    X = X[X['y coord'] < 0.98] # # exclude the top margin 
+
 X = X[['x coord','y coord']] # Only x and y coordinates 
 if len(X) > 0:
-    cluster_df,ellipses_df = dbscan_and_plot(X,"viscosity",x_value,melt_value,no_margins,plot_figures,t)
+    cluster_df,ellipses_df,_ = dbscan_and_plot(X,"viscosity",x_value,melt_value,no_margins,plot_figures,t)
     ellipses_df['average_angle_from_90'] = abs(90-ellipses_df['Angle_Degrees'])
     print(ellipses_df)
     if True:
         ax = draw_rose_ellipse(ellipses_df)
-        plt.show()
+        # plt.show()
+        #  warning: t is the true time, not the reference time (used in dbscan_broken_bonds)
         plt.savefig("../cluster/rose_"+str(x_value)+"_"+str(melt_value)+"_"+str(t)+".png",transparent=True)
 
 
-if True:
+if False:
     min_samples = 10
     # Use NearestNeighbors to find the distance to the k-th nearest neighbor
     k = min_samples  # Same as your DBSCAN min_samples value

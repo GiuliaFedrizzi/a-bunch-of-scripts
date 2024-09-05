@@ -4,6 +4,7 @@ shade the area between Pf & phi and between 0 and k
 """
 # import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import numpy as np
 import os
 from pathlib import Path
@@ -12,23 +13,24 @@ sys.path.append('/home/home01/scgf/myscripts/post_processing')
 from useful_functions import extract_two_profiles,getResolution
 
 
-# file_numbers = ["01000","03000","07000","16000"]
-file_numbers = ["30000","50000","80000","100000"]
-# file_numbers = ["11000"]
-# file_numbers = ["100000"]
-dir_path = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_1_1e15/vis1e15_mR_03'
-# dir_path = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt46/rt0.5/visc_3_1e3/vis1e3_mR_08'
+file_numbers = ["01000","03000","07000","16000"]  # tsteps for visc_3_1e3/vis1e3_mR_08
+# file_numbers = ["30000","50000","80000","100000"]  # tsteps for visc_1_1e15/vis1e15_mR_03
+dir_path = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_3_1e3/vis1e3_mR_08'
+# dir_path = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_1_1e15/vis1e15_mR_03'
 
+k_log = True
 
-# Pf_axes_lim = [6.6e7,1.1e8]  # case A  
-Pf_axes_lim = [6.6e7,1.6e8]  
-# phi_axes_lim = [0.134,0.30]  # case A
-phi_axes_lim = [0.10,0.42]
+# Pf_axes_lim = [6.6e7,1.6e8]  
+Pf_axes_lim = [1,2.1]  # when scaled (pore fluid pressure)
+Pf_axes_lim = [0.78,2]  # when scaled (pore fluid pressure, Pf0*0.5)
+phi_axes_lim = [0.11,0.42]
 # phi_axes_lim = [0.10,0.45]  # layer
-# k_axes_lim = [7.22131e-19,1.66541e-16]  # case A
-k_axes_lim = [-1e-18,3.2e-16]
+if k_log:
 
-k_log = False
+        k_axes_lim = [0,3.2e-16]
+else:
+        k_axes_lim = [-1e-18,3.2e-16]
+
 
 os.chdir(dir_path)
 
@@ -42,6 +44,10 @@ point_indexes = [(res*res_y-(5*res))-1,5]   # top (horizontal) and left (vertica
 
 blue_hex = '#1f77b4'  # colour for pressure
 
+# extract initial profile
+(_, y_press_v_0), (_, y_press_h_0) = extract_two_profiles("my_experiment00000.csv", "Pressure",point_indexes,res)
+
+
 for filenum in file_numbers:
         filename = "my_experiment"+filenum+".csv"
         myfile = Path(os.getcwd()+'/'+filename)  # build file name including path
@@ -51,8 +57,12 @@ for filenum in file_numbers:
         plt.rcParams['lines.linewidth'] = 4
         plt.rcParams['axes.linewidth'] = 4
         plt.rcParams['axes.labelsize'] = 20
-        plt.rcParams['xtick.labelsize'] = 25
-        plt.rcParams['ytick.labelsize'] = 25
+        plt.rcParams['xtick.labelsize'] = 30
+        plt.rcParams['ytick.labelsize'] = 30
+        if k_log:
+                plt.rcParams['ytick.labelsize'] = 20
+                plt.rcParams['ytick.minor.size'] = 5
+                plt.rcParams['ytick.minor.width'] = 3
         plt.rcParams['xtick.major.size'] = 10
         plt.rcParams['xtick.major.width'] = 6
         plt.rcParams['ytick.major.size'] = 10
@@ -72,11 +82,17 @@ for filenum in file_numbers:
 
         for v in vars_to_plot:
                 (x_v, y_v), (x_h, y_h) = extract_two_profiles(filename, v,point_indexes,res)
+                if v == "Pressure":   # normalise by initial value
+                    y_v = y_v/y_press_v_0*0.8
+                    y_h = y_h/y_press_h_0*0.8
+                    
                 all_data_v[v] = (x_v, y_v)
                 all_data_h[v] = (x_h, y_h)
         
         ax1a = ax1.twinx()
         ax1b = ax1.twinx()
+        if k_log:  # needs to go before I plot anything
+                ax1b.set_yscale('log')
         # print(np.corrcoef(abs(P_hor),poro_values_hor)) 
 
         line1_h, = ax1.plot(all_data_h[vars_to_plot[0]][0], all_data_h[vars_to_plot[0]][1])
@@ -85,8 +101,7 @@ for filenum in file_numbers:
 
         ax1b.fill_between(all_data_h[vars_to_plot[2]][0], all_data_h[vars_to_plot[2]][1],y2=0,color='lightgray',alpha=0.3)  # fill between 0 and permeability 
         
-        if k_log:
-                ax1b.set_yscale('log')
+
 
         # Legend
         # ax1.legend([line1_h, line2_h, line3_h], 
@@ -110,30 +125,46 @@ for filenum in file_numbers:
 
         #   options:
         ax1a.yaxis.tick_right()  # Ensure the y-axis label is on the right (phi)
-        ax1b.yaxis.tick_left()  # Ensure the y-axis label is on the left (k)
+        ax1b.yaxis.tick_right()  # Ensure the y-axis label is on the left (k)
         ax1.tick_params(axis='x')
         ax1.tick_params(axis='y', colors=blue_hex) # blue
         ax1.xaxis.set_major_locator(plt.MaxNLocator(4))
         ax1.yaxis.set_major_locator(plt.MaxNLocator(3))
         ax1a.yaxis.set_major_locator(plt.MaxNLocator(3))
-        ax1b.yaxis.set_major_locator(plt.MaxNLocator(3))
+        if k_log:
+        #     y_ticks = np.logspace(-19, np.log10(k_axes_lim[1]), num=10)
+        #     print(f'y_ticks {y_ticks}')
+        #     ax1b.set_yticks(y_ticks)
+            minor_locator = mpl.ticker.LogLocator(base=10.0, subs=np.arange(1, 11) * 0.1, numticks=100)
+            ax1b.yaxis.set_minor_locator(minor_locator)
+            print("Current y-axis ticks:", ax1b.get_yticks())
+        #     y_ticks = np.arange(0,3.2e-16,1e-18)
+        #     print(f'y_ticks {y_ticks}')
+        #     ax1b.set_yticks(y_ticks)#,y_ticks)
+        #     ax1b.set_yticklabels(y_ticks)
+        # else:
+        #     ax1b.yaxis.set_major_locator(plt.MaxNLocator(3))
         ax1a.tick_params(axis='y', colors='g')
-        ax1b.tick_params(axis='y', colors='darkgray') 
-        ax1b.spines['left'].set_position(('outward', 60))  # draw the axis for k further from the axis for phi
+        # ax1b.tick_params(axis='y', colors='darkgray') 
+        ax1b.spines['left'].set_position(('outward', 10))  # draw the axis for k further from the axis for phi
         if True:  # hide ticks
             ax1.set_xticklabels([])
             ax1.set_yticklabels([])
             ax1a.set_yticklabels([])
-            ax1b.set_yticklabels([])
+            
+            if not k_log:
+                ax1b.set_yticklabels([])
+                ax1b.tick_params(axis='y', which='both', length=0) # remove the ticks themselves
         #     ax1.tick_params(axis='x', which='both', length=0) # remove the ticks themselves
             ax1.tick_params(axis='y', which='both', length=0) # remove the ticks themselves
             ax1a.tick_params(axis='y', which='both', length=0) # remove the ticks themselves
-            ax1b.tick_params(axis='y', which='both', length=0) # remove the ticks themselves
 
 
         # Plotting on ax2 -- vertical profile ---
         ax2a = ax2.twiny()
         ax2b = ax2.twiny()
+        if k_log:
+            ax2b.set_xscale('log')
 
         ax2.set_ylim([0,0.99])
         ax2.set_xlim(Pf_axes_lim)  # Pf
@@ -142,7 +173,7 @@ for filenum in file_numbers:
         ax2.yaxis.tick_left()
         # ax2.yaxis.set_label_position("right")
 
-        print(f'max Pf {max(all_data_v[vars_to_plot[0]][1])/1e8}e8')
+        print(f'max Pf {max(all_data_v[vars_to_plot[0]][1])}')
         print(f'max phi {max(all_data_v[vars_to_plot[1]][1])}')
 
         line1_v, = ax2.plot(all_data_v[vars_to_plot[0]][1], all_data_v[vars_to_plot[0]][0], label=vars_to_plot[0])
@@ -150,8 +181,7 @@ for filenum in file_numbers:
         line3_v, = ax2b.plot(all_data_v[vars_to_plot[2]][1], all_data_v[vars_to_plot[2]][0],color='lightgray',alpha=0.3)
 
         ax2b.fill_betweenx(all_data_v[vars_to_plot[2]][0], all_data_v[vars_to_plot[2]][1],x2=0,color='lightgray',alpha=0.3)  # y,x1,x2    between 0 and permeability 
-        if k_log:
-            ax2b.set_xscale('log')
+
 
         # ax2.set_ylabel('y')
         # ax2.set_xlabel(vars_to_plot[0])
@@ -162,26 +192,28 @@ for filenum in file_numbers:
         ax2a.tick_params(axis='x', colors='g') 
         ax2b.tick_params(axis='x', colors='darkgray') 
         ax2.xaxis.set_major_locator(plt.MaxNLocator(4))
-        ax2.yaxis.set_major_locator(plt.MaxNLocator(3))
+        ax2.yaxis.set_major_locator(plt.MaxNLocator(4))
         ax2a.xaxis.set_major_locator(plt.MaxNLocator(4))
         ax2b.xaxis.set_major_locator(plt.MaxNLocator(3))
 
-        if False:  # to create the legend for the axes (only 1 for all of the figures)
+        if True:  # to create the legend for the axes (only 1 for all of the figures)
             # move all the ticks to the bottom
             ax2.xaxis.tick_bottom()
             ax2a.xaxis.tick_bottom()
             ax2b.xaxis.tick_bottom()
-            ax2.spines['bottom'].set_position(('outward', 40)) 
+            ax2.spines['bottom'].set_position(('outward', 50)) 
             plt.setp(ax2.spines.values(), color=blue_hex)
-            ax2b.spines['bottom'].set_position(('outward', 110))  # draw the axis for k further away from the axis for phi
+            ax2b.spines['bottom'].set_position(('outward', 100))  # draw the axis for k further away from the axis for phi
             plt.setp(ax2b.spines.values(), color='lightgray')
             ax2a.spines['bottom'].set_position(('outward', 0)) 
             plt.setp(ax2a.spines.values(), color='g')
             ax2b.spines['left'].set_color('g')
             ax2b.spines['right'].set_color('g')
             ax2a.spines['bottom'].set_color('g')
+            ax2.set_yticklabels([])
+            ax2.tick_params(axis='y', which='both', length=0) # remove the ticks themselves
 
-        if True:  # hide ticks
+        if False:  # hide ticks
             ax2.set_yticklabels([])
             ax2.set_xticklabels([])
             ax2a.set_xticklabels([])
@@ -222,13 +254,13 @@ for filenum in file_numbers:
 
         # fig.suptitle(str(myfile))
         if k_log:
-                fig_name = "phi_Pf_"+str(filenum)+"_log_1.png"
+                fig_name = "phi_Pf0_0.8_"+str(filenum)+"_log.png"
         else:
-                fig_name = "phi_Pf_"+str(filenum)+"_1.png"
+                fig_name = "phi_Pf0_0.8_"+str(filenum)+".png"
         # plt.tight_layout()
         plt.savefig(fig_name)
-        # plt.savefig("phi_Pf_vert_ticks.png")
         # plt.show()
+        # plt.savefig("phi_Pf_vert_ticks.png")
         # break
 
 print("Done :)")
