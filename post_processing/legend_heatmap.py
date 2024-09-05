@@ -38,11 +38,12 @@ ax.set_yticks(y, [j/1000 for j in y])  # melt rate/def rate ratio
 # fig.colorbar(cax, ax=ax, label='Ratio')
 
 # Adding text annotations
-for i in range(len(y)):
-    for j in range(len(x)):
-        ax.text(x[j], y[i], f'{10**(ratio_grid[i, j]):.2f}', ha='center', va='center')#, color='white',weight='bold') # melt rate/def rate
-        # ax.text(x[j], y[i], f'{(ratio_grid[i, j]):.0f}', ha='center', va='center')#, color='white',weight='bold')    # ones everywhere (melt amount)
+# for i in range(len(y)):
+#     for j in range(len(x)):
+#         # ax.text(x[j], y[i], f'{10**(ratio_grid[i, j]):.2f}', ha='center', va='center') # reference strain
+#         ax.text(x[j], y[i], f'{10**(ratio_grid[i, j])*2e-3:.2e}', ha='center', va='center')#, color='white',weight='bold') # melt rate/def rate
+#         # ax.text(x[j], y[i], f'{(ratio_grid[i, j]):.0f}', ha='center', va='center')#, color='white',weight='bold')    # ones everywhere (melt amount)
 
 # plt.tight_layout()
-# plt.savefig("legend_const_strain.png",dpi=300)
+plt.savefig("legend_const_melt_no_annot.png",dpi=300)
 plt.show()
