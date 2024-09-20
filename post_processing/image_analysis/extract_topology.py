@@ -456,14 +456,18 @@ def connect_graph(skel: np.ndarray, min_distance: int) -> nx.MultiGraph:
     nodes,edges = merge_loop(nodes,edges,skel,min_distance)
     # make a graph from the current node and edge lists
     g = make_graph(nodes,edges)
+
+    # Simplify graph: if the edges connect through a node with degree 2 have almost the same orientation,
+    #   that shouldn't be a node: remove it and join the two edges  
+    print(f'before removing nodes: {g}')
     g = remove_nodes_if_straight_edges(g,5)  # do the most similar first
     print(f'done with removing nodes, angle diff = 5, {g}')
     g = remove_nodes_if_straight_edges(g,10)
     print(f'done with removing nodes, angle diff = 10, {g}')
     g = remove_nodes_if_straight_edges(g,15)
     print(f'done with removing nodes, angle diff = 15, {g}')
-    # g = remove_nodes_if_straight_edges(g,20)
-    # print(f'done with removing nodes, {g}')
+    g = remove_nodes_if_straight_edges(g,20)
+    print(f'done with removing nodes, angle diff = 20,  {g}')
     nodes = g.nodes()
     # edges = g.edges()
     edges = find_paths(skel, nodes, min_distance)
@@ -589,20 +593,20 @@ def draw_rose_diagram(g: nx.Graph,proportional: bool):
     angles =  np.array([o for (u,v,o) in g.edges.data('orientation')])  # get the attribute "orientation"
     
     bins = np.arange(-5, 366, 10)
-    if proportional:
-        lengths =  np.array([d for (u,v,d) in g.edges.data('d')])  # get the attribute "length", in "d"
+    # if proportional:
+    lengths =  np.array([d for (u,v,d) in g.edges.data('d')])  # get the attribute "length", in "d"
         # print(f'lengths: {lengths}\nmin: {np.min(lengths)}, max: {np.max(lengths)}')
-        if np.max(lengths)-np.min(lengths) != 0:
-            # normalise lengths so that they go from 0 to 1
-            lengths_norm = (lengths-np.min(lengths))/(np.max(lengths)-np.min(lengths))
-        else:
-            # if they are all the same length, or if there is only one, 
-            # the normalised version of the array is 1 over their number (e.g. 1 in the case of 1 edge)
-            lengths_norm = np.ones(len(lengths))/len(lengths) 
+        # if np.max(lengths)-np.min(lengths) != 0:
+        #     # normalise lengths so that they go from 0 to 1  - doesn't work
+        #     lengths_norm = (lengths-np.min(lengths))/(np.max(lengths)-np.min(lengths))
+        # else:
+        #     # if they are all the same length, or if there is only one, 
+        #     # the normalised version of the array is 1 over their number (e.g. 1 in the case of 1 edge)
+        #     lengths_norm = np.ones(len(lengths))/len(lengths) 
         # use lengths as weights for the histogram
-        angles_in_bins, bins = np.histogram(angles, bins,weights=lengths_norm)
-    else:
-        angles_in_bins, bins = np.histogram(angles, bins)
+    angles_in_bins, bins = np.histogram(angles, bins,weights=lengths)
+    # else:
+    #     angles_in_bins, bins = np.histogram(angles, bins)
 
     # Sum the last value with the first value.
     angles_in_bins[0] += angles_in_bins[-1]
@@ -621,15 +625,15 @@ def calculate_rose(g: nx.Graph):
     angles =  np.array([o for (u,v,o) in g.edges.data('orientation')])  # get the attribute "orientation"
     lengths =  np.array([d for (u,v,d) in g.edges.data('d')])
 
-    if np.max(lengths)-np.min(lengths) != 0:
-        # normalise lengths so that they go from 0 to 1
-        lengths_norm = (lengths-np.min(lengths))/(np.max(lengths)-np.min(lengths))
-    else:
-        # if they are all the same length, or if there is only one, 
-        # the normalised version of the array is 1 over their number (e.g. 1 in the case of 1 edge)
-        lengths_norm = np.ones(len(lengths))/len(lengths) 
+    # if np.max(lengths)-np.min(lengths) != 0:
+    #     # normalise lengths so that they go from 0 to 1  - doesn't work
+    #     lengths_norm = (lengths-np.min(lengths))/(np.max(lengths)-np.min(lengths))
+    # else:
+    #     # if they are all the same length, or if there is only one, 
+    #     # the normalised version of the array is 1 over their number (e.g. 1 in the case of 1 edge)
+    #     lengths_norm = np.ones(len(lengths))/len(lengths) 
 
-    angles_in_bins, bins = np.histogram(angles, bins,weights=lengths_norm)
+    angles_in_bins, bins = np.histogram(angles, bins,weights=lengths)
     angles_in_bins[0] += angles_in_bins[-1]   # Sum the last value with the first value.
     single_half = np.sum(np.split(angles_in_bins[:-1], 2), 0)
     full_range = np.concatenate([single_half,single_half])  # repeat the sequence twice
@@ -640,10 +644,8 @@ def draw_rose_plot(full_range: np.ndarray):
     fig = plt.figure(figsize=(8,8))
     ax = fig.add_subplot(111, projection='polar')
 
-
-
-    ax.set_theta_zero_location('N') # zero starts at North
-    ax.set_theta_direction(-1)
+    ax.set_theta_zero_location('E') # zero starts to the right
+    # ax.set_theta_direction(-1)
     ax.set_thetagrids(np.arange(0, 360, 10), labels=np.arange(0, 360, 10))
     # ax.set_rgrids(np.arange(1, full_range.max() + 1, 2), angle=0, weight= 'black')
     # the height of each bar is the number of angles in that bin
@@ -830,8 +832,10 @@ def analyse_png(png_file: str, part_to_analyse: str, all_angles: list) -> dict:
     elif part_to_analyse == 'x':  # remove the parts closest to the sides
         left = left + int(0.02*width)  # take away 2 % from each side
         right = right - int(0.02*width)
-        print(f'left {left} right {right}')
-        out_path = "p_x_"+png_file.replace('.png', '_nx')
+        top = top + int(0.02*height)
+        bottom = bottom - int(0.02*height)
+        print(f'left {left}, right {right}, top {top}, bottom {bottom}')
+        out_path = "p_xx20_"+png_file.replace('.png', '_nx')
 
 
     if crop_im:  # crop the image if flag is true
@@ -882,18 +886,18 @@ def analyse_png(png_file: str, part_to_analyse: str, all_angles: list) -> dict:
     branch_info["CV_ver"] = CV_ver
     print(branch_info)
     # viz grid with networkx's plot
-    # ax = draw_nx_graph(im, g)
-    # plt.savefig(out_path+".grid.png",dpi=150)
-    # plt.clf()
+    ax = draw_nx_graph(im, g)
+    plt.savefig(out_path+".grid.png",dpi=150)
+    plt.clf()
     # # plt.show()
 
     # ax1 = draw_rose_diagram(g,False)  # proportional to branch length?
     # plt.savefig("rose_"+out_path,dpi=200)
     # plt.clf()
 
-    # ax2 = draw_rose_diagram(g,True)  # proportional to branch length?
-    # plt.savefig("rose_weight_"+out_path,dpi=200)
-    # plt.clf()
+    ax2 = draw_rose_diagram(g,True)  # proportional to branch length?
+    plt.savefig("rose_weight_"+out_path,dpi=200)
+    plt.clf()
 
     rose_histogram, angles, lengths = calculate_rose(g)
     
@@ -944,8 +948,8 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
     elif part_to_analyse == 'x': # remove the parts closest to the margins (in the x direction)
         csv_file_name = "py_branch_info_x.csv" 
 
-    bb_files = sorted(glob.glob(string_in_name))
-    # bb_files = ["py_bb_012000.png"]
+    # bb_files = sorted(glob.glob(string_in_name))
+    bb_files = ["py_bb_174000.png"]
     
     if len(bb_files) == 0:
         print("No images to analyse")
