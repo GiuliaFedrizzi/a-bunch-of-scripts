@@ -468,6 +468,10 @@ def connect_graph(skel: np.ndarray, min_distance: int) -> nx.MultiGraph:
     print(f'done with removing nodes, angle diff = 15, {g}')
     g = remove_nodes_if_straight_edges(g,20)
     print(f'done with removing nodes, angle diff = 20,  {g}')
+    g = remove_nodes_if_straight_edges(g,25)
+    print(f'done with removing nodes, angle diff = 25,  {g}')
+    g = remove_nodes_if_straight_edges(g,30)
+    print(f'done with removing nodes, angle diff = 30,  {g}')
     nodes = g.nodes()
     # edges = g.edges()
     edges = find_paths(skel, nodes, min_distance)
@@ -592,7 +596,7 @@ def draw_rose_diagram(g: nx.Graph,proportional: bool):
     #angles = np.array([168.6900675259798, 59.14124477892943, 68.96248897457819, 121.15272609593733, 124.28687697720896, 59.748306649964874])
     angles =  np.array([o for (u,v,o) in g.edges.data('orientation')])  # get the attribute "orientation"
     
-    bins = np.arange(-5, 366, 10)
+    bins = np.arange(-7.5, 368, 15)  # (-5, 366, 10)
     # if proportional:
     lengths =  np.array([d for (u,v,d) in g.edges.data('d')])  # get the attribute "length", in "d"
         # print(f'lengths: {lengths}\nmin: {np.min(lengths)}, max: {np.max(lengths)}')
@@ -621,7 +625,7 @@ def draw_rose_diagram(g: nx.Graph,proportional: bool):
     return ax
 
 def calculate_rose(g: nx.Graph):
-    bins = np.arange(-5, 366, 10)
+    bins = np.arange(-7.5, 368, 15)  #(-5, 366, 10)
     angles =  np.array([o for (u,v,o) in g.edges.data('orientation')])  # get the attribute "orientation"
     lengths =  np.array([d for (u,v,d) in g.edges.data('d')])
 
@@ -646,13 +650,14 @@ def draw_rose_plot(full_range: np.ndarray):
 
     ax.set_theta_zero_location('E') # zero starts to the right
     # ax.set_theta_direction(-1)
-    ax.set_thetagrids(np.arange(0, 360, 10), labels=np.arange(0, 360, 10))
+    ax.set_thetagrids(np.arange(0, 360, 15), labels=np.arange(0, 360, 15))  # 10 -> 15
     # ax.set_rgrids(np.arange(1, full_range.max() + 1, 2), angle=0, weight= 'black')
     # the height of each bar is the number of angles in that bin
     # ax.grid(False)
-    ax.bar(np.deg2rad(np.arange(0, 360, 10)), full_range, 
-        width=np.deg2rad(10), bottom=0.0, color=(0.5, 0.5, 0.5, 0.5), edgecolor='k')
+    ax.bar(np.deg2rad(np.arange(0, 360, 15)), full_range, 
+        width=np.deg2rad(15), bottom=0.0, color=(0.5, 0.5, 0.5, 0.5), edgecolor='k')    # 10 -> 15
         # width=np.deg2rad(10), bottom=0.0, color=(1, 0, 0), edgecolor='r')
+    ax.set_ylim([0,2000])
     return ax
 
 def topo_analysis(g: nx.Graph,tstep_number: float) -> dict:
@@ -865,6 +870,8 @@ def analyse_png(png_file: str, part_to_analyse: str, all_angles: list) -> dict:
         branch_info = {"time":timestep_number*input_tstep,"n_0":0,"n_I":0,"n_2":0,"n_3":0,"n_4":0,"n_5":0,
                 "branches_tot_length":0,"CV_hor":0,"CV_ver":0} # dictionary with all zeros: there are no fractures in this area
         return branch_info, np.zeros(36), "path", all_angles # sequences of zeros of the same length as the output of calculate_rose(). Placeholder for path
+    #  change n of bins for rose??
+    
     g,skel,CV_hor,CV_ver = extract_network(px,im)
     print(f'Extracted fracture network:')
     print(f'  - {len(g.nodes())} nodes')
@@ -949,7 +956,10 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
         csv_file_name = "py_branch_info_x.csv" 
 
     # bb_files = sorted(glob.glob(string_in_name))
-    bb_files = ["py_bb_174000.png"]
+    bb_files = ["py_bb_022000.png","py_bb_025000.png","py_bb_029000.png",
+        "py_bb_033000.png","py_bb_040000.png","py_bb_050000.png",
+        "py_bb_067000.png","py_bb_100000.png","py_bb_200000.png"]
+    # bb_files = ["py_bb_050000.png"]
     
     if len(bb_files) == 0:
         print("No images to analyse")
@@ -958,10 +968,13 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
     # for f,filename in enumerate(sorted(glob.glob("Long_drawn_OpeningInvert*.png"))):
         """ Get the file name, run 'analyse_png', get the info on the branches,
         save it into a csv   """
-        branch_dict, rose_hist, out_path, all_angles = analyse_png(filename,part_to_analyse,all_angles)
-        branch_info.append(branch_dict)  # build the list of dictionaries
-        rose_hist_list.append(rose_hist)
-        out_paths.append(out_path)
+        if os.path.isfile(filename):
+            branch_dict, rose_hist, out_path, all_angles = analyse_png(filename,part_to_analyse,all_angles)
+            branch_info.append(branch_dict)  # build the list of dictionaries
+            rose_hist_list.append(rose_hist)
+            out_paths.append(out_path)
+        else:
+            print(f'no file {filename}')
         if f%4 == 0:   # checkpoint: write out what I have so far 
             write_to_csv_file(branch_info,csv_file_name)
 
