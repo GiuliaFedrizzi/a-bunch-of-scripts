@@ -40,7 +40,7 @@ time_string <- sprintf("%02i",time/1e6)  # pad with zeros until string is 2 char
 time_string <- paste(time_string,"e6",sep="")
 
 if (no_margins) {
-    csv_time_name <- paste("branches_df_const_str_time_",time_string,"_x.csv",sep="")
+    csv_time_name <- paste("branches_df_const_str_time_",time_string,"_xx.csv",sep="")
 } else {
     csv_time_name <- paste("branches_df_const_str_time_",time_string,".csv",sep="")
 
@@ -388,7 +388,7 @@ if (FALSE){
 
     # categories = viscosity   -  colour = melt rate
 
-    png_name <- paste(base_path,"/br_ter_defPanels_t",time_string,".png",sep='')  # build name of png
+    png_name <- paste(base_path,"/br_ter_defPanels_cs_x_t",time_string,".png",sep='')  # build name of png
     # generate colours
     colours_mr <- colorRampPalette(c("#c2823a", "#33231E"))(length(unique(df_no_zeros$true_m_rate)))
     pt_pan_mr <- ggtern(data=df_no_zeros,aes(x=n_Y,y=n_I,z=n_X))+ geom_point(aes(color = as.factor(true_m_rate)))+
@@ -403,7 +403,7 @@ if (FALSE){
 
 
     # categories = melt rate  -  colour = viscosity
-    png_name <- paste(base_path,"/br_ter_meltPanels_t",time_string,".png",sep='')  # build name of png
+    png_name <- paste(base_path,"/br_ter_meltPanels_cs_x_t",time_string,".png",sep='')  # build name of png
     print("unique ----------")
     print(length(unique(df_no_zeros[[visc_or_def]])))
     colours_mu <- colorRampPalette(c("#aae88e","#397367", "#140021"))(length(unique(df_no_zeros[[visc_or_def]])))
@@ -443,7 +443,7 @@ plot_options <- theme(   # x and y here are not affected by flipping. Same AFTER
 # heatmaps combined with lineplots 
 if (TRUE) {
     # heatmaps
-    png_name <- paste(base_path,"/br_heat_B_const_str_",time_string,".png",sep='')  # build name of png
+    png_name <- paste(base_path,"/br_heat_B_cs_x_",time_string,".png",sep='')  # build name of png
     png(file=png_name,width = 3000,height = 1800,res=100)
 
     p_heat1 <- ggplot(df_m,aes(factor(x=def_rate),true_m_rate, fill=n_B))  + scale_fill_distiller(direction = +1)+ geom_tile() + theme(legend.key.size = unit(0.5, 'cm'))+
@@ -464,9 +464,17 @@ if (TRUE) {
     pm4 <- ggplot(data=df_m,mapping = aes(x=true_m_rate,y=B_22)) + geom_point(aes(color = factor(x=def_rate)))+ geom_line(aes(color = factor(x=def_rate)))+ theme(legend.key.size = unit(0.5, 'cm'))# + geom_line(aes(color = viscosity),linetype = "dashed") + scale_x_continuous(trans='log10')
     
 
+    #  define palette for form_target_ratio
+    colours_ratios <- colorRampPalette(c("#A9EED3","#84CFB7","#53B4C6","#3E89C6","#3B4FB1","#38099E", "#070120"))(length(unique(df_m$form_target_ratio)))
+    print(c("unique ratios: ",length(unique(df_m$form_target_ratio))))
+
     # def rate v B   lineplots
 
-    pv1 <- ggplot(data=df_m,mapping = aes(x=def_rate,y=n_B)) + geom_point(aes(color = factor(form_target_ratio)))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = factor(form_target_ratio)))+
+    pv1 <- ggplot(data=df_m,mapping = aes(x=def_rate,y=n_B)) + geom_point(aes(color = factor(form_target_ratio)))+ 
+        theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = factor(form_target_ratio)))+
+        # scale_color_gradientn(colors = brewer.pal(9, "YlGnBu"), 
+        #                 limits = c(min(df_m$form_target_ratio), max(df_m$form_target_ratio) * 0.9))+
+        scale_color_manual(values = colours_ratios)+
         labs(x = "Deformation Rate",y = "Number of\nBranches",colour = "Melt Rate/Deformation \nRate")
     pv1 <- pv1 + plot_options 
 
@@ -478,7 +486,9 @@ if (TRUE) {
         labs(x = "Deformation Rate",y = "Average Branch\nLength",colour = "Melt Rate/Deformation \nRate")
     pv3 <- pv3 + plot_options 
 
-    pv4 <- ggplot(data=df_m,mapping = aes(x=def_rate,y=B_22)) + geom_point(aes(color = factor(form_target_ratio)))+ theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = factor(form_target_ratio)))+
+    pv4 <- ggplot(data=df_m,mapping = aes(x=def_rate,y=B_22)) + geom_point(aes(color = factor(form_target_ratio)))+ 
+    theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = factor(form_target_ratio)))+
+        scale_color_manual(values = colours_ratios)+
         labs(x = "Deformation Rate",y = "Dimensionless\nIntensity",colour = "Melt Rate/Deformation \nRate")
     pv4 <- pv4 + plot_options 
     if(TRUE){
@@ -498,7 +508,7 @@ if (TRUE) {
 
 
 if (FALSE) {
-    png_name <- paste(base_path,"/br_heat_nb_cl_",time_string,".png",sep='')  # build name of png
+    png_name <- paste(base_path,"/br_heat_nb_cl_cs_x_",time_string,".png",sep='')  # build name of png
     png(file=png_name,width = 2800,height = 2800,res=100)
 
     if (var_is_visc){
@@ -539,7 +549,7 @@ if (FALSE) {
     df_CV_hor <- df_m[df_m$CV_hor != 0, ]  # filter out if CV_hor is 0
     df_CV_ver <- df_m[df_m$CV_ver != 0, ]  # filter out if CV_ver is 0
     print(df_CV_hor)
-    png_name <- paste(base_path,"/br_heat_CV_",time_string,".png",sep='')  # build name of png
+    png_name <- paste(base_path,"/br_heat_CV_cs_x_",time_string,".png",sep='')  # build name of png
     png(file=png_name,width = 2800,height = 2800,res=100)
     if (var_is_visc){
         visc_or_def <- "viscosity"
