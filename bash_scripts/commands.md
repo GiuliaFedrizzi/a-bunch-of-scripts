@@ -9,9 +9,12 @@
 ## sort directories by size, include hidden dirs
 > du -h -d 0 .[^.]* * | sort -h
 
+## get the number of files (recursively)
+> find . -type f | wc -l
+
 ## clean up vs code:
 > Remote-SSH: Uninstall VS Code Server from Host.... 
-rm -rf $HOME/.vscode-server
+> rm -rf $HOME/.vscode-server
 
 ## activate environment in batch job submission script:
 > eval "$(conda shell.bash hook)"
