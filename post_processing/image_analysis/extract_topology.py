@@ -647,7 +647,8 @@ def draw_rose_plot(full_range: np.ndarray):
     # make plot
     fig = plt.figure(figsize=(8,8))
     ax = fig.add_subplot(111, projection='polar')
-    y_max = 1700
+    # y_max = 1700  # set a maximum for all plots, so they are all scaled to the same maximum
+    y_max = max(full_range)  # don't set a maximum 
     grid30=np.arange(0, 360, 30)  #  set a grid line every 30 degrees
     ax.set_thetagrids(grid30, labels=grid30,weight='bold')
     ax.set_rgrids(np.arange(0, y_max, 425), angle=0, weight= 'black')
@@ -844,7 +845,34 @@ def analyse_png(png_file: str, part_to_analyse: str, all_angles: list) -> dict:
         bottom = bottom - int(0.02*height)
         print(f'left {left}, right {right}, top {top}, bottom {bottom}')
         out_path = "p_xx20_"+png_file.replace('.png', '_nx')
-
+    elif part_to_analyse == '1':
+        top = bottom - int(0.1428*height)  # go up from bottom by a length = 0.1428 of the image height
+        bottom = bottom - int(0.02*height)
+        out_path = "p_1_"+png_file.replace('.png', '_nx')
+    elif part_to_analyse == '2':
+        top = bottom - int(0.2857*height) 
+        bottom = bottom - int(0.1428*height)
+        out_path = "p_2_"+png_file.replace('.png', '_nx')
+    elif part_to_analyse == '3':
+        top = bottom - int(0.428*height)  
+        bottom = bottom - int(0.2857*height)
+        out_path = "p_3_"+png_file.replace('.png', '_nx')
+    elif part_to_analyse == '4':
+        top = bottom - int(0.57*height)  
+        bottom = bottom - int(0.428*height)
+        out_path = "p_4_"+png_file.replace('.png', '_nx')
+    elif part_to_analyse == '5':
+        top = bottom - int(0.714*height)  
+        bottom = bottom - int(0.57*height)
+        out_path = "p_5_"+png_file.replace('.png', '_nx')
+    elif part_to_analyse == '6':
+        top = bottom - int(0.857*height)  
+        bottom = bottom - int(0.714*height)
+        out_path = "p_6_"+png_file.replace('.png', '_nx')
+    elif part_to_analyse == '7':
+        top = top + int(0.02*height)
+        bottom = bottom - int(0.857*height)
+        out_path = "p_7_"+png_file.replace('.png', '_nx')
 
     if crop_im:  # crop the image if flag is true
         # Cropped image of above dimension
@@ -958,11 +986,27 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
     elif part_to_analyse == 'x': # remove the parts closest to the margins (in the x direction)
         csv_file_name = "py_branch_info_x.csv" 
 
+    elif part_to_analyse == '1': # first layer
+        csv_file_name = "py_branch_info_1.csv" 
+    elif part_to_analyse == '2':
+        csv_file_name = "py_branch_info_2.csv" 
+    elif part_to_analyse == '3': 
+        csv_file_name = "py_branch_info_3.csv" 
+    elif part_to_analyse == '4':
+        csv_file_name = "py_branch_info_4.csv"
+    elif part_to_analyse == '5':
+        csv_file_name = "py_branch_info_5.csv" 
+    elif part_to_analyse == '6':
+        csv_file_name = "py_branch_info_6.csv" 
+    elif part_to_analyse == '7': 
+        csv_file_name = "py_branch_info_7.csv" 
+
+
     # bb_files = sorted(glob.glob(string_in_name))
-    bb_files = ["py_bb_022000.png","py_bb_025000.png","py_bb_029000.png",
-        "py_bb_033000.png","py_bb_040000.png","py_bb_050000.png",
-        "py_bb_067000.png","py_bb_100000.png","py_bb_200000.png"]
-    # bb_files = ["py_bb_120000.png"]
+    # bb_files = ["py_bb_022000.png","py_bb_025000.png","py_bb_029000.png",
+        # "py_bb_033000.png","py_bb_040000.png","py_bb_050000.png",
+        # "py_bb_067000.png","py_bb_100000.png","py_bb_200000.png"]
+    bb_files = ["py_bb_009000.png"]
     
     if len(bb_files) == 0:
         print("No images to analyse")
@@ -989,13 +1033,13 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
         json.dump(all_angles, file)
 
     print(rose_hist_list)
-    print(f'max rose_hist_list {np.max(rose_hist_list)}')
-    for i,r in enumerate(rose_hist_list):  # go through the multiple rows
-        # print(f'r : {r}')
-        print(f'r/max rose_hist_list: {r/np.max(rose_hist_list)}')
-        if any(element != 0 for element in r): # if at last one element is not zero
-            ax = draw_rose_plot(r/np.max(rose_hist_list))
-            plt.savefig("rose_norm_"+out_paths[i],dpi=200)
+    # print(f'max rose_hist_list {np.max(rose_hist_list)}')
+    # for i,r in enumerate(rose_hist_list):  # go through the multiple rows
+    #     # print(f'r : {r}')
+    #     print(f'r/max rose_hist_list: {r/np.max(rose_hist_list)}')
+    #     if any(element != 0 for element in r): # if at last one element is not zero
+    #         ax = draw_rose_plot(r/np.max(rose_hist_list))
+    #         plt.savefig("rose_norm_"+out_paths[i],dpi=200)
 
 
 
@@ -1006,7 +1050,8 @@ if (len(sys.argv) == 1):
     print("No command line argument was provided, analysing the whole image")
 else:
     part_to_analyse = sys.argv[1]
-assert (part_to_analyse == 'w' or part_to_analyse == 't' or part_to_analyse == 'b' or part_to_analyse == 'f' or part_to_analyse == 'x'), "Error: specify w for whole domain, b for bottom (melt zone), t for top (through zone), f for full (or field) for field images"
+# assert (part_to_analyse == 'w' or part_to_analyse == 't' or part_to_analyse == 'b' or part_to_analyse == 'f' 
+#     or part_to_analyse == 'x' or part_to_analyse == '1'), "Error: specify w for whole domain, b for bottom (melt zone), t for top (through zone), f for full (or field) for field images"
 
 print(f'Part to analyse: {part_to_analyse}')
 file_loop(d,part_to_analyse)
