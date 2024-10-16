@@ -596,7 +596,7 @@ def draw_rose_diagram(g: nx.Graph,proportional: bool):
     #angles = np.array([168.6900675259798, 59.14124477892943, 68.96248897457819, 121.15272609593733, 124.28687697720896, 59.748306649964874])
     angles =  np.array([o for (u,v,o) in g.edges.data('orientation')])  # get the attribute "orientation"
     
-    bins = np.arange(-7.5, 368, 15)  # (-5, 366, 10)
+    bins = np.arange(-5, 366, 10)  # (-5, 366, 10) (-7.5, 368, 15)
     # if proportional:
     lengths =  np.array([d for (u,v,d) in g.edges.data('d')])  # get the attribute "length", in "d"
         # print(f'lengths: {lengths}\nmin: {np.min(lengths)}, max: {np.max(lengths)}')
@@ -625,7 +625,7 @@ def draw_rose_diagram(g: nx.Graph,proportional: bool):
     return ax
 
 def calculate_rose(g: nx.Graph):
-    bins = np.arange(-7.5, 368, 15)  #(-5, 366, 10)
+    bins = np.arange(-5, 366, 10)  #(-5, 366, 10)  (-7.5, 368, 15)
     angles =  np.array([o for (u,v,o) in g.edges.data('orientation')])  # get the attribute "orientation"
     lengths =  np.array([d for (u,v,d) in g.edges.data('d')])
 
@@ -647,17 +647,19 @@ def draw_rose_plot(full_range: np.ndarray):
     # make plot
     fig = plt.figure(figsize=(8,8))
     ax = fig.add_subplot(111, projection='polar')
-
+    y_max = 1700
+    grid30=np.arange(0, 360, 30)  #  set a grid line every 30 degrees
+    ax.set_thetagrids(grid30, labels=grid30,weight='bold')
+    ax.set_rgrids(np.arange(0, y_max, 425), angle=0, weight= 'black')
+    ax.tick_params(axis="x", labelsize=17)
+    ax.grid(linewidth=1.5, zorder=0)
     ax.set_theta_zero_location('E') # zero starts to the right
-    # ax.set_theta_direction(-1)
-    ax.set_thetagrids(np.arange(0, 360, 15), labels=np.arange(0, 360, 15))  # 10 -> 15
-    # ax.set_rgrids(np.arange(1, full_range.max() + 1, 2), angle=0, weight= 'black')
-    # the height of each bar is the number of angles in that bin
-    # ax.grid(False)
-    ax.bar(np.deg2rad(np.arange(0, 360, 15)), full_range, 
-        width=np.deg2rad(15), bottom=0.0, color=(0.5, 0.5, 0.5, 0.5), edgecolor='k')    # 10 -> 15
+    ax.bar(np.deg2rad(np.arange(0, 360, 10)), full_range,
+        width=np.deg2rad(10), bottom=0.0, color=(0.2, 0.2, 0.2),
+        edgecolor='k', linewidth=2,zorder=2)    # 10 -> 15
         # width=np.deg2rad(10), bottom=0.0, color=(1, 0, 0), edgecolor='r')
-    ax.set_ylim([0,2000])
+    ax.set_ylim([0,y_max])
+    ax.set_yticklabels([])
     return ax
 
 def topo_analysis(g: nx.Graph,tstep_number: float) -> dict:
@@ -704,10 +706,11 @@ def topo_analysis(g: nx.Graph,tstep_number: float) -> dict:
     # branches_to_line = n_of_branches / n_of_lines
     # print(f'branches/lines: {branches_to_line}')
     branches_tot_length = sum(edge_lengths)
+    num_of_branches = len(edge_lengths)
 
     # print(f'branches tot length: {branches_tot_length}')
     branch_info = {"time":tstep_number*input_tstep,"n_0":n_0,"n_I":n_I,"n_2":n_2,"n_3":n_3,"n_4":n_4,"n_5":n_5,
-                   "branches_tot_length":branches_tot_length} # dictionary with info that I just calculated
+                   "branches_tot_length":branches_tot_length,"n_branches":num_of_branches} # dictionary with info that I just calculated
     return branch_info
 
 def orientation_calc(g: nx.Graph) -> nx.Graph:
@@ -868,7 +871,7 @@ def analyse_png(png_file: str, part_to_analyse: str, all_angles: list) -> dict:
         """ if no fractures, skip analysis and return a dictionary full of zeros """
         print("0 pixels, skipping")
         branch_info = {"time":timestep_number*input_tstep,"n_0":0,"n_I":0,"n_2":0,"n_3":0,"n_4":0,"n_5":0,
-                "branches_tot_length":0,"CV_hor":0,"CV_ver":0} # dictionary with all zeros: there are no fractures in this area
+                "branches_tot_length":0,"n_branches":0,"CV_hor":0,"CV_ver":0} # dictionary with all zeros: there are no fractures in this area
         return branch_info, np.zeros(36), "path", all_angles # sequences of zeros of the same length as the output of calculate_rose(). Placeholder for path
     #  change n of bins for rose??
     
@@ -881,7 +884,7 @@ def analyse_png(png_file: str, part_to_analyse: str, all_angles: list) -> dict:
         """ if after extracting the network there are zero branches, skip analysis and return a dictionary full of zeros """
         print("0 edges, skipping")
         branch_info = {"time":timestep_number*input_tstep,"n_0":0,"n_I":0,"n_2":0,"n_3":0,"n_4":0,"n_5":0,
-                "branches_tot_length":0,"CV_hor":0,"CV_ver":0} # dictionary with all zeros: there are no fractures in this area
+                "branches_tot_length":0,"n_branches":0,"CV_hor":0,"CV_ver":0} # dictionary with all zeros: there are no fractures in this area
         return branch_info, np.zeros(36), "path", all_angles
 
     # fracture_clustering(skel)
@@ -959,7 +962,7 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
     bb_files = ["py_bb_022000.png","py_bb_025000.png","py_bb_029000.png",
         "py_bb_033000.png","py_bb_040000.png","py_bb_050000.png",
         "py_bb_067000.png","py_bb_100000.png","py_bb_200000.png"]
-    # bb_files = ["py_bb_050000.png"]
+    # bb_files = ["py_bb_120000.png"]
     
     if len(bb_files) == 0:
         print("No images to analyse")
