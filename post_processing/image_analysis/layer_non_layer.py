@@ -15,7 +15,7 @@ from useful_functions import getParameterFromLatte
 def get_bb_slow_and_fast(filename):
     df = pd.read_csv(filename, header=0)  # build the dataframe from the csv file
 
-    df = df[(df["x coord"]>0.02) & (df["x coord"]<0.98)]#["Broken Bonds"]
+    df = df[(df["x coord"]>0.02) & (df["x coord"]<0.98)] # remove the sides (2% each side)
 
     bb_df_1 = df[(df["y coord"]>0.0) & (df["y coord"]<0.1428) & (df["Broken Bonds"]>0) ]
     bb_df_2 = df[(df["y coord"]>0.1428) & (df["y coord"]<0.2857)& (df["Broken Bonds"]>0) ]
@@ -37,10 +37,11 @@ def extract_numeric_value(directory_name):
 
 frac_list = []
 
-real_timestep = 72000
+#reference_tstep = 72000
+reference_tstep = 60000
 
-mr_contrast_dirs = ['lr41','lr42','lr43']
-mr_contrast = [1,2,3]
+mr_contrast_dirs = ['lr41','lr44','lr42','lr45','lr43']
+mr_contrast = [1,1.5,2,2.5,3]
 
 
 for mrc,lr in enumerate(mr_contrast_dirs):
@@ -60,15 +61,14 @@ for mrc,lr in enumerate(mr_contrast_dirs):
             for m in melt_labels:
                 os.chdir(m)
                 m_rate = float(getParameterFromLatte("input.txt","melt_increment"))
-                norm_time = real_timestep/(m_rate*1000)  # normalise time according to how much melt waas created (so we have constant melt addition)
+                norm_time = reference_tstep/(m_rate*1000)  # normalise time according to how much melt waas created (so we have constant melt addition)
                 filename = "my_experiment"+str(int(norm_time)).zfill(5)+".csv"  # build the file name based on the normalised time (+ zeros)
-                print(filename)
                 if os.path.isfile(filename):
                     slow_n,fast_n = get_bb_slow_and_fast(filename)
                     mu_f = float(getParameterFromLatte("input.txt","mu_f"))
                     def_rate = float(getParameterFromLatte("input.txt","defRate"))
                     frac_data = {
-                        'real_timestep': real_timestep,
+                        'reference_tstep': reference_tstep,
                         'norm_time': norm_time,
                         'Melt Rate': m_rate,
                         'mu_f': mu_f,
@@ -78,7 +78,9 @@ for mrc,lr in enumerate(mr_contrast_dirs):
                         'mr contrast': mr_contrast[mrc]
                     }
                     frac_list.append(frac_data)
-                    print(frac_data)
+                    # print(frac_data)
+                else:
+                    print(f'no file {os.getcwd()}/{filename}')
 
                 os.chdir('..')
             os.chdir('..')
@@ -88,7 +90,8 @@ for mrc,lr in enumerate(mr_contrast_dirs):
 
 
 df = pd.DataFrame(frac_list)
-df["slow/fast"] = np.where(df["fast_n"] == 'NaN', 0, df["slow_n"] / (df["fast_n"]+df["slow_n"]))
+df.drop(df[df.fast_n == 0].index, inplace=True)
+df["slow/fast"] = df["slow_n"] / (df["fast_n"]+df["slow_n"])
 print(df)
 
 # split the data between low and high viscosity
@@ -100,11 +103,18 @@ df_low_visc = df[df["mu_f"] == 100]
 fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
 
 
-sns.scatterplot(data=df_low_visc,x="def_rate",y="slow/fast",hue="Melt Rate",style='mr contrast',palette="copper_r",ax=ax1) # cividis_r
-sns.scatterplot(data=df_high_visc,x="def_rate",y="slow/fast",hue="Melt Rate",style='mr contrast',palette="copper_r",ax=ax2) # cividis_r
+sns.scatterplot(data=df_low_visc,x="def_rate",y="slow/fast",hue="mr contrast",style='Melt Rate',palette="copper_r",ax=ax1) # cividis_r
+sns.lineplot(data=df_low_visc,x="def_rate",y="slow/fast",hue="mr contrast",palette="copper_r", legend=None,ax=ax1) 
+sns.scatterplot(data=df_high_visc,x="def_rate",y="slow/fast",hue="mr contrast",style='Melt Rate',palette="copper_r",ax=ax2) # cividis_r
+sns.lineplot(data=df_high_visc,x="def_rate",y="slow/fast",hue="mr contrast",palette="copper_r", legend=None,ax=ax2) 
+
+# ax1.set_xscale('log')
+# ax2.set_xscale('log')
 
 ax1.set_title("Low viscosity")
 ax2.set_title("High viscosity")
+fig.suptitle("$t_{ref} = $ "+str(reference_tstep))
+
 
 plt.show()
 # slow_n,fast_n = get_bb_slow_and_fast(filename)
