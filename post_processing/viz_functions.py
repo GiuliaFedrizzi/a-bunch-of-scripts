@@ -113,16 +113,16 @@ def build_array(big_array,variab,x,x_val,melt_rate,file_number,row,cols,rose):
             print("no file called ",rose_file)
     return big_array
 
-def build_array_layers(big_array,x,x_val,mr_contrast,file_number,row,cols,rose):
+def build_array_layers(big_array,x,x_val,mr_contrast,file_number,row,cols,rose,visc):
     """
     given all the properties (x variable, melt rate, time, coords in the big array),
     populate the big array that contains all the data and makes the final image
     """
     
     ###### path to the files
-    potential_file_path = mr_contrast+"/"+x_val+'/visc_3_1e3/vis1e3_mR_05'
+    potential_file_path = mr_contrast+"/"+x_val+'/'+visc+'/vis1e3_mR_05'
     if os.path.isdir(potential_file_path) == False:
-        potential_file_path = mr_contrast+"/"+x_val+'/visc_3_1e3/vis1e2_mR_05'
+        potential_file_path = mr_contrast+"/"+x_val+'/'+visc+'/vis1e2_mR_05'
 
     # now we have the path, choose if I open "poro_file" and "bb_file" or "rose_file"
     if rose == False:
@@ -217,7 +217,6 @@ def build_labels_with_tstep(my_labels,t,file_number,row):
         my_label_int = my_labels[row].replace("0.0","")   # e.g. from 0.001 to 01, or from 0.02 to 2
     elif "e-" in my_labels[row]:  # the label is deformation rate
         my_label_int = float(my_labels[row].replace("def",""))/1e-7
-        print(f'my_label_int {my_label_int}')
     exact = 0   # whether file corresponds to the specified time exactly 
     if int(my_label_int) !=0 and t%(int(my_label_int)) == 0:
         exact = 1
@@ -294,7 +293,7 @@ def setup_array(x_variable,melt_labels,t,im_length,im_height,variab,rose,save_fr
     return big_array,melt_labels_t  # the number of columns is the num of x variable times two (two images for each sim)
     # return np.array([bb,poro,bb,poro])
 
-def setup_array_layers(def_rate_dirs,mr_contrast_dirs,t,im_length,im_height,rose,save_freq):
+def setup_array_layers(def_rate_dirs,mr_contrast_dirs,t,im_length,im_height,rose,save_freq,visc,whats_constant):
     """ setup the big array with dimensions 
          - rows*cols, 
          - length and 
@@ -319,16 +318,20 @@ def setup_array_layers(def_rate_dirs,mr_contrast_dirs,t,im_length,im_height,rose
             file_number = str(round(int(file_number)/1000)*1000).zfill(6)
         for x,def_dir in enumerate(def_rate_dirs):
             def_val = float(def_dir.replace("def",""))
-            if def_val != 0:
-                file_number = str(round(t/((def_val)/1e-7)/save_freq)*save_freq).zfill(6)  # normalise t by the def rate.  .zfill(6) fills the string with 0 until it's 5 characters long
-                print(f'def_val {def_val}, file_number {file_number}')
-            else:
+            if whats_constant == "cs":  # constant strain
+                if def_val != 0:
+                    file_number = str(round(t/((def_val)/1e-7)/save_freq/10)*save_freq*10).zfill(6)  # normalise t by the def rate.  .zfill(6) fills the string with 0 until it's 5 characters long
+                    print(f'def_val {def_val}, file_number {file_number}')
+                else:
+                    file_number = str(t).zfill(6) 
+                    print(f'zero def file number {file_number}')
+            else:  # constant melt, don't normalise time
                 file_number = str(t).zfill(6) 
-                print(f'zero def file number {file_number}')
-            big_array = build_array_layers(big_array,x,str(def_dir),mr_contrast,file_number,row,cols,rose)   # fill the array with data from images!
+                print(f'cm, file_number = {file_number}')
+
+            big_array = build_array_layers(big_array,x,str(def_dir),mr_contrast,file_number,row,cols,rose,visc)   # fill the array with data from images!
             # ----------------------------------
             mr_contrast_dirs_t[x] = build_labels_with_tstep(def_rate_dirs,t,file_number,x)
-            print(mr_contrast_dirs_t[x])
 
     return big_array,mr_contrast_dirs_t  # the number of columns is the num of x variable times two (two images for each sim)
     # return np.array([bb,poro,bb,poro])
