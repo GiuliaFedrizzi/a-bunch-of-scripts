@@ -75,7 +75,7 @@ if (var_is_visc){
 
 melt_rate_list <- c('01','02','03','04','05','06','07','08','09')
 
-target_mr_def_ratios <- c(1/5,1/3,1/2,1.0,1.5,2.0)  # save figures with this melt rate - deformation rate ratio (= constant strain)
+target_mr_def_ratios <- c(1/3,1/2,1.0,1.5,2.0)  # save figures with this melt rate - deformation rate ratio (= constant strain)
 
 # first part of path
 base_path <- getwd( )
@@ -163,7 +163,10 @@ build_branch_df <- function(x,m,time) {
                 CV_ver <- df_bi_t$CV_ver
 
                 ## n of branches, n of lines
-                n_B <-  0.5*sum(df_bi_t$n_I+3*(df_bi_t$n_3)+4*(df_bi_t$n_4)+5*(df_bi_t$n_5))
+                # n_B <-  0.5*sum(df_bi_t$n_I+3*(df_bi_t$n_3)+4*(df_bi_t$n_4)+5*(df_bi_t$n_5))
+                n_B <-  df_bi_t$n_branches
+                # print(df_bi_t)
+                print(n_B)
                 n_L <- 0.5*(n_I+n_Y)
 
                 ## B_20 'Frequency' : number of branches (from the node types) / Area 
@@ -458,12 +461,30 @@ if (TRUE) {
     print(paste("min B20 =",min(df_m$B_20),"max = ",max(df_m$B_20)))
     # melt rate v B   lineplots
 
-    pm1 <- ggplot(data=df_m,mapping = aes(x=true_m_rate,y=n_B)) + geom_point(aes(color = factor(x=def_rate)))+ geom_line(aes(color = factor(x=def_rate)))+ theme(legend.key.size = unit(0.5, 'cm')) #+ coord_flip() #,linetype = "dashed") #+ scale_x_continuous(trans='log10') 
+
+    #  define palette for form_target_ratio
+    colours_ratios <- colorRampPalette(c("#A9EED3","#84CFB7","#53B4C6","#3E89C6","#3B4FB1","#38099E", "#070120"))(length(unique(df_m$form_target_ratio)))
+    print(c("unique ratios: ",length(unique(df_m$form_target_ratio))))
+
+
+    pm1 <- ggplot(data=df_m,mapping = aes(x=true_m_rate,y=n_B)) + geom_point(aes(color = factor(form_target_ratio)))+ 
+        theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = factor(form_target_ratio)))+
+        scale_color_manual(values = colours_ratios)+
+        labs(x = "Melt Production Rate",y = "Number of\nBranches",colour = "Melt Rate/Deformation \nRate")+ plot_options 
     pm2 <- ggplot(data=df_m,mapping = aes(x=true_m_rate,y=B_21)) + geom_point(aes(color = factor(x=def_rate)))+ geom_line(aes(color = factor(x=def_rate)))+ theme(legend.key.size = unit(0.5, 'cm'))# + geom_line(aes(color = viscosity),linetype = "dashed") + scale_x_continuous(trans='log10')
     pm3 <- ggplot(data=df_m,mapping = aes(x=true_m_rate,y=B_C)) + geom_point(aes(color = factor(x=def_rate)))+ geom_line(aes(color = factor(x=def_rate)))+ theme(legend.key.size = unit(0.5, 'cm')) #+ geom_line(aes(color = viscosity),linetype = "dashed") + scale_x_continuous(trans='log10')
-    pm4 <- ggplot(data=df_m,mapping = aes(x=true_m_rate,y=B_22)) + geom_point(aes(color = factor(x=def_rate)))+ geom_line(aes(color = factor(x=def_rate)))+ theme(legend.key.size = unit(0.5, 'cm'))# + geom_line(aes(color = viscosity),linetype = "dashed") + scale_x_continuous(trans='log10')
+    pm4 <- ggplot(data=df_m,mapping = aes(x=true_m_rate,y=B_22)) + geom_point(aes(color = factor(form_target_ratio)))+ 
+        theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = factor(form_target_ratio)))+
+        scale_color_manual(values = colours_ratios)+
+        labs(x = "Melt Production Rate",y = "Dimensionless\nIntensity",colour = "Melt Rate/Deformation \nRate")+ plot_options 
     
+    # ggplot(data=df_m,mapping = aes(x=true_m_rate,y=B_22)) + geom_point(aes(color = factor(x=def_rate)))+ geom_line(aes(color = factor(x=def_rate)))+ theme(legend.key.size = unit(0.5, 'cm'))# + geom_line(aes(color = viscosity),linetype = "dashed") + scale_x_continuous(trans='log10')
 
+
+    #  define palette for form_target_ratio
+    colours_ratios <- colorRampPalette(c("#A9EED3","#84CFB7","#53B4C6","#3E89C6","#3B4FB1","#38099E", "#070120"))(length(unique(df_m$form_target_ratio)))
+    print(c("unique ratios: ",length(unique(df_m$form_target_ratio))))
+    
     #  define palette for form_target_ratio
     colours_ratios <- colorRampPalette(c("#A9EED3","#84CFB7","#53B4C6","#3E89C6","#3B4FB1","#38099E", "#070120"))(length(unique(df_m$form_target_ratio)))
     print(c("unique ratios: ",length(unique(df_m$form_target_ratio))))
@@ -472,8 +493,6 @@ if (TRUE) {
 
     pv1 <- ggplot(data=df_m,mapping = aes(x=def_rate,y=n_B)) + geom_point(aes(color = factor(form_target_ratio)))+ 
         theme(legend.key.size = unit(0.5, 'cm')) + geom_line(aes(color = factor(form_target_ratio)))+
-        # scale_color_gradientn(colors = brewer.pal(9, "YlGnBu"), 
-        #                 limits = c(min(df_m$form_target_ratio), max(df_m$form_target_ratio) * 0.9))+
         scale_color_manual(values = colours_ratios)+
         labs(x = "Deformation Rate",y = "Number of\nBranches",colour = "Melt Rate/Deformation \nRate")
     pv1 <- pv1 + plot_options 
