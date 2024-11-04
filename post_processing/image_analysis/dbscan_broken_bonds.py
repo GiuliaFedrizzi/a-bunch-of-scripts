@@ -35,7 +35,7 @@ from scipy.stats import pearsonr
 sys.path.append('/home/home01/scgf/myscripts/post_processing')
 
 from useful_functions import getSaveFreq,getParameterFromLatte
-from dbscan_functions import read_bb_data_from_csv,dbscan_and_plot,fill_db_with_NaN
+from dbscan_functions import read_bb_data_from_csv,dbscan_and_plot,fill_db_with_NaN,draw_rose_ellipse
 from viz_functions import find_dirs,find_variab
 
 save_freq = int(getSaveFreq())
@@ -43,7 +43,7 @@ no_margins = 1
 
 # times = list(range(1, 20, 1)) + list(range(20, 141, 5)) + list(range(150, 501, 20)) + list(range(500, 801, 20)) + list(range(850, 1500, 40))
 # times = [88,100,300]
-times = [100]
+times = [200]
 times = [i*save_freq for i in times]   # convert to timestep
 
 
@@ -305,7 +305,7 @@ def cluster_analysis(t,no_margins):
                 # print(f'm {m}, melt_value {melt_value}')
                 melt_number = melt_value.split("0")[-1]  # take the last value, ignore zeros
                 file_number = str(round(t/(int(melt_number))/save_freq)*save_freq).zfill(5)  # normalise t by the melt rate.  .zfill(6) fills the string with 0 until it's 5 characters long
-                print(f'file n normalised {file_number}')
+                # print(f'file n normalised {file_number}')
                 # melt_value = float(melt_value)
                 data = read_bb_data_from_csv(m+'/my_experiment'+file_number+'.csv')
                 if data.empty:
@@ -319,12 +319,18 @@ def cluster_analysis(t,no_margins):
                     X = X[X['x coord'] < 0.98] # # exclude the right margin 
                 X = X[['x coord','y coord']] # Only x and y coordinates 
                 if len(X) > 0:
-                    cluster_df,ellipses_df = dbscan_and_plot(X,variab,x_value,melt_value,no_margins,plot_figures,t)
+                    cluster_df,ellipses_df,e = dbscan_and_plot(X,variab,x_value,melt_value,no_margins,plot_figures,t)
+                    if len(ellipses_df) > 0:
+                        # draw a rose diagram based on the ellipse orientation. This is weighted by the ellipse's size and elongation
+                        ax_ell = draw_rose_ellipse(ellipses_df)
+                        #  t is the reference time, not the true (normalised) time. This is different in dbscan_single, where it is the true time
+                        plt.savefig("../cluster/rose_"+str(x_value)+"_"+str(melt_value)+"_ref_t_"+str(t)+"_e_"+str(e)+".png",transparent=True)
+
                 else:
                     # no fractures at all: we still need to have an entry in the dataframe, but it will be NaN
                     cluster_data = fill_db_with_NaN(variab,x_value,melt_value)
                     cluster_df = pd.DataFrame(cluster_data,index=[0])
-                print(cluster_df)
+                # print(cluster_df)
                 df = pd.concat([df,cluster_df], ignore_index=True) 
             os.chdir('..')
 

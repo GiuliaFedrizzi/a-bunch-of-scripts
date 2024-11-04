@@ -5,7 +5,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import colorcet  as cc
-
+import matplotlib.cm as cm
 
 
 
@@ -21,7 +21,8 @@ def read_bb_data_from_csv(file_path):
 
 def dbscan_and_plot(X,variab,x_value,melt_value,no_margins,plot_figures,t):
     min_samples = 10
-    e = 0.01
+    # e = 0.00999  # works for pd19
+    e = 0.0105
     dbscan = DBSCAN(eps=e, min_samples=min_samples).fit(X)
     X['cluster'] = dbscan.labels_
     X=X[X['cluster']>-1]  # remove noise cluster
@@ -145,7 +146,7 @@ def dbscan_and_plot(X,variab,x_value,melt_value,no_margins,plot_figures,t):
     cluster_df = pd.DataFrame(cluster_data,index=[0])
     # df = pd.concat([df,cluster_df], ignore_index=True) 
     
-    return cluster_df,ellipses_df
+    return cluster_df,ellipses_df,e
 
 
 def fill_db_with_NaN(variab,x_value,melt_value):
@@ -206,13 +207,25 @@ def plot_rose(full_range: np.ndarray):
     tens=np.arange(0, 360, 10)
     labels=[i if i%30==0 else '' for i in tens]
     ax.set_thetagrids(tens, labels=labels,weight='bold')
-    ax.tick_params(axis="y", labelsize=11)
-    ax.tick_params(axis="x", labelsize=13)
+    ax.tick_params(axis="y", labelsize=15)
+    ax.tick_params(axis="x", labelsize=17)
     ax.grid(linewidth=1.5)
     # ax.set_rgrids(np.arange(1, full_range.max() + 1, 2), angle=0, weight= 'black')
     # the height of each bar is the number of angles in that bin
     # ax.grid(False)
-    ax.bar(np.deg2rad(np.arange(0, 360, 10)), full_range, 
-        width=np.deg2rad(10), bottom=0.0, color=(0.5, 0.5, 0.5, 0.5), edgecolor='k')
-        # width=np.deg2rad(10), bottom=0.0, color=(1, 0, 0), edgecolor='r')
+
+    # Generate colours based on the angle. It repeats every 90.
+    angles = np.arange(0, 91, 10)
+    norm = plt.Normalize(0, 90)
+    colours = cm.viridis(norm(angles))  # it's a list of RGB, 1 for each 'angle'
+    # colour list for the 1st and 3rd quadrant (top left and bottom right)
+    colours_r = colours[1:]
+    colours_r = colours_r[:-1]
+    colours_r = colours_r[::-1]
+    colmap90 = np.concatenate((colours,colours_r,colours,colours_r),axis=0)
+    # the height of each bar is the number of angles in that bin
+    ax.bar(np.deg2rad(np.arange(0, 360, 10)), full_range,
+           width=np.deg2rad(10), bottom=0.0, color=colmap90, edgecolor='k')
+
+
     return ax
