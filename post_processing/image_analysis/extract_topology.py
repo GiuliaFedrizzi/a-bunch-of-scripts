@@ -741,7 +741,8 @@ def distance_between_fractures(line_data):
         if i==0:
             continue
         elif i==1:
-            if dist == 1:  # if the previous pixel was also a fracture, shift the old distance by half (add 0.5)
+            if dist == 1 and len(distances)>0:  # if the previous pixel was also a fracture, shift the old distance by half (add 0.5)
+                #  len(distances)>0 because line_data could start with a fracture
                 distances[-1] += 0.5
             else:
                 distances.append(dist)
@@ -986,11 +987,10 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
     out_paths = []
     all_angles = []
     string_in_name = "py_bb_*[0-9]00.png"
-    # string_in_name = "py_bb_022000.png"
+    # string_in_name = "py_bb_098000.png"
     curr_path = os.getcwd()
     if "field_im" in curr_path:
         string_in_name = "Long_drawn_OpeningInvert.png"
-    # print(f'list of files {sorted(glob.glob(string_in_name))}')
 
     segments_angles_file_name = "segments_angles.json"
 
@@ -1028,10 +1028,6 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
 
 
     bb_files = sorted(glob.glob(string_in_name))
-    # bb_files = ["py_bb_022000.png","py_bb_025000.png","py_bb_029000.png",
-        # "py_bb_033000.png","py_bb_040000.png","py_bb_050000.png",
-        # "py_bb_067000.png","py_bb_100000.png","py_bb_200000.png"]
-    # bb_files = ["py_bb_009000.png","py_bb_011000.png"]
     
     if len(bb_files) == 0:
         print("No images to analyse")
@@ -1049,6 +1045,8 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
             print(f'no file {filename}')
         if f%4 == 0:   # checkpoint: write out what I have so far 
             write_to_csv_file(branch_info,csv_file_name)
+            with open(segments_angles_file_name, 'w') as file:
+                json.dump(all_angles, file)
 
     # at the end of the file loop, write to the output file
     write_to_csv_file(branch_info,csv_file_name)
