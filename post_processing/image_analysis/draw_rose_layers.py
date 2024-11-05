@@ -3,8 +3,11 @@ import matplotlib.pyplot as plt
 import json
 import glob
 
-def plot_options(ax):
-    y_max = 524  # set a maximum for all plots, so they are all scaled to the same maximum
+def plot_options(ax,max_y_from_file):
+    if max_y_from_file == 0:
+        y_max = 500  # arbitrary number, the histograms are empty anyway
+    else:
+        y_max = max_y_from_file  # set a maximum for all plots, so they are all scaled to the same maximum
     # y_max = max(full_range)  # don't set a maximum 
     grid30=np.arange(0, 360, 30)  #  set a grid line every 30 degrees
     ax.set_thetagrids(grid30, labels=grid30,weight='bold')
@@ -31,28 +34,53 @@ def draw_rose_plot(full_range: np.ndarray,fast_or_slow: str,tstep: str):
     f.close()
     return ax
 
-def draw_rose_plot_double(double_hist: list):
+def draw_rose_plot_double(double_hist: list,tstep):
     fast_hist = double_hist[0]
     slow_hist = double_hist[1]
+    if len(fast_hist)>0:
+        max_fast = max(fast_hist)
+    else:
+        max_fast = 0  # default value
+
+    if len(slow_hist)>0:
+        max_slow = max(slow_hist)
+    else:
+        max_slow = 0  # default value
+
     
+    max_y_from_file = max_dict.get(int(tstep), 'NaN')
+    # print(f'tstep max {max_y_from_file}')
+    if max_y_from_file == 'NaN':
+        # if it doesn't have an entry in the dictionary from the file, take the maximum in the current histograms
+        max_y_from_file = max(max_fast,max_slow)
+
+
     # make plot
     fig = plt.figure(figsize=(8,8))
     ax = fig.add_subplot(111, projection='polar')
-    plot_options(ax)
+    plot_options(ax,max_y_from_file)
 
     if len(fast_hist)>0:
         ax.bar(np.deg2rad(np.arange(0, 360, 10)), fast_hist,
             width=np.deg2rad(10), bottom=0.0, color=(1.0, 0.584, 0.0),alpha=0.8,
             edgecolor='k', 
             linewidth=1,zorder=2)    # 10 -> 15
+        # max_fast = max(double_hist[0])
     
     if len(slow_hist)>0:
         ax.bar(np.deg2rad(np.arange(0, 360, 10)), slow_hist,
-        width=np.deg2rad(10), bottom=0.0, color=(0.431, 0.416, 0.396),alpha=0.5,
-        # hatch="xx",
-        edgecolor='k', 
-        linewidth=1,
-        zorder=2)
+            width=np.deg2rad(10), bottom=0.0, color=(0.431, 0.416, 0.396),alpha=0.5,
+            # hatch="xx",
+            edgecolor='k', 
+            linewidth=1,
+            zorder=2)
+        # max_slow = max(double_hist[1])
+
+    max_of_both = max(max_fast,max_slow)  # take the max between the two max 
+    max_file_name = "max_double_"+str(tstep)+".txt"
+    f = open(max_file_name, "w")
+    f.write(str(max_of_both))
+    f.close()
     
     return ax
 
@@ -98,8 +126,21 @@ tsteps7 = extract_number(p_files7)
 tsteps = list(set(tsteps1 + tsteps2 + tsteps3 + tsteps4 + tsteps5 + tsteps6 + tsteps7))
 tsteps.sort()
 
-# tsteps = ['014000']
-# print(f'tsteps {tsteps}')
+# read the maximum values associated with the timesteps
+max_dict = {}
+with open("../../../../max_values.txt", "r") as file:
+    for line in file:
+        line = line.strip()
+        if not line:  # Skip if the line is empty
+            continue
+        key, value = map(int, line.split())  # split between timestep and max value
+        # Store in dictionary
+        max_dict[key] = value
+
+# print(f'max_dict {max_dict}')
+
+# tsteps = ['015000']
+
 for tstep in tsteps:
     rose_histogram_double = []
     print(f'tstep: {tstep}')
@@ -119,7 +160,6 @@ for tstep in tsteps:
                     # print(f'rose_histogram\n {rose_histogram}')
                 else:
                     rose_histogram = rose_histogram_new
-                    # print(f'rose_histogram\n {rose_histogram}')
 
         # ax = draw_rose_plot(rose_histogram,fast_or_slow,tstep)
         # plt.show()
@@ -128,9 +168,19 @@ for tstep in tsteps:
         rose_histogram = []
     
     #  draw the combined rose diagrams
-    ax = draw_rose_plot_double(rose_histogram_double)
-    # print(f'rose_histogram_double \n{rose_histogram_double}')
+
+
+    ax = draw_rose_plot_double(rose_histogram_double,tstep)
+    print(f'rose_histogram_double \n{rose_histogram_double}')
     plt.savefig("rose_double_t"+str(tstep),dpi=200)
     plt.clf()   # close figure
+    plt.close()
 
     # plt.show()
+
+"""
+Find the highest of the max:
+
+> find . \( -path "*/lr41/*" -o -path "*/lr42/*" -o -path "*/lr43/*" -o -path "*/lr44/*" -o -path "*/lr45/*" \) -name "max_double_014000.txt" -exec awk '{ if ($1 > max) max=$1 } END { print max }' {} +
+
+"""
