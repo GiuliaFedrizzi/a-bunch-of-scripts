@@ -37,10 +37,11 @@ times = [i*save_freq for i in times]
 # target_mr_def_ratios = [3.0,2.5,2.0,1.5,1.0,1/2,1/3,1/4,1/5,1/6,1/7]  # save figures with this melt rate - deformation rate ratio (= constant strain)
 target_mr_def_ratios = [2.0,1.5,1.0,1/2,1/3,1/4,1/5]  # values for figure in chapter 6
 
-for x in x_variable_dir_names:
-    x_value = float(getParameterFromLatte(x+'/baseFiles/input.txt','defRate'))
-    if x_value != 0:
-        x_variable.append(x_value)
+# for x in x_variable_dir_names:
+#     x_value = float(getParameterFromLatte(x+'/baseFiles/input.txt','defRate'))
+#     if x_value != 0:
+#         x_variable.append(x_value)
+x_variable = [2e-08, 4e-08, 6e-08, 8e-08]
 print(f'x_variable {x_variable}')
 
 ncols = len(x_variable)#*2
