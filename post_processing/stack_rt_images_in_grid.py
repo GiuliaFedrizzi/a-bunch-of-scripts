@@ -13,12 +13,16 @@ import glob
 
 from useful_functions import getSaveFreq
 
-# List of rt directories
-rt_dirs = sorted((glob.glob("rt0.*"))) 
-# print(rt_dirs)
+def extract_numeric_value(directory_name):
+    return float(directory_name[3:])
+
+# List of def directories
+def_dirs = sorted((glob.glob("def*")), key=extract_numeric_value)   # used to be for "rt0.*" (relaxation threshold)
 save_freq = int(getSaveFreq())
 
-tsteps = list(range(1, 20, 1)) + list(range(20, 141, 5)) + list(range(150, 501, 20)) + list(range(500, 801, 20)) + list(range(850, 1500, 40))
+print(f'def_dirs {def_dirs}')
+# tsteps = list(range(1, 31, 1)) + list(range(30, 71, 5)) #+ list(range(150, 501, 20)) + list(range(500, 801, 20)) + list(range(850, 1500, 40))
+tsteps = list(range(24,35,1)) +  list(range(35, 110, 5)) + list(range(110, 310, 10))# + list(range(225, 420, 25)) 
 # tsteps = list(range(850, 1500, 40))
 # tsteps = list(range(100, 2000, 100)) + list(range(2000, 14100, 500)) + list(range(15000, 50100, 2000)) + list(range(50000, 80100, 20000)) + list(range(85000, 150000, 40000))
 tsteps = [i*save_freq for i in tsteps] 
@@ -31,9 +35,10 @@ for t in tsteps:
     images = []
 
     # Loop through each directory and open the image
-    for rt_dir in rt_dirs:
-        img_path = os.path.join(rt_dir, "images_in_grid", f"visc_mRate_160_{timestep}.png")
+    for def_dir in def_dirs:
+        img_path = os.path.join(def_dir, "images_in_grid", f"visc_mRate_160_{timestep}.png")
         if os.path.exists(img_path):
+            print(f'img_path {img_path}')
             img = Image.open(img_path)
 
             # Trim 1/6 of the top and 1/6 of the bottom
@@ -50,12 +55,13 @@ for t in tsteps:
             # font = ImageFont.load_default()  # or specify a custom font
             # text_color = (0, 255, 0)  # Green color
             text_color = (0, 0, 0)  
-            text = rt_dir
+            text = def_dir
             text_width, text_height = draw.textsize(text, font=font)
             position = (width - text_width - 10, 10)  # 10 pixels from the top right corner
             draw.text(position, text, fill=text_color, font=font)
             images.append(img_cropped)
-
+        else:
+            print(f'no file {img_path}')
     # Assuming all images are of the same size after cropping
     if images:
         width, height = images[0].size
