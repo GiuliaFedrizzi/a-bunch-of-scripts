@@ -16,7 +16,6 @@ from viz_functions import gallery,build_array,build_melt_labels_t,set_ax_options
 from useful_functions import getSaveFreq,getParameterFromLatte
 save_freq = int(getSaveFreq())
 
-# variab = "def_rate"  # options: def_rate, viscosity
 variab = find_variab()
 rose = False
 im_length = 500 # was 875
@@ -37,9 +36,9 @@ print(f'melt_labels {melt_labels}')
 if melt_labels == ['0.000']:  # if no melt production
     target_mr_def_ratios = [0.0]
 else:
-    target_mr_def_ratios = [3.0,2.5,2.0,1.5,1.0,1/2,1/3,1/5,1/6,1/7]  # save figures with this melt rate - deformation rate ratio (= constant strain)
+    target_mr_def_ratios = [3.0,2.5,2.0,1.5,1.0,1/2,1/3,1/4,1/5,1/6,1/7]  # save figures with this melt rate - deformation rate ratio (= constant strain)
 
-times = list(range(50, 141, 5)) + list(range(150, 501, 20)) #+ list(range(500, 801, 20)) #+ list(range(850, 1500, 40))  # (start, end, step)
+times = list(range(100,150,5)) + list(range(150, 200, 10)) #+ list(range(200, 301, 20)) #list(range(50, 141, 5))   + list(range(500, 801, 20)) #+ list(range(850, 1500, 40))  # (start, end, step)
 times = [i*save_freq for i in times] 
 
 
