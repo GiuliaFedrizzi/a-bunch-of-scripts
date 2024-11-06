@@ -23,7 +23,7 @@ def find_global_porosity_range(root_dir):
             latest_file = find_latest_experiment_file(os.path.join(root, dir))
             if latest_file:
                 df = pd.read_csv(latest_file)
-                print(f'min {df["Porosity"].min()}, max {df["Porosity"].max()}')
+                print(f'{latest_file}: min {df["Porosity"].min()}, max {df["Porosity"].max()}')
                 min_porosity = min(min_porosity, df["Porosity"].min())
                 max_porosity = max(max_porosity, df["Porosity"].max())
                 print(f'so far, global min {min_porosity}, global max {max_porosity}')
