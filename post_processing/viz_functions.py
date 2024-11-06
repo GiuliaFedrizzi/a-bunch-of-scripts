@@ -156,10 +156,10 @@ def build_array_layers(big_array,x,x_val,mr_contrast,file_number,row,cols,rose,v
 
     else:
         """ here "rose_file" only """
-        rose_file = potential_file_path +'/rose_weight_p_top_py_bb_'+file_number+'_nx.png' # try "top" first    
+        rose_file = potential_file_path +'/rose_double_t'+file_number+'.png' # try "top" first    
         if os.path.isfile(rose_file) == False:
             """ try another version """
-            rose_file = potential_file_path +'/rose_weight_p_xx20_py_bb_'+file_number+'_nx.png'   # e.g.  rose_norm_p_py_bb_026000_nx
+            rose_file = potential_file_path +'/rose_double_t'+file_number+'.png'   # e.g.  rose_norm_p_py_bb_026000_nx
         if os.path.isfile(rose_file):
             print(f'found file {rose_file}')
             rose_big_file = Image.open(rose_file)  # to do: do I need to crop it?
@@ -312,10 +312,6 @@ def setup_array_layers(def_rate_dirs,mr_contrast_dirs,t,im_length,im_height,rose
     big_array = np.full(shape=(rows*cols, im_length, im_height, 3),fill_value=255)  # 1st number is the number of images to display, then size, then colour channels (RGB). Set initial values to 255 (white)
 
     for row,mr_contrast in enumerate(mr_contrast_dirs):
-        
-        # mr_contrast = melt_rate.replace("0.0","")   # e.g. from 0.001 to 01, or from 0.02 to 2
-        if rose:
-            file_number = str(round(int(file_number)/1000)*1000).zfill(6)
         for x,def_dir in enumerate(def_rate_dirs):
             def_val = float(def_dir.replace("def",""))
             if whats_constant == "cs":  # constant strain
