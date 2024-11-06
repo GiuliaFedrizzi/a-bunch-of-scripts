@@ -28,15 +28,15 @@ for i,filename in enumerate(sortedInputFiles[0:20:1]): #[beg:end:step]  set whic
         # average everywhere
         average_porosity.append(myExp['Porosity'].mean()*100)
         # average in the fast melting area only
-        fast1 = (myExp[(myExp["y coord"]>0.142857) & (myExp["y coord"]<0.285714)]["Porosity"])
-        fast2 = (myExp[(myExp["y coord"]>0.428571) & (myExp["y coord"]<0.571429)]["Porosity"])
-        fast3 = (myExp[(myExp["y coord"]>0.714286) & (myExp["y coord"]<0.857143)]["Porosity"])
+        fast1 = (myExp[(myExp["y coord"]>0.18) & (myExp["y coord"]<0.24)]["Porosity"])
+        fast2 = (myExp[(myExp["y coord"]>0.47) & (myExp["y coord"]<0.53)]["Porosity"])
+        fast3 = (myExp[(myExp["y coord"]>0.75) & (myExp["y coord"]<0.81)]["Porosity"])
 
         # slow areas only:
-        slow1 = (myExp[(myExp["y coord"]>0.0) & (myExp["y coord"]<0.142857)]["Porosity"])
-        slow2 = (myExp[(myExp["y coord"]>0.285714) & (myExp["y coord"]<0.428571)]["Porosity"])
-        slow3 = (myExp[(myExp["y coord"]>0.571429) & (myExp["y coord"]<0.714286)]["Porosity"])
-        slow4 = (myExp[(myExp["y coord"]>0.857143) & (myExp["y coord"]<1.0)]["Porosity"])
+        slow1 = (myExp[(myExp["y coord"]>0.04) & (myExp["y coord"]<0.10)]["Porosity"])
+        slow2 = (myExp[(myExp["y coord"]>0.32) & (myExp["y coord"]<0.38)]["Porosity"])
+        slow3 = (myExp[(myExp["y coord"]>0.61) & (myExp["y coord"]<0.67)]["Porosity"])
+        slow4 = (myExp[(myExp["y coord"]>0.90) & (myExp["y coord"]<0.95)]["Porosity"])
 
 
         # average_porosity_fast.append(myExp[(myExp["y coord"]>0.714) & (myExp["y coord"]<0.857)]["Porosity"].mean()*100)  # mean with conditions on x and y coordinates
@@ -55,8 +55,7 @@ print("global ",average_porosity[-1]-average_porosity[0],"%")
 print("fast ",average_porosity_fast[-1]-average_porosity_fast[0],"%")
 print("slow ",average_porosity_slow[-1]-average_porosity_slow[0],"%")
 
-print(f'av rate from fast and slow {(rate_fast*3+rate_slow*4)/7}')
-print(time_array[-1]-time_array[0])
+# print(time_array[-1]-time_array[0])
 
 s_in_year = 60*60*24*365
 print("rate = ",str(rate*s_in_year),"% per year")
