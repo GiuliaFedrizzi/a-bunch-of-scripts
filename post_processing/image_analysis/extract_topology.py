@@ -402,7 +402,7 @@ def connect_graph(skel: np.ndarray, min_distance: int) -> nx.MultiGraph:
         if (x1-x2) != 0:  # not horizontal 
             angle = math.atan( abs(y1-y2)/abs(x1-x2) ) * 180 / math.pi  # angle in degrees.
         else:
-            angle = 0
+            angle = 90
         # angle = math.atan( -(y1-y2)/(x1-x2) ) * 180 / math.pi  # angle in degrees.
         # print(f'p1,p2 {p1,p2}')
         # print(f'angle: {angle}')
@@ -428,15 +428,14 @@ def connect_graph(skel: np.ndarray, min_distance: int) -> nx.MultiGraph:
                         i+=1
                     elif i == 1:
                         pos_right = neigh
-                
-                # print(pos_current)
-                # print(pos_left)
-                # print(pos_right)
+
+                # print(f'pos_current  {pos_current}, pos_left {pos_left}, pos_right {pos_right}')
 
                 angle_parent = angle_with_x_axis(pos_left, pos_right)
 
                 angle_left = angle_with_x_axis(pos_current, pos_left)
                 angle_right = angle_with_x_axis(pos_current, pos_right)
+                # print(f'angle_parent {angle_parent}, angle_left {angle_left}, angle_right {angle_right}')
 
                 # angle_threshold = 10
                 if abs(angle_parent - angle_left) <= angle_threshold and abs(angle_parent - angle_right) <= angle_threshold:
@@ -445,12 +444,12 @@ def connect_graph(skel: np.ndarray, min_distance: int) -> nx.MultiGraph:
                     g.remove_edges_from([(pos_current,pos_left),(pos_current,pos_right)])
                     # print("done")
                     g.add_edge(pos_left,pos_right)
-                    # print(f'connecting {pos_left,pos_right}')
+                    print(f'connecting {pos_left,pos_right}')
                     changed = True
                     break
                 else:
-                    continue
                     # print(f'keeping {pos_current}')
+                    continue
         return g
     
     nodes,edges = merge_loop(nodes,edges,skel,min_distance)
@@ -473,10 +472,11 @@ def connect_graph(skel: np.ndarray, min_distance: int) -> nx.MultiGraph:
     g = remove_nodes_if_straight_edges(g,30)
     print(f'done with removing nodes, angle diff = 30,  {g}')
     nodes = g.nodes()
-    # edges = g.edges()
     edges = find_paths(skel, nodes, min_distance)
 
     nodes,edges = merge_loop(nodes,edges,skel,min_distance=10)  #  this min_distance adjusts the min length that should be kept. The higher, the more simplified the network
+    g = remove_nodes_if_straight_edges(g,10)      # do a final check in case merging created some straight nodes
+    print(f'done with removing nodes, angle diff = 10, {g}')
 
     # g = make_graph(nodes,edges)
     # g = remove_nodes_if_straight_edges(g,5)  # do the most similar first
@@ -647,11 +647,11 @@ def draw_rose_plot(full_range: np.ndarray):
     # make plot
     fig = plt.figure(figsize=(8,8))
     ax = fig.add_subplot(111, projection='polar')
-    y_max = 535  # set a maximum for all plots, so they are all scaled to the same maximum
-    # y_max = max(full_range)  # don't set a maximum 
+    # y_max = 535  # set a maximum for all plots, so they are all scaled to the same maximum
+    y_max = max(full_range)  # don't set a maximum 
     grid30=np.arange(0, 360, 30)  #  set a grid line every 30 degrees
     ax.set_thetagrids(grid30, labels=grid30,weight='bold')
-    ax.set_rgrids(np.arange(0, y_max, 425), angle=0, weight= 'black')
+    ax.set_rgrids(np.arange(0, y_max, int(y_max/4)), angle=0, weight= 'black')
     ax.tick_params(axis="x", labelsize=17)
     ax.grid(linewidth=1.5, zorder=0)
     ax.set_theta_zero_location('E') # zero starts to the right
@@ -895,9 +895,12 @@ def analyse_png(png_file: str, part_to_analyse: str, all_angles: list) -> dict:
         im = im.crop((left, top, right, bottom))
     
     # Apply median filter to smooth the edges
-    im = im.filter(ImageFilter.ModeFilter(size=12)) # https://stackoverflow.com/questions/62078016/smooth-the-edges-of-binary-images-face-using-python-and-open-cv 
-    # out_path_med = png_file.replace('.png', '_median.png')
-    # im.save(out_path_med)
+    filter_size = 12
+    if part_to_analyse == 'f':
+        filter_size = 2
+    im = im.filter(ImageFilter.ModeFilter(size=filter_size)) # https://stackoverflow.com/questions/62078016/smooth-the-edges-of-binary-images-face-using-python-and-open-cv 
+    out_path_med = png_file.replace('.png', '_median.png')
+    im.save(out_path_med)
     # im.show()   DO NOT DO im.show() ON BOLT/OFFICE COMPUTER OR IT WILL OPEN FIREFOX AND CRASH EVERYTHING
 
 
@@ -990,7 +993,7 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
     # string_in_name = "py_bb_098000.png"
     curr_path = os.getcwd()
     if "field_im" in curr_path:
-        string_in_name = "Long_drawn_OpeningInvert.png"
+        string_in_name = "long-orange_blue_crop.png"
 
     segments_angles_file_name = "segments_angles.json"
 
