@@ -11,9 +11,10 @@ import os
 from pathlib import Path
 import sys
 sys.path.append('/home/home01/scgf/myscripts/post_processing')
-from useful_functions import extract_two_profiles,getResolution
+from useful_functions import extract_two_profiles,getResolution,extract_horiz_sum_of_bb
 
 
+# file_numbers = ["10000"] 
 file_numbers = ["08000","10000","14000","18000"] 
 dir_path = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/layers/lr43/def0e-8/visc_3_1e3/z_vis1e3_mR_05'
 # dir_path = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_1_1e15/vis1e15_mR_03'
@@ -168,23 +169,22 @@ for filenum in file_numbers:
         ax2.set_ylim([0,0.99])
         ax2.set_xlim(Pf_axes_lim)  # Pf
         ax2a.set_xlim(phi_axes_lim)  # phi
-        ax2b.set_xlim(k_axes_lim)    # k
+        # ax2b.set_xlim(k_axes_lim)    # k - now it's bb sum
         ax2.yaxis.tick_left()
         # ax2.yaxis.set_label_position("right")
 
         print(f'max Pf {max(all_data_v[vars_to_plot[0]][1])}')
         print(f'max phi {max(all_data_v[vars_to_plot[1]][1])}')
 
+        # sum of broken bonds along each horizontal line
+        bb_horiz_sum,y_coord_bb_sum = extract_horiz_sum_of_bb(filename,res)
+        line3_v, = ax2b.plot(bb_horiz_sum, y_coord_bb_sum,color='red',linewidth=2,alpha=0.7)
+        print(f'ax2b lim: {ax2b.get_ylim()}')
         line1_v, = ax2.plot(all_data_v[vars_to_plot[0]][1], all_data_v[vars_to_plot[0]][0], label=vars_to_plot[0])
         line2_v, = ax2a.plot(all_data_v[vars_to_plot[1]][1], all_data_v[vars_to_plot[1]][0],'g', label=vars_to_plot[1])
-        line3_v, = ax2b.plot(all_data_v[vars_to_plot[2]][1], all_data_v[vars_to_plot[2]][0],color='lightgray',alpha=0.3)
-
-        ax2b.fill_betweenx(all_data_v[vars_to_plot[2]][0], all_data_v[vars_to_plot[2]][1],x2=0,color='lightgray',alpha=0.3)  # y,x1,x2    between 0 and permeability 
-
-
-        # ax2.set_ylabel('y')
-        # ax2.set_xlabel(vars_to_plot[0])
-        # ax2a.set_xlabel(vars_to_plot[1], color='g')  # Setting color to match line color
+        # line3_v, = ax2b.plot(all_data_v[vars_to_plot[2]][1], all_data_v[vars_to_plot[2]][0],color='lightgray',alpha=0.3)
+        
+        
         ax2.tick_params(axis='x', colors=blue_hex)
         ax2.tick_params(axis='y') 
         ax2.tick_params(axis='x') 
@@ -228,11 +228,11 @@ for filenum in file_numbers:
 
 
         #   add broken bonds
-        y_coord_bb_ver, bb_values_ver = all_data_v[vars_to_plot[3]]
+        # y_coord_bb_ver, bb_values_ver = all_data_v[vars_to_plot[3]]
 
-        bb_locations = [x for x, bb in zip(y_coord_bb_ver, bb_values_ver) if bb != 0]   # points of x_coord_vel_hor that have at least a broken bond
-        ax2.scatter(np.full((len(bb_locations),1), Pf_axes_lim[1]),bb_locations, color='red', marker='x', s=200)  # plot bb. array same length as bb_locations, full with the max range of Pf
-        
+        # bb_locations = [x for x, bb in zip(y_coord_bb_ver, bb_values_ver) if bb != 0]   # points of x_coord_vel_hor that have at least a broken bond
+        # ax2.scatter(np.full((len(bb_locations),1), Pf_axes_lim[1]),bb_locations, color='red', marker='x', s=200)  # plot bb. array same length as bb_locations, full with the max range of Pf
+
         fig.tight_layout()  # must go before fill_between
 
         # fill between phi and Pf
