@@ -15,11 +15,12 @@ from useful_functions import extract_two_profiles,getResolution,extract_horiz_su
 
 
 # file_numbers = ["10000"] 
-file_numbers = ["08000","10000","14000","18000"] 
-dir_path = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/layers/lr43/def0e-8/visc_3_1e3/z_vis1e3_mR_05'
+# file_numbers = ["08000","10000","14000","18000"] # for lr43/def0e-7/visc_3_1e3/z_vis1e3_mR_05
+file_numbers = ["07000","08000","10000","14000"]  # for lr43/def5e-7/visc_3_1e3/z_vis1e3_mR_05 and lr44/def5e-7/visc_3_1e3/vis1e3_mR_05
+dir_path = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/layers/lr44/def5e-7/visc_3_1e3/vis1e3_mR_05'
 # dir_path = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_1_1e15/vis1e15_mR_03'
 
-k_log = True
+k_log = False
 
 # Pf_axes_lim = [6.6e7,1.6e8]  
 Pf_axes_lim = [0.78,1.2]  # when scaled (pore fluid pressure, Pf0*0.5)
@@ -29,7 +30,7 @@ if k_log:
 
         k_axes_lim = [0,3.2e-16]
 else:
-        k_axes_lim = [-1e-18,3.2e-16]
+        k_axes_lim = [0,310]
 
 
 os.chdir(dir_path)
@@ -169,7 +170,7 @@ for filenum in file_numbers:
         ax2.set_ylim([0,0.99])
         ax2.set_xlim(Pf_axes_lim)  # Pf
         ax2a.set_xlim(phi_axes_lim)  # phi
-        # ax2b.set_xlim(k_axes_lim)    # k - now it's bb sum
+        ax2b.set_xlim(k_axes_lim)    # k - now it's bb sum
         ax2.yaxis.tick_left()
         # ax2.yaxis.set_label_position("right")
 
@@ -179,7 +180,6 @@ for filenum in file_numbers:
         # sum of broken bonds along each horizontal line
         bb_horiz_sum,y_coord_bb_sum = extract_horiz_sum_of_bb(filename,res)
         line3_v, = ax2b.plot(bb_horiz_sum, y_coord_bb_sum,color='red',linewidth=2,alpha=0.7)
-        print(f'ax2b lim: {ax2b.get_ylim()}')
         line1_v, = ax2.plot(all_data_v[vars_to_plot[0]][1], all_data_v[vars_to_plot[0]][0], label=vars_to_plot[0])
         line2_v, = ax2a.plot(all_data_v[vars_to_plot[1]][1], all_data_v[vars_to_plot[1]][0],'g', label=vars_to_plot[1])
         # line3_v, = ax2b.plot(all_data_v[vars_to_plot[2]][1], all_data_v[vars_to_plot[2]][0],color='lightgray',alpha=0.3)
@@ -195,7 +195,7 @@ for filenum in file_numbers:
         ax2a.xaxis.set_major_locator(plt.MaxNLocator(4))
         ax2b.xaxis.set_major_locator(plt.MaxNLocator(3))
 
-        if True:  # to create the legend for the axes (only 1 for all of the figures)
+        if False:  # to create the legend for the axes (only 1 for all of the figures)
             # move all the ticks to the bottom
             ax2.xaxis.tick_bottom()
             ax2a.xaxis.tick_bottom()
@@ -212,7 +212,7 @@ for filenum in file_numbers:
             ax2.set_yticklabels([])
             ax2.tick_params(axis='y', which='both', length=0) # remove the ticks themselves
 
-        if False:  # hide ticks
+        if True:  # hide ticks
             ax2.set_yticklabels([])
             ax2.set_xticklabels([])
             ax2a.set_xticklabels([])
@@ -262,7 +262,7 @@ for filenum in file_numbers:
         else:
                 fig_name = "phi_Pf0_0.8_"+str(filenum)+".png"
         # plt.tight_layout()
-        # plt.savefig(fig_name)
+        plt.savefig(fig_name)
         # plt.show()
         # plt.savefig("phi_Pf_vert_ticks.png")
         # break
