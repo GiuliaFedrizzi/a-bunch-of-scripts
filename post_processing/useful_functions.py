@@ -161,6 +161,21 @@ def extract_two_profiles(filename, var_to_plot,point_indexes,res):
     else:
         print("Problem! No file called "+str(filename)+"!")
 
+def extract_horiz_sum_of_bb(filename,res):
+    if os.path.isfile(filename):
+        myExp = pd.read_csv(filename, header=0)
+        broken_bonds = np.zeros(len(myExp)+1) # add an initial one because the bottom left corner is missing
+        broken_bonds[1:]=(myExp["Broken Bonds"].values)  # just bb values
+        grid_height = (len(myExp)+1) // res
+        grid = broken_bonds.reshape(grid_height, res)  # grid_height is the number of rows, 'res' the n of columns
+        bb_sum =  grid.sum(axis=1)  # sum along each row
+        y_coords = np.linspace(0, 1, grid_height)
+        print(f'max bb_sum {max(bb_sum)}')
+        return bb_sum,y_coords 
+    else:
+        print("Problem! No file called "+str(filename)+"!")
+
+
 
 def average_flow_ratio(filename,ver_points,hor_points,vars_to_plot):
     int_hor_for_average = []
