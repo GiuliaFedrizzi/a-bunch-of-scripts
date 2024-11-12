@@ -32,20 +32,17 @@ blue_hex = '#1f77b4'  # colour for pressure
 fig, (ax1) = plt.subplots(nrows=1, ncols=1,figsize=(9, 9))
 
 plt.rcParams["font.weight"] = "bold"
-plt.rcParams['lines.linewidth'] = 4
-plt.rcParams['axes.linewidth'] = 4
-plt.rcParams['axes.labelsize'] = 20
-plt.rcParams['xtick.labelsize'] = 50
-plt.rcParams['ytick.labelsize'] = 50
-
-plt.rcParams['xtick.major.size'] = 10
-plt.rcParams['xtick.major.width'] = 6
-plt.rcParams['ytick.major.size'] = 10
-plt.rcParams['ytick.major.width'] = 6
+plt.rcParams['lines.linewidth'] = 2.5
+plt.rcParams['axes.linewidth'] = 2
 
 filename = "my_experiment00000.csv"
 plt.setp(ax1.spines.values(), linewidth=3)  # #f56c42
-vars_to_plot = ["Pressure","Porosity", "Permeability","Broken Bonds"]
+
+colours = ['#E7AD99','#CE796B','#89AAE6',  '#0471A6',   '#061826'] 
+         # Melon, Old rose, Vista Blue, Honolulu Blue, Rich black
+        # not using:  Vista Blue '#89AAE6'
+        # not using:  Blue (NCS)  3685B5
+col_counter = 0
 
 for res_dir in res_dirs:
     os.chdir(res_dir)
@@ -63,7 +60,7 @@ for res_dir in res_dirs:
 
     for rt_dir in rt_dirs:   
         # print(f'rt_dir {rt_dir}') 
-        if rt_dir == "rb0.03":  # skip this one, it's not good
+        if res_dir == "res400" and (rt_dir == "rb0.03" or rt_dir == "rb0.01" or rt_dir == "rb0.007"):  # skip these values of res400
             continue
         os.chdir(rt_dir)
         
@@ -74,7 +71,15 @@ for res_dir in res_dirs:
         # Plotting on ax1 -- vertical profile ---
 
         ax1.set_ylim([0,1.0])
-        line1_v, = ax1.plot(stress_v,coords_v, label=res_dir+", "+rt_dir)
+        if res_dir == "res200":
+            alpha_value = 1.0
+            res_label = "200"
+        else:
+            alpha_value = 0.8
+            res_label = "400"
+        rt_label = rt_dir.split("b")[1]  # take what comes after "b" = 0.01, 0.03 etc
+        line1_v, = ax1.plot(stress_v,coords_v,color=colours[col_counter],alpha=alpha_value, label="Resolution in x: "+res_label+", r$_t$ = "+rt_label)
+        col_counter+=1
 
         # Legend
         ax1.legend() #loc=(0.7, 0.8))
@@ -84,8 +89,10 @@ for res_dir in res_dirs:
         ax1.tick_params(axis='y')#, colors=blue_hex) # blue
         ax1.xaxis.set_major_locator(plt.MaxNLocator(4))
         fig.tight_layout() 
-        ax1.set_xlabel('$\sigma_1$ (MPa)') 
-        ax1.set_ylabel("y coordinate") 
+        ax1.set_xlabel('$\sigma_1$ (MPa)',fontsize=15) 
+        ax1.set_ylabel("y coordinate",fontsize=15) 
+        ax1.tick_params(width=2, length=4)
+
 
         print(f'max {max(stress_v)}, min {min(stress_v)}, diff {max(stress_v)-min(stress_v)}')
         os.chdir("..")
@@ -93,8 +100,10 @@ for res_dir in res_dirs:
         
 plt.xticks(fontsize=15)
 plt.yticks(fontsize=15)
+plt.grid(linestyle = '--', linewidth = 0.5)
 
 print("Done :)")
-plt.show()
-# plt.savefig(fig_name)
+# plt.show()
+fig_name = "si02_sigma_1_res200_400.png"
+plt.savefig(fig_name,dpi=600)
 
