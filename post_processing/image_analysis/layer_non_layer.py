@@ -37,8 +37,9 @@ def extract_numeric_value(directory_name):
 
 
 #reference_tstep = 72000
-reference_tsteps = [75000]
-fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
+reference_tsteps = [14000]
+reference_tsteps = [i*5 for i in reference_tsteps]  # to use the true time step (not normalised by the amount of melt)
+fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2,figsize=(12,7))
 
 mr_contrast_dirs = ['lr41','lr44','lr42','lr45','lr43']
 mr_contrast = [1,1.5,2,2.5,3]
@@ -49,7 +50,8 @@ for reference_tstep in reference_tsteps:
     for mrc,lr in enumerate(mr_contrast_dirs):
         print(f'lr {lr}')
         os.chdir(lr)
-        def_dirs = sorted((glob.glob("def*")), key=extract_numeric_value)   # used to be for "rt0.*" (relaxation threshold)
+        # def_dirs = sorted((glob.glob("def*")), key=extract_numeric_value)   # used to be for "rt0.*" (relaxation threshold)
+        def_dirs = ['def0e-8','def1e-7','def2e-7','def3e-7','def4e-7','def5e-7']   # set manually
         print(f'def_dirs {def_dirs}')
         for def_dir in def_dirs:
             os.chdir(def_dir)
@@ -75,15 +77,15 @@ for reference_tstep in reference_tsteps:
                             'norm_time': norm_time,
                             'Melt Rate': m_rate,
                             'mu_f': mu_f,
-                            'Deformation Rate': def_rate,
+                            'Deformation Rate': def_rate/1e8,
                             'slow_n': slow_n,
                             'fast_n': fast_n,
-                            'mr contrast': mr_contrast[mrc]
+                            'Melt Rate Contrast': mr_contrast[mrc]
                         }
                         frac_list.append(frac_data)
                         # print(frac_data)
-                    else:
-                        print(f'no file {os.getcwd()}/{filename}')
+                    # else:
+                    #     print(f'no file {os.getcwd()}/{filename}')
 
                     os.chdir('..')
                 os.chdir('..')
@@ -93,8 +95,8 @@ for reference_tstep in reference_tsteps:
 
 
     df = pd.DataFrame(frac_list)
-    df.drop(df[df.fast_n == 0].index, inplace=True)
-    df["slow/total"] = df["slow_n"] / (df["fast_n"]+df["slow_n"])
+    df.drop(df[df.fast_n < 5].index, inplace=True)  # filter out if there aren't enough points
+    df["slow/total"] = (df["slow_n"] / (df["fast_n"]+df["slow_n"]))*100
     print(df)
 
     # split the data between low and high viscosity
@@ -106,20 +108,30 @@ for reference_tstep in reference_tsteps:
 
 # plot
 if len(df_low_visc) > 0:
-    sns.scatterplot(data=df_low_visc,x="Deformation Rate",y="slow/total",hue="mr contrast",style='reference_tstep',palette="copper_r",ax=ax1) 
-    sns.lineplot(data=df_low_visc,x="Deformation Rate",y="slow/total",hue="mr contrast",palette="copper_r", legend=None,ax=ax1) 
+    sns.scatterplot(data=df_low_visc,x="Deformation Rate",y="slow/total",hue="Melt Rate Contrast",palette="cividis",ax=ax1) 
+    sns.lineplot(data=df_low_visc,x="Deformation Rate",y="slow/total",hue="Melt Rate Contrast",palette="cividis", legend=None,ax=ax1) 
 if len(df_high_visc) > 0:
-    sns.scatterplot(data=df_high_visc,x="Deformation Rate",y="slow/total",hue="mr contrast",palette="copper_r",ax=ax2) # style='reference_tstep',
-    sns.lineplot(data=df_high_visc,x="Deformation Rate",y="slow/total",hue="mr contrast",palette="copper_r",legend=None,ax=ax2) 
+    sns.scatterplot(data=df_high_visc,x="Deformation Rate",y="slow/total",hue="Melt Rate Contrast",palette="cividis",ax=ax2) # style='reference_tstep',
+    sns.lineplot(data=df_high_visc,x="Deformation Rate",y="slow/total",hue="Melt Rate Contrast",palette="cividis",legend=None,ax=ax2) 
 
-# ax1.set_xscale('log')
+ax1.set_ylabel('Fractures Outside Fertile Layers, %')#,weight='bold')
+ax1.set_xlabel('Deformation Rate')#,weight='bold')
+plt.ticklabel_format(axis='both', style='sci')
+ax2.set_ylabel('Fractures Outside Fertile Layers, %')#,weight='bold')
+ax2.set_xlabel('Deformation Rate (s$^{-1}$)')#,weight='bold')
+
 # ax2.set_xscale('log')
 
+# ax1.grid(True)
+# ax2.grid(True)
+ax2.grid(linestyle='--',alpha=0.6)
 ax1.set_title("Low viscosity")
 ax2.set_title("High viscosity")
-fig.suptitle("$t_{ref} = $ "+str(reference_tstep))
+fig.suptitle("$t_{ref} = $ "+str(reference_tstep)+" (t = "+str(float(reference_tstep)/5)+")")
 
+fig.tight_layout()
 
+plt.savefig("slow_fast_bb_"+str(reference_tstep)+".png",dpi=300)
 plt.show()
 # slow_n,fast_n = get_bb_slow_and_fast(filename)
 
