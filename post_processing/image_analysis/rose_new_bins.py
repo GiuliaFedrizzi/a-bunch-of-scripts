@@ -39,7 +39,6 @@ def build_rose_hist(tstep,bin_size):
 
     # Iterate through the data to find the matching timestep
     for entry in data:
-        print(f'this_tstep {this_tstep}')
         if entry['timestep_n'] == float(tstep):
             angles = entry['angles']
             rose_histogram = entry['rose_histogram']
@@ -72,8 +71,8 @@ def draw_rose(full_range,bin_size):
         edgecolor='k', linewidth=2,zorder=2)    # 10 -> 15
     return ax
 
-bin_sizes = [10,15]
-tsteps = ['022000','029000','033000','050000','067000','100000']
+bin_sizes = [10,12,15]
+tsteps = ['022000','029000','033000','040000','050000','067000','100000']
 # tsteps = ['050000']
 for bin_size in bin_sizes:
     for tstep in tsteps:
