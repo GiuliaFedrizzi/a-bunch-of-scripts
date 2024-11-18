@@ -23,7 +23,7 @@ res = 200
 filename = "my_experiment"
 filenum = "00000"
 first_part_of_path = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/singleInjection/porosity_fix/'  
-pf = 'pf01'
+pf = 'pf12'
 dir = first_part_of_path + pf
 
 
@@ -55,17 +55,35 @@ def read_calculate_plot(filenum,scale_factor,res,var_plot):
         (myExpFluid_all['x'] <= 0.52)
         ]
     print(f"myExpFluid max {max(myExpFluid['Porosity'])}, min {min(myExpFluid['Porosity'])}")
+
+
+    row = myExpFluid[(myExpFluid["x"] == 0.50) & (myExpFluid["y"] == 0.49)]
+
+    # Print the value of "n_particles" for this row
+    if not row.empty:
+        print("n_particles:", row["n_particles"].values[0])
+
+    average_weight = myExpFluid["tot_smooth"].mean()
+    average_part = myExpFluid["n_particles"].mean()
+    print(f'average_weight {average_weight}')
+    print(f'average_part {average_part}')
+
     if plot_figure:
         plt.figure()
         ssize = 50 #scaled size for markers. Worked for plt.show 
         col_palette = "afmhot" #"gnuplot"
 
-        max_value = myExpFluid[variable_hue].max()#*1.1
-        min_value = myExpFluid[variable_hue].min()#*1.05
+        max_value = myExpFluid[variable_hue].max()*1.05
+        min_value = myExpFluid[variable_hue].min()*0.97
         norm = mpl.colors.Normalize(vmin=min_value, vmax=max_value)
         
-        scatter = sns.scatterplot(data=myExp,x="x coord",y="y coord",hue=variable_hue,
-            linewidth=0,alpha=0.8,marker="o",s=ssize,hue_norm=(min_value,max_value),palette=col_palette,legend=False).set_aspect('equal') #legend='full'
+        scatter = sns.scatterplot(data=myExp,x="x coord",y="y coord",hue="Broken Bonds",  # "Broken Bonds" to get a homogeneous field
+            linewidth=0,alpha=0.8,marker="o",s=ssize,
+            color='k',
+
+            hue_norm=(min_value,max_value),
+            palette=col_palette,
+            legend=False).set_aspect('equal') #legend='full'
         
         scatter = sns.scatterplot(data=myExpFluid,x="x",y="y",hue=variable_hue,
             linewidth=0,alpha=0.8,marker="s",s=ssize*2,hue_norm=(min_value,max_value),palette=col_palette,legend=False).set_aspect('equal') #legend='full'
@@ -115,7 +133,7 @@ if myfile.is_file():
 
 #  some options for plotting
 if plot_figure:
-    # plt.title(pf+", t = "+str('{:.1e}'.format(input_tstep*timestep_number))+", "+str(variable_hue)) 
+    plt.title(pf+", t = "+str('{:.1e}'.format(input_tstep*timestep_number))+", "+str(variable_hue)) 
     #plt.savefig(fig_name, dpi=150)#,transparent=True)
     plt.show()
 
