@@ -444,7 +444,7 @@ def connect_graph(skel: np.ndarray, min_distance: int) -> nx.MultiGraph:
                     g.remove_edges_from([(pos_current,pos_left),(pos_current,pos_right)])
                     # print("done")
                     g.add_edge(pos_left,pos_right)
-                    print(f'connecting {pos_left,pos_right}')
+                    # print(f'connecting {pos_left,pos_right}')
                     changed = True
                     break
                 else:
@@ -496,6 +496,11 @@ def simplify_paths(g: nx.Graph, tolerance=5) -> nx.Graph:
 
 def extract_network(px: np.ndarray, im: Image, min_distance=7) -> Tuple[nx.Graph,np.ndarray,float,float]:  # was 12
     skel = morphology.thin(px)
+    # save skeleton image:
+    # plt.figure(figsize=(10, 10))
+    # plt.imshow(skel.T, cmap='gray')
+    # plt.axis('off')
+    # plt.savefig('skeleton.png')
     print(f'Skeleton px={skel.sum()}')
     skel_width = skel.shape[0]
     skel_height = skel.shape[1]
@@ -550,7 +555,7 @@ def draw_nx_graph(im: Image, g: nx.Graph) -> None:
     lab = dict(zip(g.nodes(), all_degrees))  # degrees only
     # lab = dict(zip(g.nodes(), all_degrees_coord))  # degrees and node coordinates
     pos = {point: point for point in g.nodes()}  # save nodes in a format that can be used as position when plotting
-    ax = nx.draw(g,pos=pos,node_size=5,edge_color='g')
+    ax = nx.draw(g,pos=pos,node_size=1,edge_color='k')
     # nx.draw_networkx_labels(g,pos=pos,labels=degrees,ax=ax)
     
     # node labels:
@@ -559,17 +564,17 @@ def draw_nx_graph(im: Image, g: nx.Graph) -> None:
 
     for k, v in pos.items():
         pos_higher[k] = (v[0]+x_off, v[1])
-    nx.draw_networkx_labels(g,pos=pos_higher,ax=ax,labels=lab,font_weight='bold',font_color='r',font_size=4)
+    # nx.draw_networkx_labels(g,pos=pos_higher,ax=ax,labels=lab,font_weight='bold',font_color='r',font_size=4)
     
     #edge labels
-    # edge_d = [("{:.2f}".format(d)) for (u,v,d) in g.edges.data('d')]  # distance values are stored under the attribute "d"
-    # edge_or =  [("{:.2f}".format(o)) for (u,v,o) in g.edges.data('orientation')]  # get the attribute "orientation"
-    # edge_d_or = [d+", "+o for d,o in zip(edge_d,edge_or)]
-    # edge_lab = dict(zip(g.edges(),edge_d_or))   # create a dictionary that can be used to plot labels
+    edge_d = [("{:.2f}".format(d)) for (u,v,d) in g.edges.data('d')]  # distance values are stored under the attribute "d"
+    edge_or =  [("{:.2f}".format(o)) for (u,v,o) in g.edges.data('orientation')]  # get the attribute "orientation"
+    edge_d_or = [d+", "+o for d,o in zip(edge_d,edge_or)]
+    edge_lab = dict(zip(g.edges(),edge_d_or))   # create a dictionary that can be used to plot labels
     # print(f'edge_lab{edge_lab}')
     # print('edge_lab '+str(edge_lab))
     bbox_options = {"boxstyle":'round', "ec":(1.0, 1.0, 1.0), "fc":(1.0, 1.0, 1.0), "alpha": 0.7}
-    # nx.draw_networkx_edge_labels(g,pos=pos,edge_labels=edge_lab,ax=ax,font_size=5,bbox=bbox_options)
+    # nx.draw_networkx_edge_labels(g,pos=pos,edge_labels=edge_lab,ax=ax,font_size=3,bbox=bbox_options)
 
     plt.axis("on")  # show the axes
     plt.axis('equal')  # keep true aspect ratio
@@ -896,10 +901,12 @@ def analyse_png(png_file: str, part_to_analyse: str, all_angles: list) -> dict:
     
     # Apply median filter to smooth the edges
     filter_size = 12
+    median_file_name = '_median.png'
     if part_to_analyse == 'f':
         filter_size = 2
+        median_file_name = '_median'+str(filter_size)+'.png'
     im = im.filter(ImageFilter.ModeFilter(size=filter_size)) # https://stackoverflow.com/questions/62078016/smooth-the-edges-of-binary-images-face-using-python-and-open-cv 
-    out_path_med = png_file.replace('.png', '_median.png')
+    out_path_med = png_file.replace('.png', median_file_name)
     im.save(out_path_med)
     # im.show()   DO NOT DO im.show() ON BOLT/OFFICE COMPUTER OR IT WILL OPEN FIREFOX AND CRASH EVERYTHING
 
@@ -944,7 +951,7 @@ def analyse_png(png_file: str, part_to_analyse: str, all_angles: list) -> dict:
     print(branch_info)
     # viz grid with networkx's plot
     ax = draw_nx_graph(im, g)
-    plt.savefig(out_path+".grid.png",dpi=150)
+    plt.savefig(out_path+".grid.png",dpi=300)
     plt.clf()
     # # plt.show()
 
@@ -993,12 +1000,14 @@ def file_loop(parent_dir: str,part_to_analyse: str) -> None:
     # string_in_name = "py_bb_098000.png"
     curr_path = os.getcwd()
     if "field_im" in curr_path:
-        string_in_name = "long-orange_blue_crop.png"
+        string_in_name = "long-orange_blue_3.png"
 
     segments_angles_file_name = "segments_angles.json"
 
-    if part_to_analyse == 'w' or part_to_analyse == 'f': # whole domain
+    if part_to_analyse == 'w': # whole domain
         csv_file_name = "py_branch_info.csv" 
+    elif part_to_analyse == 'f': # field (do not crop) -----------
+        csv_file_name = "py_branch_info_3.csv" 
     elif part_to_analyse == 'b':
         csv_file_name = "py_branch_info_bot.csv" 
     elif part_to_analyse == 't':
