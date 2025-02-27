@@ -6,6 +6,7 @@ version for the layers
 # import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+import matplotlib.ticker as ticker
 import numpy as np
 import os
 from pathlib import Path
@@ -46,10 +47,7 @@ for filenum in file_numbers:
         filename = "my_experiment"+filenum+".csv"
         myfile = Path(os.getcwd()+'/'+filename)  # build file name including path
 
-
-        plt.rcParams["font.weight"] = "bold"
-        plt.rcParams['lines.linewidth'] = 4
-        plt.rcParams['axes.linewidth'] = 4
+        plt.rcParams["font.weight"] = "bold"; plt.rcParams['lines.linewidth'] = 4;plt.rcParams['axes.linewidth'] = 4
         plt.rcParams['axes.labelsize'] = 20
         plt.rcParams['xtick.labelsize'] = 30
         plt.rcParams['ytick.labelsize'] = 30
@@ -89,8 +87,6 @@ for filenum in file_numbers:
 
         ax1b.fill_between(all_data_h[vars_to_plot[2]][0], all_data_h[vars_to_plot[2]][1],y2=0,color='lightgray',alpha=0.3)  # fill between 0 and permeability 
         
-
-
         # Legend
         # ax1.legend([line1_h, line2_h, line3_h], 
                 # [vars_to_plot[0], vars_to_plot[1],vars_to_plot[2]],loc=(0.6, 0.8))   # labels: y velocity and poro
@@ -134,7 +130,7 @@ for filenum in file_numbers:
         ax2a = ax2.twiny()
         ax2b = ax2.twiny()
 
-        ax2.set_ylim([0,0.99])
+        ax2.set_ylim([0.01,0.99])
         ax2.set_xlim(Pf_axes_lim)  # Pf
         ax2a.set_xlim(phi_axes_lim)  # phi
         ax2b.set_xlim(k_axes_lim)    # k - now it's bb sum
@@ -153,16 +149,17 @@ for filenum in file_numbers:
         
         
         ax2.tick_params(axis='x', colors=blue_hex)
-        ax2.tick_params(axis='y') 
+        ax2.tick_params(axis='y')#,length=0) 
         ax2.tick_params(axis='x') 
         ax2a.tick_params(axis='x', colors='g') 
-        ax2b.tick_params(axis='x', colors='darkgray') 
+        # ax2b.tick_params(axis='x', colors='darkgray') 
+        tick_spacing = 1/7
+        ax2.yaxis.set_major_locator(ticker.MultipleLocator(tick_spacing))
         ax2.xaxis.set_major_locator(plt.MaxNLocator(4))
-        ax2.yaxis.set_major_locator(plt.MaxNLocator(4))
         ax2a.xaxis.set_major_locator(plt.MaxNLocator(4))
         ax2b.xaxis.set_major_locator(plt.MaxNLocator(3))
 
-        if False:  # to create the legend for the axes (only 1 for all of the figures)
+        if True:  # to create the legend for the axes (only 1 for all of the figures)
             # move all the ticks to the bottom
             ax2.xaxis.tick_bottom()
             ax2a.xaxis.tick_bottom()
@@ -179,7 +176,7 @@ for filenum in file_numbers:
             ax2.set_yticklabels([])
             ax2.tick_params(axis='y', which='both', length=0) # remove the ticks themselves
 
-        if True:  # hide ticks
+        if False:  # hide ticks
             ax2.set_yticklabels([])
             ax2.set_xticklabels([])
             ax2a.set_xticklabels([])
@@ -212,10 +209,9 @@ for filenum in file_numbers:
         # ax2.fill_between(np.arange(Pf_axes_lim[0],Pf_axes_lim[1]+0.06,0.05), y1=1.0/7.0, y2=2.0/7.0, color="orange",interpolate=True, alpha=0.2)#, transform=None)
         # ax2.fill_between(np.arange(Pf_axes_lim[0],Pf_axes_lim[1]+0.06,0.05), y1=3.0/7.0, y2=4.0/7.0, color="orange",interpolate=True, alpha=0.2)#, transform=None)
         # ax2.fill_between(np.arange(Pf_axes_lim[0],Pf_axes_lim[1]+0.06,0.05), y1=5.0/7.0, y2=6.0/7.0, color="orange",interpolate=True, alpha=0.2)#, transform=None)
-        # fig.suptitle(str(myfile))
         fig_name = "phi_Pf0_0.8_"+str(filenum)+".png"
         # plt.tight_layout()
-        plt.savefig(fig_name)
+        # plt.savefig(fig_name)
         # plt.show()
         # plt.savefig("phi_Pf_vert_ticks.png")
         # break
