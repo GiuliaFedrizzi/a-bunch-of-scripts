@@ -20,7 +20,9 @@ save_freq = int(getSaveFreq())
 # times = range(1000,1011,5)  # (start, end, step)
 
 # file number
-times = list(range(1, 20, 1)) + list(range(20, 141, 5)) + list(range(150, 501, 20)) + list(range(500, 801, 20)) + list(range(850, 1500, 40))
+# times = list(range(1, 20, 1)) + list(range(20, 141, 5))+ list(range(150, 200, 10))  + list(range(200, 501, 20)) + list(range(500, 801, 20)) #+ list(range(850, 1500, 40))
+times = list(range(24,35,1)) +  list(range(35, 110, 5)) + list(range(110, 310, 10))# + list(range(225, 420, 25))
+
 # translate to timestep
 # times *= save_freq 
 times = [i*save_freq for i in times] 
