@@ -48,7 +48,8 @@ def draw_rose_plot_double(double_hist: list,tstep):
         max_slow = 0  # default value
 
     
-    max_y_from_file = max_dict.get(int(tstep), 'NaN')
+    # max_y_from_file = max_dict.get(int(tstep), 'NaN')
+    max_y_from_file = 'NaN'
     # print(f'tstep max {max_y_from_file}')
     if max_y_from_file == 'NaN':
         # if it doesn't have an entry in the dictionary from the file, take the maximum in the current histograms
@@ -108,6 +109,7 @@ def extract_number(filenames):
     tsteps = [i.split("_py_bb_")[1].split('_nx.png')[0] for i in filenames]
     return tsteps
 
+# get all the time steps where there are fractures (=there are rose diagrams)
 p_files1 = sorted(glob.glob("rose_weight_p_1_py_bb_*_nx.png"))
 tsteps1 = extract_number(p_files1)
 p_files2 = sorted(glob.glob("rose_weight_p_2_py_bb_*_nx.png"))
@@ -123,6 +125,7 @@ tsteps6 = extract_number(p_files6)
 p_files7 = sorted(glob.glob("rose_weight_p_7_py_bb_*_nx.png"))
 tsteps7 = extract_number(p_files7)
 
+# get all the unique values of these time steps
 tsteps = list(set(tsteps1 + tsteps2 + tsteps3 + tsteps4 + tsteps5 + tsteps6 + tsteps7))
 tsteps.sort()
 
@@ -183,4 +186,5 @@ Find the highest of the max:
 
 > find . \( -path "*/lr41/*" -o -path "*/lr42/*" -o -path "*/lr43/*" -o -path "*/lr44/*" -o -path "*/lr45/*" \) -name "max_double_014000.txt" -exec awk '{ if ($1 > max) max=$1 } END { print max }' {} +
 
+ find . \( -path "*/lr43/*" -o -path "*/lr46/*" -o -path "*/lr47/*" \) -name "max_double_011000.txt" -exec awk '{ if ($1 > max) max=$1 } END { print max }' {} +
 """

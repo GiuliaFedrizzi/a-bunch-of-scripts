@@ -43,6 +43,8 @@ if (no_margins) {
 }
 
 scale_unit <- 1000  # edge of the square that gives an area comparable to the simulation (in pixels)
+                    # can be checked from the size of the analysed png in extr topology:
+                    # (1470-449)*(1189-183) = 1e6 , then I'll take the square of 1000, so I'll get 1e6 as the area
 
 # some options for different sets of simulations
 two_subdirs <- TRUE  # is it visc_1_1e1/vis1e1_mR01 (TRUE)  or just vis1e2_mR_01  (FALSE)?
