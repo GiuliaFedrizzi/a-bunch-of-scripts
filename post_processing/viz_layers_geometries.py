@@ -10,6 +10,9 @@ Options:
 
 images are trimmed to show only the domain
 
+version for the simulations with a different geometry: 
+Thicker layers and without the middle layer
+
 '''
 import numpy as np
 import matplotlib.pyplot as plt
@@ -22,7 +25,7 @@ from useful_functions import getSaveFreq
 
 save_freq = int(getSaveFreq())
 
-times = list(range(110,120,10))
+times = list(range(300,410,10))
 # times = list(range(80,230,10))
 # times = list(range(40,400,10))
 # times = list(range(200,400,50))
@@ -70,9 +73,9 @@ if rose == False:
         else:
             filename = 'images_in_grid_layers/layer_geom_'+whats_constant+'_t'
 
-        # plt.savefig(filename+str(t).zfill(3)+'.png',dpi=600)
+        plt.savefig(filename+str(t).zfill(3)+'.png',dpi=600)
         
-        plt.show()
+        # plt.show()
 
         plt.clf()   # close figure
 
@@ -106,9 +109,9 @@ if rose == True:
         else:
             filename = 'images_in_grid_layers/layer_rose_geom_'+whats_constant+'_t'
 
-        # plt.savefig(filename+str(t).zfill(3)+'.png',dpi=600)
+        plt.savefig(filename+str(t).zfill(3)+'.png',dpi=600)
         
-        plt.show()
+        # plt.show()
 
         plt.clf()   # close figure
         plt.close()
