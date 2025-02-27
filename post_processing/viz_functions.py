@@ -97,7 +97,7 @@ def build_array(big_array,variab,x,x_val,melt_rate,file_number,row,cols,rose):
         rose_file = potential_file_path +'/rose_weight_p_top_py_bb_'+file_number+'_nx.png' # try "top" first    
         if os.path.isfile(rose_file) == False:
             """ try another version """
-            rose_file = potential_file_path +'/rose_weight_p_xx20_py_bb_'+file_number+'_nx.png'   # e.g.  rose_norm_p_py_bb_026000_nx
+            rose_file = potential_file_path +'/rose_bin10_t'+file_number+'.png'   # e.g.  rose_norm_p_py_bb_026000_nx
         if os.path.isfile(rose_file):
             print(f'found file {rose_file}')
             rose_big_file = Image.open(rose_file)  # to do: do I need to crop it?
@@ -120,9 +120,15 @@ def build_array_layers(big_array,x,x_val,mr_contrast,file_number,row,cols,rose,v
     """
     
     ###### path to the files
-    potential_file_path = mr_contrast+"/"+x_val+'/'+visc+'/vis1e3_mR_05'
+    potential_file_path = mr_contrast+"/"+x_val+'/'+visc+'/y_vis1e3_mR_05'   # try the new directories first (8/11/24)
     if os.path.isdir(potential_file_path) == False:
-        potential_file_path = mr_contrast+"/"+x_val+'/'+visc+'/vis1e2_mR_05'
+        potential_file_path = mr_contrast+"/"+x_val+'/'+visc+'/z_vis1e2_mR_05'
+        if os.path.isdir(potential_file_path) == False:
+            potential_file_path = mr_contrast+"/"+x_val+'/'+visc+'/z_vis1e3_mR_05'
+            if os.path.isdir(potential_file_path) == False:
+                potential_file_path = mr_contrast+"/"+x_val+'/'+visc+'/vis1e3_mR_05'
+                if os.path.isdir(potential_file_path) == False:
+                    potential_file_path = mr_contrast+"/"+x_val+'/'+visc+'/vis1e2_mR_05'
 
     # now we have the path, choose if I open "poro_file" and "bb_file" or "rose_file"
     if rose == False:
