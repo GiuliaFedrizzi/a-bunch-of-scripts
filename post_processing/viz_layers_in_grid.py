@@ -22,22 +22,23 @@ from useful_functions import getSaveFreq
 
 save_freq = int(getSaveFreq())
 
-# times = list(range(80,450,10))
-times = list(range(140,150,10))
+# times = list(range(80,400,10))
+times = list(range(100,110,10))
 # times = list(range(200,400,50))
 # translate to timestep
 times = [i*save_freq for i in times] 
 
 # viscosity_dirs = ["visc_2_1e2","visc_3_1e3"]
-visc = "visc_3_1e3"
+visc = "visc_2_1e2"
 mr_contrast_dirs = ['lr41','lr44','lr42','lr45','lr43']
 y_variable = ['3','2.5','2','1.5','1'] 
 mr_contrast_dirs.reverse()
-def_rate_dirs = ['def0e-8','def8e-8','def9e-8','def1e-7','def2e-7','def3e-7','def4e-7','def5e-7']
+# def_rate_dirs = ['def0e-8','def1e-7','def2e-7','def3e-7','def4e-7','def5e-7']
+def_rate_dirs = ['def0e-8','def1e-7','def3e-7','def5e-7']
 melt_labels = '0.005'
 whats_constant = "cm"
 
-rose = True
+rose = False
 
 if rose == False:
     im_length = 500
@@ -68,9 +69,9 @@ if rose == False:
         else:
             filename = 'images_in_grid_layers/layer_grid_'+whats_constant+'_t'
 
-        plt.savefig(filename+str(t).zfill(3)+'.png',dpi=600)
+        # plt.savefig(filename+str(t).zfill(3)+'.png',dpi=600)
         
-        # plt.show()
+        plt.show()
 
         plt.clf()   # close figure
 
@@ -104,9 +105,9 @@ if rose == True:
         else:
             filename = 'images_in_grid_layers/layer_rose_'+whats_constant+'_t'
 
-        # plt.savefig(filename+str(t).zfill(3)+'.png',dpi=600)
+        plt.savefig(filename+str(t).zfill(3)+'.png',dpi=600)
         
-        plt.show()
+        # plt.show()
 
         plt.clf()   # close figure
         plt.close()
