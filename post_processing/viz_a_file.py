@@ -23,8 +23,8 @@ from useful_functions import *
 plot_figure = 1
 dir_label = ''
 res = 200
-filename = "my_experiment110000.csv"
-first_part_of_path = '/nobackup/scgf/myExperiments/threeAreas/prod/pdef/pd19/rt0.5/pdef9e8/vis1e2_mR01/'  # remember the slash (/) at the end
+filename = "my_experiment175000.csv"
+first_part_of_path = '/nobackup/scgf/myExperiments/threeAreas/prod/pdef/pd20/rt0.5/pdef9e8/vis1e2_mR00/'  # remember the slash (/) at the end
 
 #dir = first_part_of_path+'size'+str(dir_label)        # res200
 dir = first_part_of_path

@@ -45,7 +45,7 @@ import re
 # import functions from external file
 from useful_functions import * 
 
-var_to_plot = "Pressure"
+var_to_plot = "Sigma_1"
 # options: Pressure, Mean Stress, Actual Movement, Gravity, Porosity, Sigma_1, Sigma_2, Youngs Modulus, Differential Stress,Permeability
 #         F_P_x, F_P_y, pf_grad_x, pf_grad_y, Original Movement, Movement in Gravity, Smooth function, area_par_fluid
 #         gauss_scaling_par, gauss_scaling_par_sum, gauss_scaling_par_n_tot, xy_melt_point
@@ -62,18 +62,19 @@ var_to_plot = "Pressure"
 # dir_labels = ['tw12/rt0.1/pincr1e6','tw12/rt0.5/pincr1e6'] # 'tw12/rt0.01/pincr1e6','tw12/rt0.03/pincr1e6',
 # dir_labels = ['si08','si10']#,'rb1.0'] # 'rb0.01',  
 # dir_labels = ['rt0.01','rt0.03']#,'rt0.05'] 
-# dir_labels = ['op13/rt0.03/threads1','op18/rt0.03/threads2','op18/rt0.03/threads4']#,'threads8','threads16']#,'rt0.05'] 
+dir_labels = ['op13/rt0.03/threads1','op18/rt0.03/threads2','op18/rt0.03/threads4','op18/rt0.03/threads8','op18/rt0.03/threads16']#,'threads8','threads16']#,'rt0.05'] 
 # dir_labels = ['rt0.08/mrate0.0005']#,'threads8','threads16']#,'rt0.05'] 
-dir_labels = ['vis1e15_mR_03']#,'threads8','threads16']#,'rt0.05'] 
+# dir_labels = ['vis1e15_mR_03']#,'threads8','threads16']#,'rt0.05'] 
 # dir_labels = ['young0.5', 'young1']
 # dir_labels = ['rb0.03', 'rb0.05','rb0.5']
-# dir_labels = ['bs45/depth1000/young0.7/rb0.5','bs45/depth1500/young0.7/rb0.5','bs45/depth2000/young0.7/rb0.5']
-# dir_labels = ['young0.5','young0.7','young1']
+# dir_labels = ['bs56/depth1000/young0.7/rb0.65','bs56/depth1000/young0.7/rb0.7','bs56/depth1000/young0.7/rb0.8','bs56/depth1000/young0.7/rb0.9']
+# dir_labels = ['bs56/depth1000','bs58/dis0001','bs58/dis0002','bs58/dis0003','bs58/dis0004']
 
 # my_labels = ['p52, 0.001','p54, 0.0005','p55, 0.0001']#,'p49, 0.005'] # leave empty for default labels (= dir labels)
-# my_labels = ['rt1 = 0.5, rt2 = 0.5','rt1 = 0.05, rt2 = 0.5','rt1 = 0.1, rt2 = 0.5'] # leave empty for default labels (= dir labels)
-my_labels = [] # leave empty for default labels (= dir labels)
-# my_labels = ['grad0.3','grad0.4'] # leave empty for default labels (= dir labels)
+# my_labels = ['bs50, rt = 0.3','bs53, rt = 0.5','bs56, rt = 0.8'] # leave empty for default labels (= dir labels)
+# my_labels = [] # leave empty for default labels (= dir labels)
+my_labels = ['Serial', '2 threads', '4 threads','8 threads','16 threads'] 
+# my_labels = ['first rt: 0.3, with hydr grad','first rt: 0.5, with hydr grad'] # leave empty for default labels (= dir labels)
 
 # resolution = 200 # now extracted automatically
 
@@ -92,18 +93,18 @@ for i in dir_labels:
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/background_stress/'+i)
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/thr/thr01/rt0.01/'+i)
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/thr/thr02/'+i+'/pincr1e2')
-    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/background_stress/bs23/'+i+'/depth0100/young2/rb0.03')
+    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/background_stress/'+i+'/young0.7/rb0.65')
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/singleInjection/si22/'+i) #'rb0.003'
-    dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_1_1e15/'+i)
-    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/thprod/tp12/'+i)
+    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_1_1e15/'+i)
+    # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/prod/prt/layers/lr16/def0e-8/visc_1_1e15/'+i)
     # dir_list.append('/nobackup/scgf/myExperiments/threeAreas/through/thprod/single/ts04/'+i+'/mrate1e6')
-    # dir_list.append('/nobackup/scgf/myExperiments/optimise/'+i)
+    dir_list.append('/nobackup/scgf/myExperiments/optimise/'+i)
     
 print(dir_list)
 
 f1=-1  # first file to plot. They account for "my_experiment-0003.csv" as the first file in dir :::  -1  =  0
-f2= 0  # second file. if f2 = 5 -> my_experiment00500.csv
-step=1
+f2= 10  # second file. if f2 = 5 -> my_experiment00500.csv
+step=4
 
 df_x = pd.DataFrame()
 df_y = pd.DataFrame()
@@ -157,7 +158,7 @@ for dirnum,dir in enumerate(dir_list):
             has_res_directory = False
             res_directory = 'no dir'
             rb=0
-        first_file = sorted(glob.glob("my_experiment*"))[1]
+        first_file = sorted(glob.glob("my_experiment*"))[0]
         dom_size = float(getParameterFromLatte('input.txt','Scale'))
         # print(f'scale: {dom_size}')
 
@@ -356,10 +357,9 @@ if True:
         ax1.legend(fancybox=True, ncol=1)   # legend for the horizontal line plot
 
     ax1.set_title("Horizontal Profile")
-    #ax1.set_xlim([-0.51,+0.51])  # zoom in. Limits are location of max pressure +- 0.05
-    #ax2.set_xlim([-1.01,+0.12])  # zoom in. Limits are location of max pressure +- 0.05
+    ax1.set_xlim([-100,+100])  # zoom in. Limits are location of max pressure +- 0.05
+    ax2.set_xlim([-100,+100])  # zoom in. Limits are location of max pressure +- 0.05
     ax2.set_title("Vertical Profile")
-
     g_y.legend_.remove()
     
 
@@ -367,8 +367,13 @@ if True:
     #plt.savefig("gaussScale50-100-200_diff_hrz-vrt.png", dpi=600,transparent=True)
     plt.tight_layout()
     fig.suptitle(os.getcwd()) 
-    plt.show()
 if var_to_plot == "Sigma_1" or var_to_plot == "Sigma_2":
+    big_font = 15
+    ax1.set_ylabel('$\sigma_1$',fontsize=big_font)
+    ax1.set_xlabel('x',fontsize=big_font)
+    ax2.set_ylabel('$\sigma_1$',fontsize=big_font)
+    ax2.set_xlabel('y',fontsize=big_font)
+
     if False:
         fig, (ax1,ax2) = plt.subplots(nrows=1,ncols=2)
         ax1.plot(sizes,sigmas_top_true,'-o',color='blue',label='top true')
@@ -398,5 +403,6 @@ if var_to_plot == "Sigma_1" or var_to_plot == "Sigma_2":
         # ax1.legend()
         # ax2.legend()
         plt.show()
+plt.show()
 
 

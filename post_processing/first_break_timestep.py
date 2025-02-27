@@ -9,7 +9,7 @@ import glob
 import os as os
 
 #parent_directory = "sigma_3_0_gaussTime05"
-parent_directory = "timestep04"
+parent_directory = "timestep04" # fig for pdf was made wirh timestep02?
 
 
 fig, axs = plt.subplots(nrows=1, ncols=1)
@@ -70,8 +70,8 @@ axs.set_xscale('log')
 fig_title = "Time of the first broken bond using different time steps\n" #+ parent_directory.replace("/","-") 
 axs.set(title=fig_title, xlabel='Time step (s)', ylabel='Time before the first broken bond (s)')
 #axs.set_xscale('log')
-figure_name = parent_directory.replace("/","-")+"_time_first_bb_aug2022.png"
-plt.savefig(figure_name, dpi=600)
+# figure_name = parent_directory.replace("/","-")+"_time_first_bb_aug2022.png"
+# plt.savefig(figure_name, dpi=600)
 plt.show()
 """
 # LEGEND:

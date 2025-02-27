@@ -2,7 +2,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 
 # Load the image
-image_path = 'viz_bb_009000.png'
+image_path = 'viz_bb_100000.png'
 image = Image.open(image_path)
 
 # Get image dimensions

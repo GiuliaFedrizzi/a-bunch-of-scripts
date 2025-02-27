@@ -20,10 +20,10 @@ plot_figure = 1
 res = 200
 res_y = 230
 filename = "my_experiment00000.csv"
-# first_part_of_path = '/nobackup/scgf/myExperiments/threeAreas/prod/pb47/visc_1_1e1/'  # to show boundary conditions
-first_part_of_path = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/singleInjection/si25/'
+first_part_of_path = '/nobackup/scgf/myExperiments/threeAreas/prod/pb54/visc_1_1e1/'  # to show boundary conditions
+# first_part_of_path = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/singleInjection/si25/'
 #  Pressure   Porosity
-dir = first_part_of_path+'vis4_09'        # res200
+dir = first_part_of_path+'vis1e1_mR_01'       
 # poro_colour = (161/255, 62/255, 22/255)
 poro_colour = ('g')
 # press_colour = (0/255, 28/255, 148/255)  #1f77b4
@@ -122,6 +122,6 @@ ax1a.spines[['left', 'top']].set_visible(False)  # remove plot margins
 
 plt.subplots_adjust(wspace=0.3)  # Adjust space between plots
 # plt.set_ylim(bottom=0)
-# plt.show()
-plt.savefig("poro_press_central_point_poro.png",dpi=400,transparent=True)
+plt.show()
+# plt.savefig("poro_press_central_point_poro.png",dpi=400,transparent=True)
 print("Done")

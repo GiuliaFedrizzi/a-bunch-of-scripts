@@ -17,7 +17,7 @@ def extract_numeric_value(directory_name):
     return float(directory_name[3:])
 
 # List of def directories
-layer_dirs = ['lr41','lr42','lr43']
+layer_dirs = ['lr41','lr44','lr42','lr45','lr43']
 os.chdir(layer_dirs[0])
 save_freq = int(getSaveFreq())
 os.chdir("..")
