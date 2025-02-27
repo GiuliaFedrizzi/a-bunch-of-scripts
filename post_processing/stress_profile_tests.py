@@ -14,6 +14,7 @@ import sys
 sys.path.append('/home/home01/scgf/myscripts/post_processing')
 from useful_functions import extract_two_profiles,getResolution
 
+big_font = 21
 
 res_dirs = ['res200','res400']
 dir_path = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/singleInjection/si02'
@@ -78,19 +79,28 @@ for res_dir in res_dirs:
             alpha_value = 0.8
             res_label = "400"
         rt_label = rt_dir.split("b")[1]  # take what comes after "b" = 0.01, 0.03 etc
-        line1_v, = ax1.plot(stress_v,coords_v,color=colours[col_counter],alpha=alpha_value, label="Resolution in x: "+res_label+", r$_t$ = "+rt_label)
+        rt_label = float(rt_label)*1e-7
+        coefficient = f"{rt_label:.1e}".split("e")[0]  # Get the coefficient (e.g., 3.0)
+        exponent = f"{rt_label:.1e}".split("e")[1]  # Get the exponent
+        # exponent = int(np.log10(abs(rt_label)))       
+        # use latex formatting for scientific notation
+        rt_label_sci = f"{coefficient}×10$^{{{exponent}}}$"
+
+
+        line1_v, = ax1.plot(stress_v,coords_v,color=colours[col_counter],alpha=alpha_value, 
+            label=f"Resolution in x: {res_label}, r$_t$ = {rt_label_sci}")
         col_counter+=1
 
         # Legend
-        ax1.legend() #loc=(0.7, 0.8))
+        ax1.legend(fontsize = 14) #loc=(0.7, 0.8))
 
         #   options:
         ax1.tick_params(axis='x')
         ax1.tick_params(axis='y')#, colors=blue_hex) # blue
         ax1.xaxis.set_major_locator(plt.MaxNLocator(4))
-        fig.tight_layout() 
-        ax1.set_xlabel('$\sigma_1$ (MPa)',fontsize=15) 
-        ax1.set_ylabel("y coordinate",fontsize=15) 
+        # fig.tight_layout() 
+        ax1.set_xlabel('$\sigma_1$ (MPa)',fontsize=big_font) 
+        ax1.set_ylabel("y coordinate",fontsize=big_font) 
         ax1.tick_params(width=2, length=4)
 
 
@@ -98,8 +108,8 @@ for res_dir in res_dirs:
         os.chdir("..")
     os.chdir("..")
         
-plt.xticks(fontsize=15)
-plt.yticks(fontsize=15)
+plt.xticks(fontsize=big_font)
+plt.yticks(fontsize=big_font)
 plt.grid(linestyle = '--', linewidth = 0.5)
 
 print("Done :)")
