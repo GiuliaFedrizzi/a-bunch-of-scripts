@@ -15,7 +15,7 @@ from useful_functions import extract_two_profiles,getResolution
 res = getResolution()    # resolution in the x direction
 res_y = int(res*1.15)  # resolution in the y direction
 filename = "my_experiment03000.csv"
-dir_path = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_3_1e3/vis1e3_mR_08'
+dir_path = '/Users/giuliafedrizzi/Library/CloudStorage/OneDrive-UniversityofLeeds/PhD/arc/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_3_1e3/vis1e3_mR_08'
 
 # define the indexes for the two profiles, the first one is the start for the horizontal, the second for the vertical profile
 # REMEMBER to remove 1 from the horizontal index
