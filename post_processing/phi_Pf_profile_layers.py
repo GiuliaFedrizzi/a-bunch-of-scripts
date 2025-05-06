@@ -1,7 +1,7 @@
 """
 plot Pf, phi, k to see if they are correlated, how variable they are.
-shade the area between Pf & phi and between 0 and k
 version for the layers
+Vertical profile only
 """
 # import pandas as pd
 import matplotlib.pyplot as plt
@@ -14,18 +14,33 @@ import sys
 sys.path.append('/home/home01/scgf/myscripts/post_processing')
 from useful_functions import extract_two_profiles,getResolution,extract_horiz_sum_of_bb
 
+# two options: prt/prt46 (first paper, one layer) prt/layers (3rd paper, multiple layers)
 
-# file_numbers = ["10000"] 
-file_numbers = ["08000","10000","14000","18000"] # for lr43/def0e-8/visc_3_1e3/z_vis1e3_mR_05
+prt_layers = False
+prt46 = True
+
+file_numbers = ["11000"] # for prt46 high visc
+# file_numbers = ["08000","10000","14000","18000"] # for lr43/def0e-8/visc_3_1e3/z_vis1e3_mR_05
 # file_numbers = ["07000","08000","10000","14000"]  # for lr43/def5e-7/visc_3_1e3/z_vis1e3_mR_05 and lr44/def5e-7/visc_3_1e3/vis1e3_mR_05
-dir_path = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/layers/lr43/def0e-8/visc_3_1e3/z_vis1e3_mR_05'
+# dir_path = '/Users/giuliafedrizzi/Library/CloudStorage/OneDrive-UniversityofLeeds/PhD/arc/myExperiments/threeAreas/prod/prt/layers/lr43/def0e-8/visc_3_1e3/z_vis1e3_mR_05'
+dir_path = '/Users/giuliafedrizzi/Library/CloudStorage/OneDrive-UniversityofLeeds/PhD/arc/myExperiments/threeAreas/prod/prt/prt46/rt0.5/visc_3_1e3/vis1e3_mR_08/'
 # dir_path = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_1_1e15/vis1e15_mR_03'
 
 
 # Pf_axes_lim = [6.6e7,1.6e8]  
-Pf_axes_lim = [0.78,1.2]  # when scaled (pore fluid pressure, Pf0*0.5)
-phi_axes_lim = [0.09,0.22]
-k_axes_lim = [0,310]  # layer
+
+if prt_layers:
+    #  prt/layers
+    Pf_axes_lim = [0.78,1.2]  # when scaled (pore fluid pressure, Pf0*0.5)
+    phi_axes_lim = [0.09,0.22]
+    k_axes_lim = [0,310]  # layer
+
+if prt46:
+    #  prt46
+    Pf_axes_lim = [0.75,1.75]  # when scaled (pore fluid pressure, Pf0*0.5)
+    phi_axes_lim = [0.11,0.42]
+    k_axes_lim = [-1e-17,3.2e-16]  
+
 
 
 os.chdir(dir_path)
@@ -47,19 +62,20 @@ for filenum in file_numbers:
         filename = "my_experiment"+filenum+".csv"
         myfile = Path(os.getcwd()+'/'+filename)  # build file name including path
 
-        plt.rcParams["font.weight"] = "bold"; plt.rcParams['lines.linewidth'] = 4;plt.rcParams['axes.linewidth'] = 4
+        plt.rcParams["font.weight"] = "bold"
+        plt.rcParams['lines.linewidth'] = 3
+        plt.rcParams['axes.linewidth'] = 3
         plt.rcParams['axes.labelsize'] = 20
-        plt.rcParams['xtick.labelsize'] = 30
-        plt.rcParams['ytick.labelsize'] = 30
-        plt.rcParams['xtick.major.size'] = 10
-        plt.rcParams['xtick.major.width'] = 6
-        plt.rcParams['ytick.major.size'] = 10
-        plt.rcParams['ytick.major.width'] = 6
+        plt.rcParams['xtick.labelsize'] = 15
+        plt.rcParams['ytick.labelsize'] = 15
+        plt.rcParams['xtick.major.size'] = 5
+        plt.rcParams['xtick.major.width'] = 3
+        plt.rcParams['ytick.major.size'] = 5
+        plt.rcParams['ytick.major.width'] = 3
 
 
-        fig, (ax1,ax2) = plt.subplots(nrows=1, ncols=2,figsize=(12, 9))
-        # plt.setp(ax1.spines.values(), linewidth=3)  # #f56c42
-        # plt.setp(ax2.spines.values(), linewidth=3)  # #9ce35d
+        fig, (ax2,ax2a,ax2b) = plt.subplots(nrows=1, ncols=3,figsize=(6, 6), gridspec_kw={'wspace': 0.1})  # remove space between plots
+
 
         vars_to_plot = ["Pressure","Porosity", "Permeability","Broken Bonds"]
 
@@ -77,89 +93,63 @@ for filenum in file_numbers:
                 all_data_v[v] = (x_v, y_v)
                 all_data_h[v] = (x_h, y_h)
         
-        ax1a = ax1.twinx()
-        ax1b = ax1.twinx()
-        # print(np.corrcoef(abs(P_hor),poro_values_hor)) 
-
-        line1_h, = ax1.plot(all_data_h[vars_to_plot[0]][0], all_data_h[vars_to_plot[0]][1])
-        line2_h, = ax1a.plot(all_data_h[vars_to_plot[1]][0], all_data_h[vars_to_plot[1]][1],'g')  # plot porosity in green
-        line3_h, = ax1b.plot(all_data_h[vars_to_plot[2]][0], all_data_h[vars_to_plot[2]][1],color='lightgray',alpha=0.3)  # plot permeability
-
-        ax1b.fill_between(all_data_h[vars_to_plot[2]][0], all_data_h[vars_to_plot[2]][1],y2=0,color='lightgray',alpha=0.3)  # fill between 0 and permeability 
-        
-        # Legend
-        # ax1.legend([line1_h, line2_h, line3_h], 
-                # [vars_to_plot[0], vars_to_plot[1],vars_to_plot[2]],loc=(0.6, 0.8))   # labels: y velocity and poro
-
-        #   add broken bonds
-        x_coord_bb_hor, bb_values_hor = all_data_h[vars_to_plot[3]]
-
-        bb_locations = [x for x, bb in zip(x_coord_bb_hor, bb_values_hor) if bb != 0]   # points of x_coord_vel_hor that have at least a broken bond
-        ax1.scatter(bb_locations, np.full((len(bb_locations),1), Pf_axes_lim[1]), color='red', marker='x', s=150)  # plot bb. array same length as bb_locations, full with the max range of Pf
-        
-        
-        #   limits:
-        # ax1.set_ylabel(vars_to_plot[0]) 
-        ax1.set_ylim(Pf_axes_lim)  # Pf
-        ax1a.set_ylim(phi_axes_lim)    # phi
-        ax1b.set_ylim(k_axes_lim)    # k
-        ax1.set_xlim([0,1])
-        # ax1a.set_ylabel(vars_to_plot[1], color='g')  # Setting color to match line color
-        # ax1.set_xlabel('x') 
-
-        #   options:
-        ax1a.yaxis.tick_right()  # Ensure the y-axis label is on the right (phi)
-        ax1b.yaxis.tick_right()  # Ensure the y-axis label is on the left (k)
-        ax1.tick_params(axis='x')
-        ax1.tick_params(axis='y', colors=blue_hex) # blue
-        ax1.xaxis.set_major_locator(plt.MaxNLocator(4))
-        ax1.yaxis.set_major_locator(plt.MaxNLocator(3))
-        ax1a.yaxis.set_major_locator(plt.MaxNLocator(3))
-        ax1a.tick_params(axis='y', colors='g')
-        # ax1b.tick_params(axis='y', colors='darkgray') 
-        ax1b.spines['left'].set_position(('outward', 10))  # draw the axis for k further from the axis for phi
-        if True:  # hide ticks
-            ax1.set_xticklabels([])
-            ax1.set_yticklabels([])
-            ax1a.set_yticklabels([])
-            ax1.tick_params(axis='y', which='both', length=0) # remove the ticks themselves
-            ax1a.tick_params(axis='y', which='both', length=0) # remove the ticks themselves
-
 
         # Plotting on ax2 -- vertical profile ---
-        ax2a = ax2.twiny()
-        ax2b = ax2.twiny()
 
-        ax2.set_ylim([0.01,0.99])
+        ax2.set_ylim([0.0,1])
+        ax2a.set_ylim([0.0,1])
+        ax2b.set_ylim([0.0,1])
         ax2.set_xlim(Pf_axes_lim)  # Pf
         ax2a.set_xlim(phi_axes_lim)  # phi
         ax2b.set_xlim(k_axes_lim)    # k - now it's bb sum
-        ax2.yaxis.tick_left()
+        # ax2.yaxis.tick_left()
         # ax2.yaxis.set_label_position("right")
 
         print(f'max Pf {max(all_data_v[vars_to_plot[0]][1])}')
         print(f'max phi {max(all_data_v[vars_to_plot[1]][1])}')
 
-        # sum of broken bonds along each horizontal line
-        bb_horiz_sum,y_coord_bb_sum = extract_horiz_sum_of_bb(filename,res)
-        line3_v, = ax2b.plot(bb_horiz_sum, y_coord_bb_sum,color='red',linewidth=2,alpha=0.7)
+        if prt_layers:
+            # sum of broken bonds along each horizontal line
+            bb_horiz_sum,y_coord_bb_sum = extract_horiz_sum_of_bb(filename,res)
+            line3_v, = ax2b.plot(bb_horiz_sum, y_coord_bb_sum,color='red',linewidth=2,alpha=0.7)
         line1_v, = ax2.plot(all_data_v[vars_to_plot[0]][1], all_data_v[vars_to_plot[0]][0], label=vars_to_plot[0])
         line2_v, = ax2a.plot(all_data_v[vars_to_plot[1]][1], all_data_v[vars_to_plot[1]][0],'g', label=vars_to_plot[1])
-        # line3_v, = ax2b.plot(all_data_v[vars_to_plot[2]][1], all_data_v[vars_to_plot[2]][0],color='lightgray',alpha=0.3)
+        if prt46:
+            line3_v, = ax2b.plot(all_data_v[vars_to_plot[2]][1], all_data_v[vars_to_plot[2]][0],color='dimgray')
         
+        #   add broken bonds
+        y_coord_bb_ver, bb_values_ver = all_data_v[vars_to_plot[3]]
+        x_coord_bb_hor, bb_values_hor = all_data_h[vars_to_plot[3]]
+
+        bb_locations = [x for x, bb in zip(y_coord_bb_ver, bb_values_ver) if bb != 0]   # points of x_coord_vel_hor that have at least a broken bond
+
+        # plot on the third axis (perm)
+        ax2b.scatter(np.full((len(bb_locations),1), k_axes_lim[1]),bb_locations, color='red', marker='x', s=80)  # plot bb. array same length as bb_locations, full with the max range of Pf
         
         ax2.tick_params(axis='x', colors=blue_hex)
-        ax2.tick_params(axis='y')#,length=0) 
-        ax2.tick_params(axis='x') 
+        # ax2.tick_params(axis='y')#,length=0) 
+        # ax2.tick_params(axis='x') 
         ax2a.tick_params(axis='x', colors='g') 
-        # ax2b.tick_params(axis='x', colors='darkgray') 
-        tick_spacing = 1/7
-        ax2.yaxis.set_major_locator(ticker.MultipleLocator(tick_spacing))
-        ax2.xaxis.set_major_locator(plt.MaxNLocator(4))
-        ax2a.xaxis.set_major_locator(plt.MaxNLocator(4))
-        ax2b.xaxis.set_major_locator(plt.MaxNLocator(3))
+        ax2b.tick_params(axis='x', colors='dimgray') 
 
-        if True:  # to create the legend for the axes (only 1 for all of the figures)
+        ax2.xaxis.set_major_locator(plt.MaxNLocator(3))
+        ax2.yaxis.set_major_locator(plt.MaxNLocator(4))
+        ax2a.xaxis.set_major_locator(plt.MaxNLocator(3))
+        ax2a.yaxis.set_major_locator(plt.MaxNLocator(4))
+        ax2b.xaxis.set_major_locator(plt.MaxNLocator(3))
+        ax2b.yaxis.set_major_locator(plt.MaxNLocator(4))
+        if prt_layers:
+            tick_spacing = 1/7
+            ax2.yaxis.set_major_locator(ticker.MultipleLocator(tick_spacing))
+
+        # hide numbers for poro and perm
+        ax2a.set_yticklabels([])
+        ax2b.set_yticklabels([])
+        ax2.grid(True)
+        ax2a.grid(True)
+        ax2b.grid(True)
+
+        if False:  # to create the legend for the axes (only 1 for all of the figures)
             # move all the ticks to the bottom
             ax2.xaxis.tick_bottom()
             ax2a.xaxis.tick_bottom()
@@ -189,32 +179,14 @@ for filenum in file_numbers:
             ax2a.tick_params(axis='x', which='both', length=0) # remove the ticks themselves
             ax2b.tick_params(axis='x', which='both', length=0) # remove the ticks themselves
 
-        fig.tight_layout()  # must go before fill_between
-
-        # fill between phi and Pf
-        # transform datasets to display space
-        # WARNING it only works if I set the limits for the axes manually
-        x1p, y1p = ax1.transData.transform(np.c_[all_data_h[vars_to_plot[0]][0],all_data_h[vars_to_plot[0]][1]]).T
-        _, y2p = ax1a.transData.transform(np.c_[all_data_h[vars_to_plot[1]][0],all_data_h[vars_to_plot[1]][1]]).T
-
-        ax1.autoscale(False)
-        ax1.fill_between(x1p, y1p, y2p, color='teal',alpha=0.2, transform=None)
-        
-        x1p, yp = ax2.transData.transform(np.c_[all_data_v[vars_to_plot[0]][1],all_data_v[vars_to_plot[0]][0]]).T
-        x2p, _ = ax2a.transData.transform(np.c_[all_data_v[vars_to_plot[1]][1],all_data_v[vars_to_plot[1]][0]]).T
-        ax2.autoscale(False)
-        ax2.fill_betweenx(yp, x1p, x2p, color="teal", alpha=0.2, transform=None)
-
-        # add shading to show where layers are
-        # ax2.fill_between(np.arange(Pf_axes_lim[0],Pf_axes_lim[1]+0.06,0.05), y1=1.0/7.0, y2=2.0/7.0, color="orange",interpolate=True, alpha=0.2)#, transform=None)
-        # ax2.fill_between(np.arange(Pf_axes_lim[0],Pf_axes_lim[1]+0.06,0.05), y1=3.0/7.0, y2=4.0/7.0, color="orange",interpolate=True, alpha=0.2)#, transform=None)
-        # ax2.fill_between(np.arange(Pf_axes_lim[0],Pf_axes_lim[1]+0.06,0.05), y1=5.0/7.0, y2=6.0/7.0, color="orange",interpolate=True, alpha=0.2)#, transform=None)
-        fig_name = "phi_Pf0_0.8_"+str(filenum)+".png"
-        # plt.tight_layout()
-        # plt.savefig(fig_name)
+        ax2.spines[['right']].set_visible(False)
+        ax2a.spines[['right']].set_visible(False)
+        # ax2b.spines[['right']].set_visible(False)
+        ax2b.spines['right'].set_linewidth(1)  # line where the broken bonds go. Thin but still visible
+      
+        fig_name = "phi_Pf0_0.8_3prof_"+str(filenum)+".png"
+        plt.savefig(fig_name,dpi=600,transparent=True)
         # plt.show()
-        # plt.savefig("phi_Pf_vert_ticks.png")
-        # break
 
 print("Done :)")
 plt.show()
