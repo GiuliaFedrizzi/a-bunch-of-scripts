@@ -19,11 +19,13 @@ from useful_functions import extract_two_profiles,getResolution,extract_horiz_su
 prt_layers = False
 prt46 = True
 
-file_numbers = ["11000"] # for prt46 high visc
+# file_numbers = ["11000"] # for prt46 high visc
+file_numbers = ["100000"] # for prt46 low visc
 # file_numbers = ["08000","10000","14000","18000"] # for lr43/def0e-8/visc_3_1e3/z_vis1e3_mR_05
 # file_numbers = ["07000","08000","10000","14000"]  # for lr43/def5e-7/visc_3_1e3/z_vis1e3_mR_05 and lr44/def5e-7/visc_3_1e3/vis1e3_mR_05
 # dir_path = '/Users/giuliafedrizzi/Library/CloudStorage/OneDrive-UniversityofLeeds/PhD/arc/myExperiments/threeAreas/prod/prt/layers/lr43/def0e-8/visc_3_1e3/z_vis1e3_mR_05'
-dir_path = '/Users/giuliafedrizzi/Library/CloudStorage/OneDrive-UniversityofLeeds/PhD/arc/myExperiments/threeAreas/prod/prt/prt46/rt0.5/visc_3_1e3/vis1e3_mR_08/'
+# dir_path = '/Users/giuliafedrizzi/Library/CloudStorage/OneDrive-UniversityofLeeds/PhD/arc/myExperiments/threeAreas/prod/prt/prt46/rt0.5/visc_3_1e3/vis1e3_mR_08/'
+dir_path = '/Users/giuliafedrizzi/Library/CloudStorage/OneDrive-UniversityofLeeds/PhD/arc/myExperiments/threeAreas/prod/prt/prt46/rt0.5/visc_1_1e15/vis1e15_mR_03/'
 # dir_path = '/nobackup/scgf/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_1_1e15/vis1e15_mR_03'
 
 
@@ -38,8 +40,8 @@ if prt_layers:
 if prt46:
     #  prt46
     Pf_axes_lim = [0.75,1.75]  # when scaled (pore fluid pressure, Pf0*0.5)
-    phi_axes_lim = [0.11,0.42]
-    k_axes_lim = [-1e-17,3.2e-16]  
+    phi_axes_lim = [0.11,0.44]
+    k_axes_lim = [-1.5e-17,3.6e-16]  
 
 
 
