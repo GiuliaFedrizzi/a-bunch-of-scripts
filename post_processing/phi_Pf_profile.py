@@ -14,6 +14,7 @@ from useful_functions import extract_two_profiles,getResolution
 
 
 file_numbers = ["01000","03000","07000","16000"]  # tsteps for visc_3_1e3/vis1e3_mR_08
+# file_numbers = ["03000"]  # tsteps for visc_3_1e3/vis1e3_mR_08
 # file_numbers = ["30000","50000","80000","100000"]  # tsteps for visc_1_1e15/vis1e15_mR_03
 dir_path = '/Users/giuliafedrizzi/Library/CloudStorage/OneDrive-UniversityofLeeds/PhD/arc/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_3_1e3/vis1e3_mR_08'
 # dir_path = '/Users/giuliafedrizzi/Library/CloudStorage/OneDrive-UniversityofLeeds/PhD/arc/myExperiments/threeAreas/prod/prt/prt45/rt0.5/visc_1_1e15/vis1e15_mR_03'
@@ -26,7 +27,7 @@ Pf_axes_lim = [0.75,2]  # when scaled (pore fluid pressure, Pf0*0.5)
 phi_axes_lim = [0.11,0.42]
 # phi_axes_lim = [0.10,0.45]  # layer
 if k_log:
-
+        # k_axes_lim = [0,1e-17] # zoom
         k_axes_lim = [0,3.2e-16]
 else:
         k_axes_lim = [-1e-17,3.2e-16]
@@ -68,8 +69,10 @@ for filenum in file_numbers:
         plt.rcParams['ytick.major.size'] = 6
         plt.rcParams['ytick.major.width'] = 4
 
-
-        fig, (ax1,ax1a,ax1b) = plt.subplots(nrows=3, ncols=1,figsize=(6, 6), gridspec_kw={'hspace': 0})  # remove space between plots
+        if k_log == False:
+                fig, (ax1,ax1a,ax1b) = plt.subplots(nrows=3, ncols=1,figsize=(6, 6), gridspec_kw={'hspace': 0})  # remove space between plots
+        else:
+                fig, (ax1,ax1a,ax1b) = plt.subplots(nrows=3, ncols=1,figsize=(7, 5), gridspec_kw={'hspace': 0})  # remove space between plots
         # plt.setp(ax1.spines.values(), linewidth=3)  # #f56c42
         # plt.setp(ax2.spines.values(), linewidth=3)  # #9ce35d
 
@@ -140,8 +143,9 @@ for filenum in file_numbers:
         #     y_ticks = np.logspace(-19, np.log10(k_axes_lim[1]), num=10)
         #     print(f'y_ticks {y_ticks}')
         #     ax1b.set_yticks(y_ticks)
-            minor_locator = mpl.ticker.LogLocator(base=10.0, subs=np.arange(1, 11) * 0.1, numticks=100)
+            minor_locator = mpl.ticker.LogLocator(base=10.0, subs=np.arange(1, 11) * 0.05, numticks=100) # subs=np.arange(1, 11) * 0.1 = every 0.1 : [0.1, 0.2, ..., 1.0]
             ax1b.yaxis.set_minor_locator(minor_locator)
+            ax1b.yaxis.tick_left()  # Ensure the y-axis label is on the left (k)
             print("Current y-axis ticks:", ax1b.get_yticks())
         #     y_ticks = np.arange(0,3.2e-16,1e-18)
         #     print(f'y_ticks {y_ticks}')
@@ -167,7 +171,7 @@ for filenum in file_numbers:
             ax1a.set_yticklabels([])
             ax1a.tick_params(axis='y', which='both', length=0) # remove the ticks themselves
         #     ax1a.set_yticks([])
-            ax1b.set_yticklabels([])
+        #     ax1b.set_yticklabels([])
         #     ax1b.set_yticks([])
 
         #     ax1.set_yticklabels([])
@@ -180,6 +184,11 @@ for filenum in file_numbers:
         #     ax1.tick_params(axis='y', which='both', length=0) # remove the ticks themselves
         #     ax1a.tick_params(axis='y', which='both', length=0) # remove the ticks themselves
         plt.tight_layout(pad=0)
+
+        if k_log:
+            ax1a.tick_params(axis='y', which='both', length=4, width=2) # show the ticks 
+            ax1a.yaxis.set_major_locator(mpl.ticker.MaxNLocator(nbins=10)) 
+            ax1a.yaxis.tick_left()  # the zoomed rectangle has the ticks on the left
 
         print(f'max Pf {max(all_data_v[vars_to_plot[0]][1])}')
         print(f'max phi {max(all_data_v[vars_to_plot[1]][1])}')
@@ -194,15 +203,15 @@ for filenum in file_numbers:
         # fig.suptitle(str(myfile))
         if k_log:
                 fig_name = "phi_Pf0_separ_0.8_"+str(filenum)+"_log.png"
-                transp = False
+                transp = True
         else:
                 fig_name = "phi_Pf0_separ_0.8_"+str(filenum)+".png"
                 transp = True
         # plt.tight_layout()
-        plt.savefig(fig_name,dpi=600,transparent=transp)
+        # plt.savefig(fig_name,dpi=600,transparent=transp)
         # plt.show()
         # break
 
 print("Done :)")
-# plt.show()
+plt.show()
 
