@@ -21,8 +21,8 @@ def read_bb_data_from_csv(file_path):
 
 def dbscan_and_plot(X,variab,x_value,melt_value,no_margins,plot_figures,t):
     min_samples = 10
-    e = 0.0088  # works for prt45, prt46
-    # e = 0.00999  # works for pd19
+    # e = 0.0088  # works for prt45, prt46
+    e = 0.00999  # works for pd19, prt46 layers mu1e3, mr08
     # e = 0.0105
     dbscan = DBSCAN(eps=e, min_samples=min_samples).fit(X)
     X['cluster'] = dbscan.labels_

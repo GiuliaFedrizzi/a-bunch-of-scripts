@@ -14,16 +14,16 @@ from sklearn.neighbors import NearestNeighbors
 
 no_margins = 1
 plot_figures = 1
-t = 100000
-# t =25000 # true time
+t = 11000  # true time!
+# t =25000 # true time!
 # os.chdir("rt0.5/pdef0e8/")
-os.chdir("rt0.5/visc_1_1e15/")  # change  x_value and melt_value too
+os.chdir("rt0.5/visc_3_1e3/")  # change  x_value and melt_value too
 file_to_read = "my_experiment"+str(t)+".csv"
-x_value = "1e15"      # <----------
-melt_value = 0.003    # <----------
-data = read_bb_data_from_csv("vis1e15_mR_03/"+file_to_read)
+x_value = "1e3"      # <----------
+melt_value = 0.008    # <----------
+data = read_bb_data_from_csv("vis1e3_mR_08/"+file_to_read)
 # data = read_bb_data_from_csv("vis1e2_mR08/"+file_to_read)
-print("vis1e15_mR_03/"+file_to_read)
+print("vis1e3_mR_08/"+file_to_read)
 if data.empty:
     print("empty df") 
     sys.exit()
