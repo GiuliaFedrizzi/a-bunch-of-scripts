@@ -21,8 +21,9 @@ def read_bb_data_from_csv(file_path):
 
 def dbscan_and_plot(X,variab,x_value,melt_value,no_margins,plot_figures,t):
     min_samples = 10
+    e = 0.0088  # works for prt45, prt46
     # e = 0.00999  # works for pd19
-    e = 0.0105
+    # e = 0.0105
     dbscan = DBSCAN(eps=e, min_samples=min_samples).fit(X)
     X['cluster'] = dbscan.labels_
     X=X[X['cluster']>-1]  # remove noise cluster
@@ -207,9 +208,10 @@ def plot_rose(full_range: np.ndarray):
     tens=np.arange(0, 360, 10)
     labels=[i if i%30==0 else '' for i in tens]
     ax.set_thetagrids(tens, labels=labels,weight='bold')
+    ax.xaxis.set_tick_params(pad=7)
     ax.tick_params(axis="y", labelsize=15)
     ax.tick_params(axis="x", labelsize=17)
-    ax.grid(linewidth=1.5)
+    ax.grid(linewidth=1,alpha=0.5, zorder=0)  # zorder=0 to put it behind the bars
     # ax.set_rgrids(np.arange(1, full_range.max() + 1, 2), angle=0, weight= 'black')
     # the height of each bar is the number of angles in that bin
     # ax.grid(False)
@@ -224,8 +226,14 @@ def plot_rose(full_range: np.ndarray):
     colours_r = colours_r[::-1]
     colmap90 = np.concatenate((colours,colours_r,colours,colours_r),axis=0)
     # the height of each bar is the number of angles in that bin
+    # set the colour to the colormap defined above
+    # ax.bar(np.deg2rad(np.arange(0, 360, 10)), full_range,
+    #        width=np.deg2rad(10), bottom=0.0, color=colmap90, edgecolor='k')
+
+    # set the colour to black
     ax.bar(np.deg2rad(np.arange(0, 360, 10)), full_range,
-           width=np.deg2rad(10), bottom=0.0, color=colmap90, edgecolor='k')
+           width=np.deg2rad(10), bottom=0.0, color='k', edgecolor='k',zorder=2)  # zorder=2 to put it on top of the grid
+    ax.set_yticklabels([])
 
 
     return ax
